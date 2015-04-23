@@ -6,6 +6,7 @@ ROOT=`pwd`
 BUILD=$ROOT/build_libav
 LIBAV=$BUILD/libav
 NDK=/home/dan/sdk/android-ndk
+export PATH=$NDK:$PATH
 JNIDIR=$ROOT/jni/libav/libav
 TAG=v11.3
 #TAG=master
