@@ -1,0 +1,7 @@
+h263_vaapi		h264_vdpau		mpeg4_vdpau
+h263_vdpau		hevc_dxva2		vc1_dxva2
+h264_dxva2		mpeg1_vdpau		vc1_vaapi
+h264_qsv		mpeg2_dxva2		vc1_vdpau
+h264_vaapi		mpeg2_vaapi		wmv3_dxva2
+h264_vda		mpeg2_vdpau		wmv3_vaapi
+h264_vda_old		mpeg4_vaapi		wmv3_vdpau

@@ -1,0 +1,23 @@
+aformat			drawtext		ocv
+amix			fade			overlay
+anull			fieldorder		pad
+anullsink		format			pixdesctest
+anullsrc		fps			resample
+asetpts			framepack		rgbtestsrc
+asettb			frei0r			scale
+ashowinfo		frei0r_src		select
+asplit			gradfun			setdar
+asyncts			hflip			setpts
+atrim			hqdn3d			setsar
+blackframe		interlace		settb
+boxblur			join			showinfo
+bs2b			lut			shuffleplanes
+channelmap		lutrgb			split
+channelsplit		lutyuv			testsrc
+color			movie			transpose
+compand			negate			trim
+copy			noformat		unsharp
+crop			null			vflip
+cropdetect		nullsink		volume
+delogo			nullsrc			yadif
+drawbox

@@ -1,0 +1,11 @@
+**/bin
+**/obj
+**/gen
+**/libs
+**/.gradle
+**/build
+**/lint.xml
+library/notes
+**/.settings
+**/local.properties
+**/.checkstyle
