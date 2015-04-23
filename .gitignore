@@ -1,7 +1,6 @@
 **/bin
 **/obj
 **/gen
-**/libs
 **/.gradle
 **/build
 **/lint.xml
