@@ -13,7 +13,12 @@ The gradle build scripts are for gradle 2.3.
 
 For testing there is a ./demo/demo.apk file ready to go.
 
+=======
+Status
+------
 
+Basics are all working.
+Some nasty bugs leading to lockups.
 
 
 
