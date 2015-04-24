@@ -11,6 +11,10 @@ An LibAV based drop-in replacement for the android [MediaPlayer](http://develope
 You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
 The gradle build scripts are for gradle 2.3.
 
+For testing there is a ./demo/demo.apk file ready to go.
+
+
+
 
 
 

@@ -83,16 +83,25 @@ public class MainActivity extends AppCompatActivity {
     seekBar.setEnabled(false);
     seekBar.setProgress(0);
 
-    addURL("http://192.168.1.2/test.mp3");
+    // 48khz ogg
     addURL("http://h1.danbrough.org/media/tests/test48.ogg");
+
+    // music that matters
     addURL("http://live-aacplus-64.kexp.org/kexp64.aac");
-    addURL("http://192.168.1.2/test.ogg");
-    addURL("mmsh://streaming.radionz.co.nz/national-mbr");
+
     addURL("http://stream.radioactive.fm:8000/ractive");
+    // wmav2 encoded asf stream
     addURL("mmsh://streaming.radionz.co.nz/national-mbr");
-    addURL("rtsp://radionz-wowza.streamguys.com/national/national.stream/");
+    // rtsp aac stream
+    addURL("rtsp://radionz-wowza.streamguys.com/national/national.stream");
+    // mp3 stream
     addURL("http://radionz-ice.streamguys.com/national.mp3");
+    // audio/aacp
     addURL("http://radionz-ice.streamguys.com/national");
+
+    // local tests
+    addURL("http://192.168.1.2/test.ogg");
+    addURL("http://192.168.1.2/test.mp3");
 
     findViewById(R.id.pause).setOnClickListener(new View.OnClickListener() {
       @Override

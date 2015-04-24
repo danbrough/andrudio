@@ -49,13 +49,4 @@ public class LibAV {
 
   public static native boolean isPlaying(long handle);
 
-  /* public static native void setDataSource(long handler, String dataSource);
-
-   public static native int prepareAsync(long handler);
-
-   public static native int reset(long handler);
-
-   public static native long getDuration(long handle);
-
-   public static native void seekTo(long handle, long ms);*/
 }
