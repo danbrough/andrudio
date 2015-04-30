@@ -1,16 +1,33 @@
 package danbroid.libavplayer;
 
-
 public class LibAV {
+  private static boolean initialized = false;
 
-  public static int initialiseLibrary() {
-    return initialiseLibrary(AudioStreamListener.class);
+  public static void initialize() {
+    String libs[] = { "avutil", "avresample", "avcodec", "avformat", "avplayer" };
+
+    for (String lib : libs) {
+      System.loadLibrary(lib);
+    }
+
+    initializeLibrary(AudioStreamListener.class);
+    initialized = true;
   }
 
-  private static native int initialiseLibrary(
+  private static native int initializeLibrary(
       Class<AudioStreamListener> listenerClass);
 
-  public static native long create();
+  public static long create() {
+    if (!initialized) {
+      synchronized (LibAV.class) {
+        if (!initialized)
+          initialize();
+      }
+    }
+    return _create();
+  }
+
+  private static native long _create();
 
   public static native void setListener(long handle,
       AudioStreamListener listener);
@@ -49,8 +66,5 @@ public class LibAV {
   public static native void setLooping(long handle, boolean looping);
 
   public static native boolean isPlaying(long handle);
-
-  public static native void audioPrepared(Object audioTrack, int sampleFormat,
-      int sampleRateInHz, int channelConfig);
 
 }

@@ -8,13 +8,13 @@ import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
+import android.media.AudioTrack.OnPlaybackPositionUpdateListener;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-public class LibAVMediaPlayer extends MediaPlayer {
+public class MediaPlayer extends android.media.MediaPlayer {
   private static final String TAG = "danbroid.LibAVMediaPlayer";
 
   public enum AVSampleFormat {
@@ -30,29 +30,8 @@ public class LibAVMediaPlayer extends MediaPlayer {
     AV_SAMPLE_FMT_DBLP,        // /< double, planar
   };
 
-  public static final int STATE_IDLE = 0;
-  public static final int STATE_INITIALIZED = 1;
-  public static final int STATE_PREPARING = 2;
-  public static final int STATE_PREPARED = 3;
-  public static final int STATE_STARTED = 4;
-  public static final int STATE_PAUSED = 5;
-  public static final int STATE_COMPLETED = 6;
-  public static final int STATE_STOPPED = 7;
-  public static final int STATE_ERROR = 8;
-  public static final int STATE_END = 9;
-
   public interface OnStatusUpdateListener {
     void onStatusUpdate(int position, int duration);
-  }
-
-  public static void initJNI() {
-    String libs[] = { "avutil", "avresample", "avcodec", "avformat", "avplayer" };
-
-    for (String lib : libs) {
-      System.loadLibrary(lib);
-    }
-
-    LibAV.initialiseLibrary();
   }
 
   private static final int EVENT_STATUS = 1000;
@@ -66,7 +45,7 @@ public class LibAVMediaPlayer extends MediaPlayer {
         break;
       case AudioStreamListener.EVENT_SEEK_COMPLETE:
         if (onSeekCompleteListener != null)
-          onSeekCompleteListener.onSeekComplete(LibAVMediaPlayer.this);
+          onSeekCompleteListener.onSeekComplete(MediaPlayer.this);
         break;
       case EVENT_STATUS:
         if (statusPollLength > 0)
@@ -86,7 +65,7 @@ public class LibAVMediaPlayer extends MediaPlayer {
 
   private boolean playing = false;
 
-  public LibAVMediaPlayer() {
+  public MediaPlayer() {
     super();
     handle = LibAV.create();
     LibAV.setListener(handle, new AudioStreamListener() {
@@ -98,51 +77,65 @@ public class LibAVMediaPlayer extends MediaPlayer {
       static final String TAG = "danbroid.AudioStreamListener";
 
       @Override
-      public void writeAudio(byte[] data, int offset, int len) {
-        audioTrack.write(data, offset, len);
-      }
+      public AudioTrack prepareAudio(int sampleFormat, int sampleRateInHz,
+          int channelConfig) {
 
-      @Override
-      public void prepareAudio(final int sampleFormat,
-          final int sampleRateInHz, final int channelConfig) {
+        Log.i(TAG, "onPrepared():" + Thread.currentThread().getId()
+            + " sampleFormat: " + sampleFormat + " sampleRateInHZ: "
+            + sampleRateInHz + " channelConfig: " + channelConfig);
+        boolean configChanged = false;
 
-        handler.post(new Runnable() {
-          @Override
-          public void run() {
-            Log.i(TAG, "onPrepared():" + Thread.currentThread().getId()
-                + " sampleFormat: " + sampleFormat + " sampleRateInHZ: "
-                + sampleRateInHz + " channelConfig: " + channelConfig);
-            boolean configChanged = false;
+        int chanConfig = (channelConfig == 1) ? AudioFormat.CHANNEL_OUT_MONO
+            : AudioFormat.CHANNEL_OUT_STEREO;
 
-            int chanConfig = (channelConfig == 1) ? AudioFormat.CHANNEL_OUT_MONO
-                : AudioFormat.CHANNEL_OUT_STEREO;
+        configChanged = sampleFormat != prevSampleFormat
+            | chanConfig != prevChannelConfig
+            | sampleRateInHz != prevSampleRate;
+        prevChannelConfig = chanConfig;
+        prevSampleFormat = sampleFormat;
+        prevSampleRate = sampleRateInHz;
 
-            configChanged = sampleFormat != prevSampleFormat
-                | chanConfig != prevChannelConfig
-                | sampleRateInHz != prevSampleRate;
-            prevChannelConfig = chanConfig;
-            prevSampleFormat = sampleFormat;
-            prevSampleRate = sampleRateInHz;
+        int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
+            chanConfig, AudioFormat.ENCODING_PCM_16BIT) * 4;
+        Log.v(TAG, "minBufferSize: " + minBufferSize);
 
-            int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-                chanConfig, AudioFormat.ENCODING_PCM_16BIT) * 4;
-            Log.v(TAG, "minBufferSize: " + minBufferSize);
+        if (configChanged && audioTrack != null) {
+          audioTrack.release();
+          audioTrack = null;
+        }
 
-            if (configChanged && audioTrack != null) {
-              audioTrack.release();
-              audioTrack = null;
-            }
+        if (audioTrack == null) {
+          audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+              sampleRateInHz, chanConfig, AudioFormat.ENCODING_PCM_16BIT,
+              minBufferSize, AudioTrack.MODE_STREAM);
 
-            if (audioTrack == null) {
-              audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                  sampleRateInHz, chanConfig, AudioFormat.ENCODING_PCM_16BIT,
-                  minBufferSize, AudioTrack.MODE_STREAM);
-            }
+          audioTrack
+              .setPlaybackPositionUpdateListener(new OnPlaybackPositionUpdateListener() {
 
-            LibAV.audioPrepared(audioTrack, sampleFormat, sampleRateInHz,
-                channelConfig);
-          }
-        });
+                @Override
+                public void onPeriodicNotification(AudioTrack track) {
+                  Log.i(
+                      TAG,
+                      "audioTrack.onPeriodicNotification: thread: "
+                          + Thread.currentThread() + " "
+                          + (System.currentTimeMillis() / 1000) + " position: "
+                          + audioTrack.getPlaybackHeadPosition() + " clock: "
+                          + (float) audioTrack.getPlaybackHeadPosition()
+                          / audioTrack.getSampleRate());
+
+                }
+
+                @Override
+                public void onMarkerReached(AudioTrack track) {
+                  Log.i(TAG, "audioTrack.onMarkerReached");
+                }
+              });
+
+          audioTrack.setPositionNotificationPeriod(audioTrack.getSampleRate());
+
+        }
+
+        return audioTrack;
       }
 
       @Override
@@ -153,33 +146,34 @@ public class LibAVMediaPlayer extends MediaPlayer {
   }
 
   protected void onStateChange(int old_state, int state) {
-    if (state == STATE_STARTED) {
+    if (state == AudioStreamListener.STATE_STARTED) {
       playing = true;
       onStatusUpdate(getCurrentPosition(), getDuration());
-    } else if (old_state == STATE_STARTED) {
+    } else if (old_state == AudioStreamListener.STATE_STARTED) {
       playing = false;
       handler.removeMessages(EVENT_STATUS);
-      if (state != STATE_IDLE) {
+      if (state != AudioStreamListener.STATE_IDLE) {
         Log.v(TAG, "calling onStatusUpdate from state: " + state);
         onStatusUpdate(getCurrentPosition(), getDuration());
       }
     }
 
-    if (old_state == STATE_STARTED && state != STATE_PAUSED
-        && state != STATE_COMPLETED) {
+    if (old_state == AudioStreamListener.STATE_STARTED
+        && state != AudioStreamListener.STATE_PAUSED
+        && state != AudioStreamListener.STATE_COMPLETED) {
       Log.v(TAG, "audioTrack.stop()");
       audioTrack.stop();
-    } else if (state == STATE_STARTED) {
+    } else if (state == AudioStreamListener.STATE_STARTED) {
       Log.v(TAG, "audioTrack.play()");
       audioTrack.play();
-    } else if (state == STATE_PAUSED) {
+    } else if (state == AudioStreamListener.STATE_PAUSED) {
       Log.v(TAG, "audioTrack.pause()");
       audioTrack.pause();
-    } else if (state == STATE_PREPARED) {
+    } else if (state == AudioStreamListener.STATE_PREPARED) {
       if (onPreparedListener != null)
-        onPreparedListener.onPrepared(LibAVMediaPlayer.this);
-    } else if (state == STATE_COMPLETED) {
-      Log.i(TAG, "onStateChange::STATE_COMPLETED");
+        onPreparedListener.onPrepared(MediaPlayer.this);
+    } else if (state == AudioStreamListener.STATE_COMPLETED) {
+      Log.i(TAG, "onStateChange::AudioStreamListener.STATE_COMPLETED");
     }
   }
 

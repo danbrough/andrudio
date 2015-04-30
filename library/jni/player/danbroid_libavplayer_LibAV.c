@@ -15,6 +15,7 @@ typedef struct fields_t {
 
 typedef struct _JavaInfo {
 	jobject listener;
+	jobject audioTrack;
 	jbyteArray buffer;
 	int size;
 } JavaInfo;
@@ -27,6 +28,7 @@ static void detach_current_thread(void *env) {
 	log_info("detach_current_thread() %"PRIX32, (uint32_t ) pthread_self());
 	(*jvm)->DetachCurrentThread(jvm);
 }
+
 static JNIEnv* attach_current_thread() {
 	log_info("attach_current_thread() %"PRIX32, (uint32_t ) pthread_self());
 	JNIEnv *env = 0;
@@ -59,25 +61,22 @@ void jniThrowException(JNIEnv* env, const char* className, const char* msg) {
 	(*env)->ThrowNew(env, exception, msg);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initialiseLibrary(
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initializeLibrary(
         JNIEnv *env, jclass jCls, jclass listenerCls) {
-	log_info("Java_danbroid_libavplayer_LibAV_initialise()");
+	log_info("Java_danbroid_libavplayer_LibAV_initializeLibrary()");
 
 	fields.class_audio_stream = listenerCls;
-	assert(fields.class_audio_stream);
-
-	fields.writeAudio = (*env)->GetMethodID(env, listenerCls, "writeAudio",
-	        "([BII)V");
-
-	assert(fields.writeAudio);
 
 	fields.prepareAudio = (*env)->GetMethodID(env, listenerCls, "prepareAudio",
-	        "(III)V");
-	assert(fields.prepareAudio);
+	        "(III)Landroid/media/AudioTrack;");
 
 	fields.handleEvent = (*env)->GetMethodID(env, listenerCls, "handleEvent",
 	        "(III)V");
-	assert(fields.handleEvent);
+
+	jclass audioTrackClass = (*env)->FindClass(env, "android/media/AudioTrack");
+	if (audioTrackClass)
+		fields.writeAudio = (*env)->GetMethodID(env, audioTrackClass,
+		        "write", "([BII)I");
 
 	return ap_init();
 }
@@ -103,8 +102,8 @@ static void callback_on_play(player_t *player, char *data, int len) {
 
 	(*env)->SetByteArrayRegion(env, info->buffer, 0, len, (jbyte*) data);
 
-	if (info->listener) {
-		(*env)->CallVoidMethod(env, info->listener, fields.writeAudio,
+	if (info->audioTrack) {
+		(*env)->CallIntMethod(env, info->audioTrack, fields.writeAudio,
 		        info->buffer, 0, len);
 	}
 }
@@ -115,8 +114,14 @@ static int callback_prepare_audio(player_t *player, int sampleFormat,
 	JNIEnv *env = get_jni_env();
 
 	JavaInfo *info = (JavaInfo*) player->extra;
-	(*env)->CallVoidMethod(env, info->listener, fields.prepareAudio,
-	        sampleFormat, sampleRate, channelFormat);
+	if (info->audioTrack) {
+		(*env)->DeleteGlobalRef(env, info->audioTrack);
+	}
+
+	info->audioTrack = (*env)->CallObjectMethod(env, info->listener,
+	        fields.prepareAudio, sampleFormat, sampleRate, channelFormat);
+	info->audioTrack = (*env)->NewGlobalRef(env, info->audioTrack);
+	jclass audioTrackClass = (*env)->FindClass(env, "android/media/AudioTrack");
 
 	return 0;
 }
@@ -130,7 +135,7 @@ static void callback_on_event(struct player_t *player, audio_event_t event,
 		case EVENT_THREAD_START:
 			//nothing to do here
 			log_trace("callback_on_event::EVENT_THREAD_START %"PRIX32,
-			        (uint32_t )pthread_self());
+					(uint32_t )pthread_self());
 			break;
 		default:
 			assert(info);
@@ -142,9 +147,9 @@ static void callback_on_event(struct player_t *player, audio_event_t event,
 	}
 }
 
-JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV_create(JNIEnv *env,
+JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV__1create(JNIEnv *env,
         jclass jCls) {
-	log_info("Java_danbroid_libavplayer_LibAV_create()");
+	log_info("Java_danbroid_libavplayer_LibAV__1create()");
 	player_callbacks_t callbacks;
 	memset(&callbacks, 0, sizeof(player_callbacks_t));
 
@@ -190,6 +195,12 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_destroy(JNIEnv *env,
 			log_trace(
 			        "Java_danbroid_libavplayer_LibAV_destroy::(*env)->DeleteGlobalRef(env, info->listener);");
 			(*env)->DeleteGlobalRef(env, info->listener);
+		}
+
+		if (info->audioTrack) {
+			log_trace(
+			        "Java_danbroid_libavplayer_LibAV_destroy::(*env)->DeleteGlobalRef(env, info->audioTrack)");
+			(*env)->DeleteGlobalRef(env, info->audioTrack);
 		}
 	}
 
@@ -369,3 +380,14 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_seekTo(JNIEnv *env,
 	return 0;
 }
 
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_audioPrepared(
+        JNIEnv *env, jclass cls, jlong handle, jobject jaudioTrack,
+        jint sampleFormat, jint sampleRate, jint channelFormat) {
+	player_t* player = JLONG_TO_PLAYER(handle);
+	if (!player) {
+		log_error("invalid handle");
+		return;
+	}
+	JavaInfo *info = (JavaInfo*) player->extra;
+	info->audioTrack = (*env)->NewGlobalRef(env, jaudioTrack);
+}

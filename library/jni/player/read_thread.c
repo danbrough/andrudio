@@ -26,7 +26,7 @@ static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
         [AVMEDIA_TYPE_VIDEO] = -1, [AVMEDIA_TYPE_SUBTITLE] = -1, };
 
 extern int change_state(player_t *player, audio_state_t state);
-extern void ap_print_error(const char* msg, int err);
+
 
 /* open a given stream. Return 0 if OK */
 static int stream_component_open(player_t *player, int stream_index) {
@@ -162,7 +162,7 @@ static void stream_component_close(player_t *player, int stream_index) {
 	ic->streams[stream_index]->discard = AVDISCARD_ALL;
 	avcodec_close(avctx);
 
-	end: ;
+	//end: ;
 	END_LOCK(player);
 	log_debug("stream_component_close::done");
 

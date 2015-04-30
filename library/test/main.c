@@ -4,10 +4,10 @@
 
 #include "audioplayer.h"
 
-#define USING_AO
 
-#ifdef DISABLE_AUDIO
-#undef USING_AO
+
+#ifndef DISABLE_AUDIO
+#define USING_AO
 #endif
 
 #ifdef USING_AO
@@ -19,24 +19,23 @@ static ao_device* device = NULL;
 static const char* url =
         "http://www.audiocheck.net/Audio/audiocheck.net_putyourhands.mp3";
 
-static int on_prepare(player_t *player, SDL_AudioSpec *wanted_spec,
-        SDL_AudioSpec *spec) {
+static int on_prepare(player_t *player, int sampleFormat, int sampleRate,
+        int channelFormat) {
 	log_debug("on_prepare()");
-	memccpy(spec, wanted_spec, 1, sizeof(*spec));
 
 #ifdef USING_AO
 	if (device)
 		ao_close(device);
 
-	log_debug("on_prepare::opening channels:%d rate:%d", spec->channels,
-	        spec->freq);
-	log_trace("freq : %d", spec->freq);
+	log_debug("on_prepare::opening channels:%d rate:%d", channelFormat,
+	        sampleRate);
+	log_trace("freq : %d", sampleRate);
 	ao_sample_format sample_format;
 
 	sample_format.bits = 16;
-	sample_format.channels = spec->channels;
+	sample_format.channels = channelFormat;
 	//sample_format.rate = spec->freq;
-	sample_format.rate = spec->freq;
+	sample_format.rate = sampleRate;
 	sample_format.byte_format = AO_FMT_NATIVE;
 	sample_format.matrix = 0;
 

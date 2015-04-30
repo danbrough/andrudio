@@ -9,18 +9,18 @@ extern "C" {
 #endif
 /*
  * Class:     danbroid_libavplayer_LibAV
- * Method:    initialiseLibrary
+ * Method:    initializeLibrary
  * Signature: (Ljava/lang/Class;)I
  */
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initialiseLibrary
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initializeLibrary
   (JNIEnv *, jclass, jclass);
 
 /*
  * Class:     danbroid_libavplayer_LibAV
- * Method:    create
+ * Method:    _create
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV_create
+JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV__1create
   (JNIEnv *, jclass);
 
 /*
@@ -134,14 +134,6 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setLooping
  */
 JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isPlaying
   (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     danbroid_libavplayer_LibAV
- * Method:    audioPrepared
- * Signature: (Ljava/lang/Object;III)V
- */
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_audioPrepared
-  (JNIEnv *, jclass, jobject, jint, jint, jint);
 
 #ifdef __cplusplus
 }

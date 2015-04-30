@@ -7,7 +7,32 @@
 # see: https://libav.org/ and http://xiph.org/ao/
 ###########################################################################
 
-cd `dirname $0`
+cd `dirname $0` && cd ..
+ROOT=`pwd`
+
+TEST=$ROOT/test
+BUILD=$TEST/libav
+SRC=$ROOT/build_libav/libav
+
+if [ ! -d $SRC ]; then
+  git clone git://git.libav.org/libav.git $SRC || exit 1
+  cd $SRC
+fi
+
+
+if [ ! -d $BUILD ]; then
+  cd $SRC
+  git clean -xdf
+  git checkout v11.3
+  git clean -xdf
+  git reset --hard
+  source ../common_flags.sh
+  ./configure $FLAGS --prefix=$BUILD --enable-shared --disable-static || exit 1
+  make -j4 || exit 1
+  make install || exit 1
+fi
+
+cd $TEST
 
 URL=""
 
@@ -24,7 +49,7 @@ fi
 
 gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/packet_queue.c ../jni/player/read_thread.c \
 	../jni/player/play_thread.c  ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest \
-   -lavutil -lavformat -lavcodec -lavresample -lao -lpthread -I../jni/libav/libav/x86/include -I/tmp/libao/include -L/tmp/libao/lib || exit 1
+   -lavutil -lavformat -lavcodec -lavresample -lao -lpthread -lc -lm -Ilibav/include -Llibav/lib || exit 1
 
 WRAPPER=""
 

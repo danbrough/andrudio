@@ -1,14 +1,9 @@
 package danbroid.libavplayer.demo;
 
-import java.io.IOException;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.AndroidLoggerFactory;
 
 import android.annotation.TargetApi;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -19,8 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
-import danbroid.libavplayer.LibAVMediaPlayer;
-import danbroid.libavplayer.LibAVMediaPlayer.OnStatusUpdateListener;
+import danbroid.libavplayer.AudioPlayer;
+import danbroid.libavplayer.LibAV;
 
 public class MainActivity extends AppCompatActivity {
   private static org.slf4j.Logger log = null;
@@ -28,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
   static {
     AndroidLoggerFactory.configureDefaultLogger(Package.getPackage("danbroid"));
     log = LoggerFactory.getLogger(MainActivity.class);
-    danbroid.libavplayer.LibAVMediaPlayer.initJNI();
+    LibAV.initialize();
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
       init_gingerbread();
@@ -43,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     StrictMode.setThreadPolicy(policy);
   }
 
-  private MediaPlayer player;
+  private AudioPlayer player;
   private ViewGroup buttons;
   private SeekBar seekBar;
   private boolean isSeeking = false;
@@ -137,14 +132,7 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         log.trace("playing: {}", url);
-        player.reset();
-        try {
-          player.setDataSource(url);
-        } catch (IOException e) {
-          log.error(e.getMessage(), e);
-          return;
-        }
-        player.prepareAsync();
+        player.play(url);
       }
     });
   }
@@ -153,38 +141,25 @@ public class MainActivity extends AppCompatActivity {
   protected void onStart() {
     log.info("onStart();");
     super.onStart();
-    player = new LibAVMediaPlayer();
+    player = new AudioPlayer();
 
-    player.setOnPreparedListener(new OnPreparedListener() {
-      @Override
-      public void onPrepared(MediaPlayer mp) {
-        player.start();
-      }
-    });
-    player.setOnSeekCompleteListener(new OnSeekCompleteListener() {
+    /*    ((LibAVMediaPlayer) player)
+            .setOnStatusUpdateListener(new OnStatusUpdateListener() {
+              @Override
+              public void onStatusUpdate(int position, int duration) {
 
-      @Override
-      public void onSeekComplete(MediaPlayer mp) {
-        log.info("onSeekComplete();");
-      }
-    });
+                if (duration > 0) {
+                  seekBar.setMax(duration);
+                  seekBar.setEnabled(true);
+                } else {
+                  seekBar.setEnabled(false);
+                }
 
-    ((LibAVMediaPlayer) player)
-        .setOnStatusUpdateListener(new OnStatusUpdateListener() {
-          @Override
-          public void onStatusUpdate(int position, int duration) {
+                if (!isSeeking)
+                  seekBar.setProgress(position);
+              }
+            });*/
 
-            if (duration > 0) {
-              seekBar.setMax(duration);
-              seekBar.setEnabled(true);
-            } else {
-              seekBar.setEnabled(false);
-            }
-
-            if (!isSeeking)
-              seekBar.setProgress(position);
-          }
-        });
   }
 
   @Override

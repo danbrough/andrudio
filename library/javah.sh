@@ -1,3 +1,3 @@
 cd `dirname $0`
 cd src
-javah -d ../jni/player/ danbroid.libavplayer.LibAV
+javah -classpath .:$ANDROID_SDK/platforms/android-8/android.jar  -d ../jni/player/ danbroid.libavplayer.LibAV

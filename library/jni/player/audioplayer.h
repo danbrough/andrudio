@@ -223,6 +223,8 @@ int ap_is_looping(player_t *player);
 
 void ap_set_looping(player_t *player, int looping);
 
+void ap_print_error(const char* msg, int err);
+
 #define BEGIN_LOCK(player) pthread_mutex_lock(&player->mutex)
 #define END_LOCK(player) pthread_mutex_unlock(&player->mutex)
 #define AP_EVENT(player,event,arg1,arg2) if (player->callbacks.on_event)\

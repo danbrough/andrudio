@@ -50,12 +50,12 @@
 		<link>
 			<name>include</name>
 			<type>2</type>
-			<location>/home/dan/sdk/android-ndk-r10d/platforms/android-21/arch-arm/usr/include</location>
+			<location>/opt/oracle-jdk-bin-1.8.0.45/include</location>
 		</link>
 		<link>
 			<name>include2</name>
 			<type>2</type>
-			<location>/opt/oracle-jdk-bin-1.8.0.40/include</location>
+			<location>/opt/oracle-jdk-bin-1.8.0.45/include/linux</location>
 		</link>
 	</linkedResources>
 </projectDescription>
