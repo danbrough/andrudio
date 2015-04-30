@@ -12,7 +12,7 @@ android {
   compileSdkVersion parent.TARGET_SDK
   buildToolsVersion parent.BUILD_TOOLS_VERSION
   defaultConfig {
-    versionCode 1
+    versionCode parent.VERSION_CODE
     versionName '1.0'
     minSdkVersion 8
     targetSdkVersion parent.TARGET_SDK
