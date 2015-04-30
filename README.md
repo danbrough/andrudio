@@ -13,6 +13,9 @@ The gradle build scripts are for gradle 2.3.
 
 For testing there is a ./demo/demo.apk file ready to go.
 
+There is also a command line application for testing the native code:
+	see:  `./library/test/test.sh`
+
 =======
 Status
 ------
