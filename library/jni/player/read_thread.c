@@ -33,7 +33,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	AVFormatContext *ic = player->ic;
 	AVCodecContext *avctx;
 	AVCodec *codec;
-	SDL_AudioSpec wanted_spec = { 0 }, spec = { 0 };
+
 	AVDictionary *opts = NULL;
 	AVDictionaryEntry *t = NULL;
 	int ret = 0;
@@ -95,14 +95,15 @@ static int stream_component_open(player_t *player, int stream_index) {
 		player->sdl_channels = av_get_channel_layout_nb_channels(
 		        player->sdl_channel_layout);
 
-		wanted_spec.freq = player->sdl_sample_rate;
-		wanted_spec.channels = player->sdl_channels;
+		int sampleRate = player->sdl_sample_rate;
+		int channelFormat = player->sdl_channels;
 		//wanted_spec.silence = 0;
 		//wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
 		//wanted_spec.callback = (void*) sdl_audio_callback;
 		//wanted_spec.userdata = player;
 
-		if (player->callbacks.on_prepare(player, &wanted_spec, &spec) < 0) {
+		if (player->callbacks.on_prepare(player, AV_SAMPLE_FMT_S16, sampleRate,
+		        channelFormat) < 0) {
 			log_error("on_prepare() failed");
 			ret = AVERROR_UNKNOWN;
 			goto fail;
@@ -113,7 +114,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 		player->resample_sample_fmt = player->sdl_sample_fmt;
 		player->resample_channel_layout = avctx->channel_layout;
 		//player->resample_sample_rate = avctx->sample_rate;
-		player->sdl_sample_rate = spec.freq;
+		player->resample_sample_rate = 	player->sdl_sample_rate;
 
 		log_trace("stream_component_open::resample_sample_rate: %d",
 		        player->sdl_sample_rate);
@@ -309,7 +310,7 @@ int read_thread(player_t *player) {
 				}
 			}
 			if (player->callbacks.on_event)
-				player->callbacks.on_event(player,EVENT_SEEK_COMPLETE,0,0);
+				player->callbacks.on_event(player, EVENT_SEEK_COMPLETE, 0, 0);
 			player->seek_req = 0;
 			eof = 0;
 		}

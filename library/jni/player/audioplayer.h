@@ -71,27 +71,6 @@
 #define log_error(format, ...) if (AS_DEBUG_LEVEL & AS_DEBUG_ERROR)  _log(stderr,COLOR_ERROR_BEGIN"ERROR:" ,format, ## __VA_ARGS__)
 #endif //__ANDROID__
 
-typedef struct SDL_AudioSpec {
-		int freq; /**< DSP frequency -- samples per second */
-		//uint16_t format; /**< Audio data format */
-		uint8_t channels; /**< Number of channels: 1 mono, 2 stereo */
-		//uint8_t silence; /**< Audio buffer silence value (calculated) */
-		//uint16_t samples; /**< Audio buffer size in samples (power of 2) */
-		//uint16_t padding; /**< Necessary for some compile environments */
-		//uint32_t size; /**< Audio buffer size in bytes (calculated) */
-		/**
-		 *  This function is called when the audio device needs more data.
-		 *
-		 *  @param[out] stream	A pointer to the audio data buffer
-		 *  @param[in]  len	The length of the audio buffer in bytes.
-		 *
-		 *  Once the callback returns, the buffer will no longer be valid.
-		 *  Stereo samples are stored in a LRLRLR ordering.
-		 */
-		//void (*callback)(void *userdata, uint8_t *stream, int len);
-		//void *userdata;
-} SDL_AudioSpec;
-
 #include "packet_queue.h"
 
 #define MAX_QUEUE_SIZE (15  * 1024)
@@ -115,9 +94,7 @@ typedef enum {
 } audio_state_t;
 
 typedef enum {
-	EVENT_THREAD_START=1,
-	EVENT_STATE_CHANGE,
-	EVENT_SEEK_COMPLETE
+	EVENT_THREAD_START = 1, EVENT_STATE_CHANGE, EVENT_SEEK_COMPLETE
 } audio_event_t;
 
 const char* ap_get_state_name(audio_state_t state);
@@ -183,8 +160,8 @@ typedef struct player_t {
 
 				void (*on_play)(struct player_t *player, char *data, int len);
 
-				int (*on_prepare)(struct player_t *player,
-				        SDL_AudioSpec *wanted_spec, SDL_AudioSpec *spec);
+				int (*on_prepare)(struct player_t *player, int sampleFormat,
+				        int sampleRate, int channelFormat);
 
 		} callbacks;
 
@@ -201,8 +178,8 @@ typedef void (*on_play_t)(player_t *player, char *data, int len);
 
 typedef void (*callback_t)(player_t *player);
 
-typedef int (*on_prepare_t)(struct player_t *player, SDL_AudioSpec *wanted_spec,
-        SDL_AudioSpec *spec);
+typedef int (*on_prepare_t)(struct player_t *player, int sampleFormat,
+        int sampleRate, int channelFormat);
 
 //one off initialization of the library
 int ap_init();
@@ -244,8 +221,7 @@ int ap_is_playing(player_t *player);
 
 int ap_is_looping(player_t *player);
 
-void ap_set_looping(player_t *player,int looping);
-
+void ap_set_looping(player_t *player, int looping);
 
 #define BEGIN_LOCK(player) pthread_mutex_lock(&player->mutex)
 #define END_LOCK(player) pthread_mutex_unlock(&player->mutex)

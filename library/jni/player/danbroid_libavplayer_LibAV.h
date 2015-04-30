@@ -135,6 +135,14 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setLooping
 JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isPlaying
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     danbroid_libavplayer_LibAV
+ * Method:    audioPrepared
+ * Signature: (Ljava/lang/Object;III)V
+ */
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_audioPrepared
+  (JNIEnv *, jclass, jobject, jint, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

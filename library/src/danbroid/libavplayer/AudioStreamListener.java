@@ -8,7 +8,7 @@ public interface AudioStreamListener {
 
   void writeAudio(byte data[], int offset, int len);
 
-  void onPrepared(int sampleFormat, int sampleRateInHz, int channelConfig);
+  void prepareAudio(int sampleFormat, int sampleRateInHZ, int channelConfig);
 
   void handleEvent(int what, int arg1, int arg2);
 }

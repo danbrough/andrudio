@@ -103,8 +103,8 @@ public class LibAVMediaPlayer extends MediaPlayer {
       }
 
       @Override
-      public void onPrepared(final int sampleFormat, final int sampleRateInHz,
-          final int channelConfig) {
+      public void prepareAudio(final int sampleFormat,
+          final int sampleRateInHz, final int channelConfig) {
 
         handler.post(new Runnable() {
           @Override
@@ -138,6 +138,9 @@ public class LibAVMediaPlayer extends MediaPlayer {
                   sampleRateInHz, chanConfig, AudioFormat.ENCODING_PCM_16BIT,
                   minBufferSize, AudioTrack.MODE_STREAM);
             }
+
+            LibAV.audioPrepared(audioTrack, sampleFormat, sampleRateInHz,
+                channelConfig);
           }
         });
       }

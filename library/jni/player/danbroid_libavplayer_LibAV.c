@@ -7,7 +7,7 @@
 
 typedef struct fields_t {
 	jclass class_audio_stream;
-	jmethodID onPrepared;
+	jmethodID prepareAudio;
 	jmethodID writeAudio;
 	jmethodID onStateChanged;
 	jmethodID handleEvent;
@@ -71,9 +71,9 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initialiseLibrary(
 
 	assert(fields.writeAudio);
 
-	fields.onPrepared = (*env)->GetMethodID(env, listenerCls, "onPrepared",
+	fields.prepareAudio = (*env)->GetMethodID(env, listenerCls, "prepareAudio",
 	        "(III)V");
-	assert(fields.onPrepared);
+	assert(fields.prepareAudio);
 
 	fields.handleEvent = (*env)->GetMethodID(env, listenerCls, "handleEvent",
 	        "(III)V");
@@ -109,15 +109,14 @@ static void callback_on_play(player_t *player, char *data, int len) {
 	}
 }
 
-static int callback_on_prepare(player_t *player, SDL_AudioSpec *wanted,
-        SDL_AudioSpec *spec) {
-	log_trace("callback_on_prepare()");
+static int callback_prepare_audio(player_t *player, int sampleFormat,
+        int sampleRate, int channelFormat) {
+	log_trace("callback_prepare_audio()");
 	JNIEnv *env = get_jni_env();
-	memccpy(spec, wanted, 1, sizeof(SDL_AudioSpec));
 
 	JavaInfo *info = (JavaInfo*) player->extra;
-	(*env)->CallVoidMethod(env, info->listener, fields.onPrepared,
-	        AV_SAMPLE_FMT_S16, spec->freq, spec->channels);
+	(*env)->CallVoidMethod(env, info->listener, fields.prepareAudio,
+	        sampleFormat, sampleRate, channelFormat);
 
 	return 0;
 }
@@ -150,7 +149,7 @@ JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV_create(JNIEnv *env,
 	memset(&callbacks, 0, sizeof(player_callbacks_t));
 
 	callbacks.on_play = callback_on_play;
-	callbacks.on_prepare = callback_on_prepare;
+	callbacks.on_prepare = callback_prepare_audio;
 	callbacks.on_event = callback_on_event;
 
 	player_t* audio = ap_create(callbacks);

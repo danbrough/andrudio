@@ -1,5 +1,6 @@
 package danbroid.libavplayer;
 
+
 public class LibAV {
 
   public static int initialiseLibrary() {
@@ -48,5 +49,8 @@ public class LibAV {
   public static native void setLooping(long handle, boolean looping);
 
   public static native boolean isPlaying(long handle);
+
+  public static native void audioPrepared(Object audioTrack, int sampleFormat,
+      int sampleRateInHz, int channelConfig);
 
 }
