@@ -67,8 +67,8 @@ public class MediaPlayer extends android.media.MediaPlayer {
 
   public MediaPlayer() {
     super();
-    handle = LibAV.create();
-    LibAV.setListener(handle, new AudioStreamListener() {
+    handle = LibAndrudio.create();
+    LibAndrudio.setListener(handle, new AudioStreamListener() {
 
       int prevSampleFormat = 0;
       int prevSampleRate = 0;
@@ -213,7 +213,7 @@ public class MediaPlayer extends android.media.MediaPlayer {
   @Override
   public void setDataSource(String path) throws IOException,
       IllegalArgumentException, SecurityException, IllegalStateException {
-    LibAV.setDataSource(handle, path);
+    LibAndrudio.setDataSource(handle, path);
   }
 
   @Override
@@ -248,53 +248,53 @@ public class MediaPlayer extends android.media.MediaPlayer {
 
   @Override
   public void prepareAsync() throws IllegalStateException {
-    LibAV.prepareAsync(handle);
+    LibAndrudio.prepareAsync(handle);
   }
 
   @Override
   public void pause() {
     Log.v(TAG, "pause()");
-    LibAV.togglePause(handle);
+    LibAndrudio.togglePause(handle);
   }
 
   @Override
   public void stop() {
     Log.v(TAG, "stop()");
-    LibAV.stop(handle);
+    LibAndrudio.stop(handle);
   }
 
   @Override
   public void start() {
     Log.v(TAG, "start()");
-    LibAV.start(handle);
+    LibAndrudio.start(handle);
   }
 
   @Override
   public void reset() {
     Log.v(TAG, "reset()");
-    LibAV.reset(handle);
+    LibAndrudio.reset(handle);
   }
 
   @Override
   public boolean isLooping() {
-    return LibAV.isLooping(handle);
+    return LibAndrudio.isLooping(handle);
   }
 
   @Override
   public void setLooping(boolean looping) {
-    LibAV.setLooping(handle, looping);
+    LibAndrudio.setLooping(handle, looping);
   }
 
   @Override
   public void seekTo(int msec) throws IllegalStateException {
-    LibAV.seekTo(handle, msec);
+    LibAndrudio.seekTo(handle, msec);
   }
 
   @Override
   public synchronized void release() {
     Log.i(TAG, "release()");
     if (handle != 0) {
-      LibAV.destroy(handle);
+      LibAndrudio.destroy(handle);
     }
     handle = 0;
   }
@@ -309,17 +309,17 @@ public class MediaPlayer extends android.media.MediaPlayer {
 
   @Override
   public boolean isPlaying() {
-    return LibAV.isPlaying(handle);
+    return LibAndrudio.isPlaying(handle);
   }
 
   @Override
   public int getCurrentPosition() {
-    return LibAV.getPosition(handle);
+    return LibAndrudio.getPosition(handle);
   }
 
   @Override
   public int getDuration() {
-    return LibAV.getDuration(handle);
+    return LibAndrudio.getDuration(handle);
   }
 
 }

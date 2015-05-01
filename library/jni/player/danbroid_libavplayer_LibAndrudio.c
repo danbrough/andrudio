@@ -1,5 +1,5 @@
 #include "audioplayer.h"
-#include "danbroid_libavplayer_LibAV.h"
+#include "danbroid_libavplayer_LibAndrudio.h"
 #include <assert.h>
 
 #define JLONG_TO_PLAYER(handle) (player_t*)(intptr_t) handle
@@ -61,9 +61,9 @@ void jniThrowException(JNIEnv* env, const char* className, const char* msg) {
 	(*env)->ThrowNew(env, exception, msg);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_initializeLibrary(
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_initializeLibrary(
         JNIEnv *env, jclass jCls, jclass listenerCls) {
-	log_info("Java_danbroid_libavplayer_LibAV_initializeLibrary()");
+	log_info("Java_danbroid_libavplayer_LibAndrudio_initializeLibrary()");
 
 	fields.class_audio_stream = listenerCls;
 
@@ -147,9 +147,9 @@ static void callback_on_event(struct player_t *player, audio_event_t event,
 	}
 }
 
-JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV__1create(JNIEnv *env,
+JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAndrudio__1create(JNIEnv *env,
         jclass jCls) {
-	log_info("Java_danbroid_libavplayer_LibAV__1create()");
+	log_info("Java_danbroid_libavplayer_LibAndrudio__1create()");
 	player_callbacks_t callbacks;
 	memset(&callbacks, 0, sizeof(player_callbacks_t));
 
@@ -169,14 +169,14 @@ JNIEXPORT jlong JNICALL Java_danbroid_libavplayer_LibAV__1create(JNIEnv *env,
 
 	return PLAYER_TO_JLONG(audio);
 }
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_destroy(JNIEnv *env,
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAndrudio_destroy(JNIEnv *env,
         jclass jCls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
 		return;
 	}
-	log_info("Java_danbroid_libavplayer_LibAV_destroy()");
+	log_info("Java_danbroid_libavplayer_LibAndrudio_destroy()");
 
 	JavaInfo *info = (JavaInfo*) player->extra;
 
@@ -186,30 +186,30 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_destroy(JNIEnv *env,
 	if (info) {
 		if (info->buffer) {
 			log_trace(
-			        "Java_danbroid_libavplayer_LibAV_destroy::(*env)->DeleteGlobalRef(env, info->buffer);");
+			        "Java_danbroid_libavplayer_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->buffer);");
 			(*env)->DeleteGlobalRef(env, info->buffer);
 		}
 		info->buffer = NULL;
 
 		if (info->listener) {
 			log_trace(
-			        "Java_danbroid_libavplayer_LibAV_destroy::(*env)->DeleteGlobalRef(env, info->listener);");
+			        "Java_danbroid_libavplayer_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->listener);");
 			(*env)->DeleteGlobalRef(env, info->listener);
 		}
 
 		if (info->audioTrack) {
 			log_trace(
-			        "Java_danbroid_libavplayer_LibAV_destroy::(*env)->DeleteGlobalRef(env, info->audioTrack)");
+			        "Java_danbroid_libavplayer_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->audioTrack)");
 			(*env)->DeleteGlobalRef(env, info->audioTrack);
 		}
 	}
 
-	log_trace("Java_danbroid_libavplayer_LibAV_destroy::free(info)");
+	log_trace("Java_danbroid_libavplayer_LibAndrudio_destroy::free(info)");
 	free(info);
-	log_trace("Java_danbroid_libavplayer_LibAV_destroy::done");
+	log_trace("Java_danbroid_libavplayer_LibAndrudio_destroy::done");
 
 }
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setListener(JNIEnv *env,
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAndrudio_setListener(JNIEnv *env,
         jclass cls, jlong handle, jobject listener) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
@@ -228,7 +228,7 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setListener(JNIEnv *env,
 	}
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_stop(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_stop(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -238,7 +238,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_stop(JNIEnv *env,
 	return ap_stop(player);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_reset(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_reset(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -250,7 +250,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_reset(JNIEnv *env,
 	return 0;
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_start(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_start(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -261,7 +261,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_start(JNIEnv *env,
 	return ap_start(player);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_togglePause(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_togglePause(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -272,7 +272,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_togglePause(JNIEnv *env,
 	return (jint) ap_pause(player);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_getDuration(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_getDuration(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -284,11 +284,11 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_getDuration(JNIEnv *env,
 }
 
 /*
- * Class:     danbroid_libavplayer_LibAV
+ * Class:     danbroid_libavplayer_LibAndrudio
  * Method:    getPosition
  * Signature: (J)J
  */
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_getPosition(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_getPosition(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -299,11 +299,11 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_getPosition(JNIEnv *env,
 }
 
 /*
- * Class:     danbroid_libavplayer_LibAV
+ * Class:     danbroid_libavplayer_LibAndrudio
  * Method:    setDataSource
  * Signature: (JLjava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV__1setDataSource(
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAndrudio__1setDataSource(
         JNIEnv *env, jclass cls, jlong handle, jstring jdatasource) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -320,7 +320,7 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV__1setDataSource(
 
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_prepareAsync(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_prepareAsync(JNIEnv *env,
         jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -331,7 +331,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_prepareAsync(JNIEnv *env,
 	return ap_prepare_async(player);
 }
 
-JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isLooping(
+JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAndrudio_isLooping(
         JNIEnv *env, jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -342,7 +342,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isLooping(
 	return ap_is_looping(player);
 }
 
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setLooping(JNIEnv *env,
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAndrudio_setLooping(JNIEnv *env,
         jclass cls, jlong handle, jboolean looping) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -353,11 +353,11 @@ JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_setLooping(JNIEnv *env,
 }
 
 /*
- * Class:     danbroid_libavplayer_LibAV
+ * Class:     danbroid_libavplayer_LibAndrudio
  * Method:    isPlaying
  * Signature: (J)Z
  */
-JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isPlaying(
+JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAndrudio_isPlaying(
         JNIEnv *env, jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -368,7 +368,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_libavplayer_LibAV_isPlaying(
 	return ap_is_playing(player);
 }
 
-JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_seekTo(JNIEnv *env,
+JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAndrudio_seekTo(JNIEnv *env,
         jclass cls, jlong handle, jint msecs) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -380,7 +380,7 @@ JNIEXPORT jint JNICALL Java_danbroid_libavplayer_LibAV_seekTo(JNIEnv *env,
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAV_audioPrepared(
+JNIEXPORT void JNICALL Java_danbroid_libavplayer_LibAndrudio_audioPrepared(
         JNIEnv *env, jclass cls, jlong handle, jobject jaudioTrack,
         jint sampleFormat, jint sampleRate, jint channelFormat) {
 	player_t* player = JLONG_TO_PLAYER(handle);

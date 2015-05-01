@@ -15,10 +15,10 @@ export FFMPEG
 
 
 export ROOT=`pwd`
-export BUILD=$ROOT/build_libav
+export BUILD=$ROOT/build_native
 export NDK=$ANDROID_NDK
 export PATH=$NDK:$PATH
-export JNIDIR=$ROOT/jni/libav/libav
+export JNIDIR=$ROOT/jni/native/native
 
 if (( $FFMPEG )); then
   export LIBAV=$BUILD/ffmpeg.git

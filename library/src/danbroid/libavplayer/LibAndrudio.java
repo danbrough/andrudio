@@ -1,10 +1,10 @@
 package danbroid.libavplayer;
 
-public class LibAV {
+public class LibAndrudio {
   private static boolean initialized = false;
 
   public static void initialize() {
-    String libs[] = { "avutil", "avresample", "avcodec", "avformat", "avplayer" };
+    String libs[] = { "avutil", "avresample", "avcodec", "avformat", "andrudio" };
 
     for (String lib : libs) {
       System.loadLibrary(lib);
@@ -19,7 +19,7 @@ public class LibAV {
 
   public static long create() {
     if (!initialized) {
-      synchronized (LibAV.class) {
+      synchronized (LibAndrudio.class) {
         if (!initialized)
           initialize();
       }

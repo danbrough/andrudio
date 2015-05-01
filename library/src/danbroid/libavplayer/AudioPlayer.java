@@ -47,8 +47,8 @@ public class AudioPlayer implements AudioStreamListener,
 
   public AudioPlayer() {
     super();
-    handle = LibAV.create();
-    LibAV.setListener(handle, this);
+    handle = LibAndrudio.create();
+    LibAndrudio.setListener(handle, this);
   }
 
   protected void onStateChange(int old_state, int state) {
@@ -76,12 +76,12 @@ public class AudioPlayer implements AudioStreamListener,
   public void play(String url) {
     Log.i(TAG, "play() :" + url);
     reset();
-    LibAV.setDataSource(handle, url);
-    LibAV.prepareAsync(handle);
+    LibAndrudio.setDataSource(handle, url);
+    LibAndrudio.prepareAsync(handle);
   }
 
   public synchronized void reset() {
-    LibAV.reset(handle);
+    LibAndrudio.reset(handle);
     if (audioTrack != null) {
       audioTrack.release();
       audioTrack = null;
@@ -91,7 +91,7 @@ public class AudioPlayer implements AudioStreamListener,
   public synchronized void release() {
     Log.i(TAG, "release()");
     if (handle != 0) {
-      LibAV.destroy(handle);
+      LibAndrudio.destroy(handle);
       handle = 0;
     }
   }
@@ -147,19 +147,19 @@ public class AudioPlayer implements AudioStreamListener,
   }
 
   public void seekTo(int msecs) {
-    LibAV.seekTo(handle, msecs);
+    LibAndrudio.seekTo(handle, msecs);
   }
 
   public void start() {
-    LibAV.start(handle);
+    LibAndrudio.start(handle);
   }
 
   public void stop() {
-    LibAV.stop(handle);
+    LibAndrudio.stop(handle);
   }
 
   public void pause() {
-    LibAV.togglePause(handle);
+    LibAndrudio.togglePause(handle);
   }
 
   protected void onPrepared() {
@@ -186,6 +186,6 @@ public class AudioPlayer implements AudioStreamListener,
   }
 
   public long getDuration() {
-    return LibAV.getDuration(handle);
+    return LibAndrudio.getDuration(handle);
   }
 }
