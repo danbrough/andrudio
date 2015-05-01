@@ -8,31 +8,21 @@
 ###########################################################################
 
 cd `dirname $0` && cd ..
-ROOT=`pwd`
-
-TEST=$ROOT/test
-BUILD=$TEST/libav
-SRC=$ROOT/build_libav/libav
-
-if [ ! -d $SRC ]; then
-  git clone git://git.libav.org/libav.git $SRC || exit 1
-  cd $SRC
-fi
+source env.sh
 
 
-if [ ! -d $BUILD ]; then
-  cd $SRC
-  git clean -xdf
-  git checkout v11.3
-  git clean -xdf
-  git reset --hard
+export BUILD=$BUILD/build/native
+
+if [ ! -d $BUILD ]; then   
+  setup_source
+  cd $LIBAV
   source ../common_flags.sh
   ./configure $FLAGS --prefix=$BUILD --enable-shared --disable-static || exit 1
   make -j4 || exit 1
   make install || exit 1
 fi
 
-cd $TEST
+cd $ROOT/test
 
 URL=""
 
@@ -49,7 +39,7 @@ fi
 
 gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/packet_queue.c ../jni/player/read_thread.c \
 	../jni/player/play_thread.c  ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest \
-   -lavutil -lavformat -lavcodec -lavresample -lao -lpthread -lc -lm -Ilibav/include -Llibav/lib || exit 1
+   -lavutil -lavformat -lavcodec -lavresample -lao -lpthread -lc -lm -I${BUILD}/include -L${BUILD}/lib || exit 1
 
 WRAPPER=""
 

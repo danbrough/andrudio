@@ -1,8 +1,8 @@
 /build_libav/build
-/build_libav/libav
+/build_libav/libav.git
+/build_libav/ffmpeg.git
 /player
 /build
-/build_ffmpeg
 /jni/ffmpeg/ffmpeg
 /jni/libav/libav
 /Test

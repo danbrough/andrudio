@@ -2,11 +2,13 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libavplayer
-LOCAL_CFLAGS := 
+LOCAL_MODULE := libavplayer 
 LOCAL_SRC_FILES := danbroid_libavplayer_LibAV.c audioplayer.c packet_queue.c read_thread.c play_thread.c
 
+
 LOCAL_SHARED_LIBRARIES := libavresample libavcodec libavformat libavutil
+
+
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../libav/libav/$(TARGET_ARCH_ABI)/include
 
 #LOCAL_LDLIBS += -lOpenSLES  -llog 

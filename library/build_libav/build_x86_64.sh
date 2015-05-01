@@ -2,7 +2,7 @@
 
 log building x86_64
 
-setup_libav
+setup_source
 cd $BUILD
 
 # Detect OS

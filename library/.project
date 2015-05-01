@@ -57,5 +57,10 @@
 			<type>2</type>
 			<location>/opt/oracle-jdk-bin-1.8.0.45/include/linux</location>
 		</link>
+		<link>
+			<name>include3</name>
+			<type>2</type>
+			<location>/usr/include</location>
+		</link>
 	</linkedResources>
 </projectDescription>

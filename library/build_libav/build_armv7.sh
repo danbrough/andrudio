@@ -2,7 +2,7 @@
 
 log building arm
 
-setup_libav
+setup_source
 cd $BUILD
 
 # Detect OS
