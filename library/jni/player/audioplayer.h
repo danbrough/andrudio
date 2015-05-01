@@ -9,7 +9,7 @@
 #include <libavresample/avresample.h>
 
 
-#define LOG_TAG "danbroid.libavplayer"
+#define LOG_TAG "danbroid.andrudio"
 
 #define TRUE 1
 #define FALSE 0

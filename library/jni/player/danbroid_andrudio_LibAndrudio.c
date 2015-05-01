@@ -65,6 +65,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_initializeLibrary(
         JNIEnv *env, jclass jCls, jclass listenerCls) {
 	log_info("Java_danbroid_andrudio_LibAndrudio_initializeLibrary()");
 
+
 	fields.class_audio_stream = listenerCls;
 
 	fields.prepareAudio = (*env)->GetMethodID(env, listenerCls, "prepareAudio",
