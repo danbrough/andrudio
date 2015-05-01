@@ -173,13 +173,19 @@ public class AudioPlayer implements AudioStreamListener,
 
   @Override
   public void onPeriodicNotification(AudioTrack track) {
-    Log.v(TAG, "onPeriodicNotification() :" + track.getPlaybackHeadPosition()
-        / track.getSampleRate());
+    Log.v(TAG, "onPeriodicNotification() position:" + getPosition()
+        + " head position: " + track.getPlaybackHeadPosition()
+        + " playback rate: " + track.getPlaybackRate() + " duration: "
+        + getDuration());
   }
 
   public int getPosition() {
     if (audioTrack == null)
       return -1;
     return audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate();
+  }
+
+  public long getDuration() {
+    return LibAV.getDuration(handle);
   }
 }
