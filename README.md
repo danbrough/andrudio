@@ -3,7 +3,7 @@ Andrudio Audio Player
 =================
 A LibAV/FFMPEG based drop-in replacement for the android [MediaPlayer](http://developer.android.com/reference/android/media/MediaPlayer.html)
     
-    git clone git@github.com:danbrough/andrudio.git
+    git clone git@github.com:danbrough/andrudio
     cd andrudio
     ./library/build.sh
     gradle build
