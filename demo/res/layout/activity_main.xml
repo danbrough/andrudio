@@ -5,7 +5,7 @@
   android:layout_height="match_parent"
   android:orientation="vertical"
   android:padding="4dip"
-  tools:context="danbroid.libavplayer.demo.MainActivity" >
+  tools:context="danbroid.andrudio.demo.MainActivity" >
 
   <LinearLayout
     android:layout_width="match_parent"
