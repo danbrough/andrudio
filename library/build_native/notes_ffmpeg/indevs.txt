@@ -1,0 +1,8 @@
+alsa			iec61883		pulse
+avfoundation		jack			qtkit
+bktr			lavfi			sndio
+decklink		libcdio			v4l2
+dshow			libdc1394		vfwcap
+dv1394			openal			x11grab
+fbdev			oss			x11grab_xcb
+gdigrab

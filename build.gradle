@@ -6,3 +6,4 @@ ext {
 	VERSION_CODE = 1
 }
 
+defaultTasks 'build'

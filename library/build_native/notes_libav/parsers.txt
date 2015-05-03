@@ -8,5 +8,4 @@ cook			hevc			tak
 dca			mjpeg			vc1
 dirac			mlp			vorbis
 dnxhd			mpeg4video		vp3
-dpx			mpegaudio		vp8
-dvbsub
+dvbsub			mpegaudio		vp8

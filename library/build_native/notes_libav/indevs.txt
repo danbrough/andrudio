@@ -1,0 +1,5 @@
+alsa			libcdio			sndio
+bktr			libdc1394		v4l2
+dv1394			oss			vfwcap
+fbdev			pulse			x11grab
+jack

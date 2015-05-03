@@ -1,5 +1,0 @@
-alsa			libcdio			v4l2
-bktr			libdc1394		vfwcap
-dv1394			oss			x11grab
-fbdev			pulse			x11grab_xcb
-jack			sndio

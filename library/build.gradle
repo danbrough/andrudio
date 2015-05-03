@@ -6,7 +6,7 @@ buildscript {
 }
 
 apply plugin: 'android-library'
-
+apply plugin: 'maven-publish'
 android {
 
   compileSdkVersion parent.TARGET_SDK
@@ -41,6 +41,17 @@ android {
   }
 }
 
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'danbroid'
+            artifactId 'andrudio'
+            version 'v1.0'
+            artifact("$buildDir/outputs/aar/library-release.aar")
+        }
+    }
+}
 //dependencies {
 //    compile fileTree(dir: 'ffmpeg', include: ['ffmpeg.jar'])
 //}

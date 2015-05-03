@@ -1,0 +1,4 @@
+alsa			opengl			sndio
+caca			oss			v4l2
+decklink		pulse			xv
+fbdev			sdl

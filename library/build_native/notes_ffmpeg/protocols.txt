@@ -1,0 +1,14 @@
+bluray			icecast			rtmps
+cache			librtmp			rtmpt
+concat			librtmpe		rtmpte
+crypto			librtmps		rtmpts
+data			librtmpt		rtp
+ffrtmpcrypt		librtmpte		sctp
+ffrtmphttp		libsmbclient		srtp
+file			libssh			subfile
+ftp			md5			tcp
+gopher			mmsh			tls
+hls			mmst			udp
+http			pipe			udplite
+httpproxy		rtmp			unix
+https			rtmpe
