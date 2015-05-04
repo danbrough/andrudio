@@ -5,7 +5,9 @@ FLAGS="$FLAGS --disable-avdevice"
 FLAGS="$FLAGS --disable-swscale"
 FLAGS="$FLAGS --disable-avfilter"
 FLAGS="$FLAGS --enable-avresample" 
+if (( $FFMPEG ));  then
 FLAGS="$FLAGS --disable-swresample"
+fi
 FLAGS="$FLAGS --disable-bsfs"
 FLAGS="$FLAGS --disable-indevs"
 FLAGS="$FLAGS --disable-outdevs"

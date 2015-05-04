@@ -32,9 +32,7 @@ android {
       aidl.srcDirs = ['src']
       renderscript.srcDirs = ['src']
       res.srcDirs = ['res']
-      assets.srcDirs = ['assets']
-      //jniLibs.srcDir 'jni/libav/libav'
-      //jni.srcDirs = ['jni']
+      assets.srcDirs = ['assets']     
     }
 
     androidTest.setRoot('tests')
@@ -52,7 +50,5 @@ publishing {
         }
     }
 }
-//dependencies {
-//    compile fileTree(dir: 'ffmpeg', include: ['ffmpeg.jar'])
-//}
+
 
