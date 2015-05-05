@@ -8,7 +8,6 @@
 #include <libavformat/avformat.h>
 #include <libavresample/avresample.h>
 
-
 #define LOG_TAG "danbroid.andrudio"
 
 #define TRUE 1

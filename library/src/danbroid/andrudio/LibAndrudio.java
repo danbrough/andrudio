@@ -1,6 +1,32 @@
 package danbroid.andrudio;
 
+import android.media.AudioTrack;
+
 public class LibAndrudio {
+
+  public interface AudioStreamListener {
+
+    public static final int STATE_IDLE = 0;
+    public static final int STATE_INITIALIZED = 1;
+    public static final int STATE_PREPARING = 2;
+    public static final int STATE_PREPARED = 3;
+    public static final int STATE_STARTED = 4;
+    public static final int STATE_PAUSED = 5;
+    public static final int STATE_COMPLETED = 6;
+    public static final int STATE_STOPPED = 7;
+    public static final int STATE_ERROR = 8;
+    public static final int STATE_END = 9;
+
+    public static final int EVENT_THREAD_START = 1;
+    public static final int EVENT_STATE_CHANGE = 2;
+    public static final int EVENT_SEEK_COMPLETE = 3;
+
+    AudioTrack prepareAudio(int sampleFormat, int sampleRateInHZ,
+        int channelConfig);
+
+    void handleEvent(int what, int arg1, int arg2);
+  }
+
   private static boolean initialized = false;
 
   public static void initialize() {
@@ -45,10 +71,26 @@ public class LibAndrudio {
 
   public static native int togglePause(long handle);
 
+  /**
+   *
+   * @return length of track in millis or -1 if track is a stream
+   */
   public static native int getDuration(long handle);
 
+  /**
+   * 
+   * @param handle
+   * @return playback position in millis or -1 if the track is invalid
+   */
   public static native int getPosition(long handle);
 
+  /**
+   * Seek to the specified position in millis
+   * 
+   * @param handle
+   * @param msecs
+   * @return 0 if successful
+   */
   public static native int seekTo(long handle, int msecs);
 
   public static void setDataSource(long handle, String dataSource) {

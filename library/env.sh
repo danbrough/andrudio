@@ -13,6 +13,10 @@ if grep FFMPEG jni/Android.mk | grep 1 > /dev/null; then
 fi
 export FFMPEG
 
+if [ -z $ANDROID_NDK ]; then
+  log please set ANDROID_NDK to the root of your android ndk installation
+  exit 1
+fi
 
 export ROOT=`pwd`
 export BUILD=$ROOT/build_native

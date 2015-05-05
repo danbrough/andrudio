@@ -9,7 +9,7 @@ static int decode_interrupt_cb(player_t *player) {
 
 //see audiostream.c
 // "seek by bytes 0=off 1=on -1=auto"
-int seek_by_bytes = -1;
+//int seek_by_bytes = -1;
 extern AVPacket flush_pkt;
 static int workaround_bugs = 1;
 //"non spec compliant optimizations"
@@ -26,7 +26,6 @@ static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
         [AVMEDIA_TYPE_VIDEO] = -1, [AVMEDIA_TYPE_SUBTITLE] = -1, };
 
 extern int change_state(player_t *player, audio_state_t state);
-
 
 /* open a given stream. Return 0 if OK */
 static int stream_component_open(player_t *player, int stream_index) {
@@ -114,7 +113,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 		player->resample_sample_fmt = player->sdl_sample_fmt;
 		player->resample_channel_layout = avctx->channel_layout;
 		//player->resample_sample_rate = avctx->sample_rate;
-		player->resample_sample_rate = 	player->sdl_sample_rate;
+		player->resample_sample_rate = player->sdl_sample_rate;
 
 		log_trace("stream_component_open::resample_sample_rate: %d",
 		        player->sdl_sample_rate);
@@ -218,8 +217,9 @@ int read_thread(player_t *player) {
 	if (ic->pb)
 		ic->pb->eof_reached = 0;
 
-	if (seek_by_bytes < 0)
-		seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT);
+	//if (seek_by_bytes < 0)
+	//	seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT);
+	//log_error("seek by bytes: %d", seek_by_bytes);
 
 	player->audio_stream = -1;
 
@@ -264,7 +264,8 @@ int read_thread(player_t *player) {
 		int is_paused = player->state == STATE_PAUSED;
 
 		if (is_paused)
-			usleep(100000);
+			goto sleep;
+
 		if (is_paused != player->last_paused) {
 			player->last_paused = is_paused;
 			if (is_paused) {
@@ -323,8 +324,7 @@ int read_thread(player_t *player) {
 		                || ((player->audioq.size > MIN_AUDIOQ_SIZE
 		                        || player->audio_stream < 0)))) {
 			/* wait 10 ms */
-			usleep(10000);
-			continue;
+			goto sleep;
 		}
 
 		if (eof) {
@@ -350,8 +350,7 @@ int read_thread(player_t *player) {
 				ret = AVERROR_EOF;
 				goto fail;
 			}
-			usleep(1000);
-			continue;
+			goto sleep;
 		}
 
 		ret = av_read_frame(ic, pkt);
@@ -363,8 +362,7 @@ int read_thread(player_t *player) {
 			if (ic->pb && ic->pb->error)
 				break;
 			//usleep(100000); /* wait for user event */
-			usleep(1000);
-			continue;
+			goto sleep;
 		}
 
 		if (pkt->stream_index == player->audio_stream) {
@@ -375,6 +373,11 @@ int read_thread(player_t *player) {
 			log_trace("read_thread::av_free_packet(pkt);");
 			av_free_packet(pkt);
 		}
+
+		continue;
+		sleep:
+		usleep(1000);
+
 
 	}
 

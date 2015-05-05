@@ -13,7 +13,7 @@ import android.util.Log;
  * 
  * @author dan
  */
-public class AudioPlayer implements AudioStreamListener,
+public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     OnPlaybackPositionUpdateListener {
 
   private static final String TAG = AudioPlayer.class.getName();
@@ -71,6 +71,7 @@ public class AudioPlayer implements AudioStreamListener,
       if (audioTrack != null)
         audioTrack.stop();
     }
+
   }
 
   public void play(String url) {
@@ -179,13 +180,23 @@ public class AudioPlayer implements AudioStreamListener,
         + getDuration());
   }
 
+  /**
+   * 
+   * @return playback position in millis or -1 if track is invalid
+   */
+
   public int getPosition() {
     if (audioTrack == null)
       return -1;
-    return audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate();
+    return audioTrack.getPlaybackHeadPosition() * 1000
+        / audioTrack.getSampleRate();
   }
 
-  public long getDuration() {
+  /**
+   *
+   * @return length of track in millis
+   */
+  public int getDuration() {
     return LibAndrudio.getDuration(handle);
   }
 }

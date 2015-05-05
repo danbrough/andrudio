@@ -291,6 +291,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getDuration(JNIEnv *en
  */
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getPosition(JNIEnv *env,
         jclass cls, jlong handle) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -306,6 +307,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getPosition(JNIEnv *en
  */
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio__1setDataSource(
         JNIEnv *env, jclass cls, jlong handle, jstring jdatasource) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -323,6 +325,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio__1setDataSource(
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_prepareAsync(JNIEnv *env,
         jclass cls, jlong handle) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -334,6 +337,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_prepareAsync(JNIEnv *e
 
 JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isLooping(
         JNIEnv *env, jclass cls, jlong handle) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -345,6 +349,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isLooping(
 
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setLooping(JNIEnv *env,
         jclass cls, jlong handle, jboolean looping) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -360,6 +365,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setLooping(JNIEnv *env
  */
 JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying(
         JNIEnv *env, jclass cls, jlong handle) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -371,6 +377,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying(
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
         jclass cls, jlong handle, jint msecs) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -384,6 +391,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_audioPrepared(
         JNIEnv *env, jclass cls, jlong handle, jobject jaudioTrack,
         jint sampleFormat, jint sampleRate, jint channelFormat) {
+
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");

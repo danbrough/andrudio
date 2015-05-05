@@ -116,12 +116,7 @@ public class MainActivity extends AppCompatActivity {
         player.stop();
       }
     });
-    findViewById(R.id.reset).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        player.reset();
-      }
-    });
+
   }
 
   private void addURL(final String url) {
@@ -141,24 +136,25 @@ public class MainActivity extends AppCompatActivity {
   protected void onStart() {
     log.info("onStart();");
     super.onStart();
-    player = new AudioPlayer();
+    player = new AudioPlayer() {
+      @Override
+      public void onPeriodicNotification(android.media.AudioTrack track) {
+        int duration = getDuration();
+        int position = getPosition();
+        log.debug("onPeriodicNotification() {}:{}", position, duration);
 
-    /*    ((LibAVMediaPlayer) player)
-            .setOnStatusUpdateListener(new OnStatusUpdateListener() {
-              @Override
-              public void onStatusUpdate(int position, int duration) {
+        if (isSeeking)// dont bother updating seek bar
+          return;
 
-                if (duration > 0) {
-                  seekBar.setMax(duration);
-                  seekBar.setEnabled(true);
-                } else {
-                  seekBar.setEnabled(false);
-                }
-
-                if (!isSeeking)
-                  seekBar.setProgress(position);
-              }
-            });*/
+        if (duration > 0) {
+          seekBar.setProgress(position);
+          seekBar.setMax(duration);
+          seekBar.setEnabled(true);
+        } else {
+          seekBar.setEnabled(false);
+        }
+      }
+    };
 
   }
 
