@@ -33,7 +33,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     public boolean handleMessage(Message msg) {
       switch (msg.what) {
       case EVENT_SEEK_COMPLETE:
-        Log.i(TAG, "event seek complete");
+        onSeekComplete();
         return true;
       case EVENT_STATE_CHANGE:
         onStateChange(stateValues[msg.arg1], stateValues[msg.arg2]);
@@ -195,10 +195,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
    */
 
   public int getPosition() {
-    if (audioTrack == null)
-      return -1;
-    return audioTrack.getPlaybackHeadPosition() * 1000
-        / audioTrack.getSampleRate();
+    return LibAndrudio.getPosition(handle);
   }
 
   /**
@@ -207,5 +204,13 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
    */
   public int getDuration() {
     return LibAndrudio.getDuration(handle);
+  }
+
+  public void printStatus() {
+    LibAndrudio.printStatus(handle);
+  }
+
+  protected void onSeekComplete() {
+    Log.v(TAG, "onSeekComplete()");
   }
 }

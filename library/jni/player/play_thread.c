@@ -136,12 +136,19 @@ static int audio_decode_frame(player_t *player, double *pts_ptr) {
 			}
 
 			/* if no pts, then compute it */
-			pts = player->audio_clock;
-			*pts_ptr = pts;
+			/*pts = player->audio_clock;
+			*pts_ptr = pts;*/
 			n = player->sdl_channels
 			        * av_get_bytes_per_sample(player->sdl_sample_fmt);
 			player->audio_clock += (double) data_size
 			        / (double) (n * player->sdl_sample_rate);
+
+			if (pkt->pts != AV_NOPTS_VALUE) {
+				player->audio_clock = av_q2d(player->audio_st->time_base)
+				        * pkt->pts;
+			}
+
+
 #ifdef DEBUG
 			{
 				static double last_clock;

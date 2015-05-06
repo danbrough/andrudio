@@ -57,7 +57,8 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
         log.trace("onStopTrackingTouch()");
-        isSeeking = false;
+
+        log.debug("player.seekTo() {}", seekProgress);
         player.seekTo(seekProgress);
       }
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
           boolean fromUser) {
         if (fromUser) {
           seekProgress = progress;
+          log.trace("progress: " + progress);
         }
       }
     });
@@ -136,23 +138,34 @@ public class MainActivity extends AppCompatActivity {
   protected void onStart() {
     log.info("onStart();");
     super.onStart();
+
     player = new AudioPlayer() {
       @Override
       public void onPeriodicNotification(android.media.AudioTrack track) {
         int duration = getDuration();
         int position = getPosition();
         log.debug("onPeriodicNotification() {}:{}", position, duration);
+        player.printStatus();
 
-        if (isSeeking)// dont bother updating seek bar
+        if (isSeeking) {
+          log.trace("isSeeking .. wont update seekbar");
           return;
+        }
 
         if (duration > 0) {
           seekBar.setProgress(position);
           seekBar.setMax(duration);
           seekBar.setEnabled(true);
         } else {
+          seekBar.setProgress(0);
           seekBar.setEnabled(false);
         }
+      }
+
+      @Override
+      protected void onSeekComplete() {
+        super.onSeekComplete();
+        isSeeking = false;
       }
     };
 

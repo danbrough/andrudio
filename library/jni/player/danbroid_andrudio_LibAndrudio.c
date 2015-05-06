@@ -405,3 +405,13 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_audioPrepared(
 	JavaInfo *info = (JavaInfo*) player->extra;
 	info->audioTrack = (*env)->NewGlobalRef(env, jaudioTrack);
 }
+
+JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus
+  (JNIEnv *env, jclass cls, jlong handle){
+	player_t* player = JLONG_TO_PLAYER(handle);
+	if (!player) {
+		log_error("invalid handle");
+		return;
+	}
+	ap_print_status(player);
+}

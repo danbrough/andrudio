@@ -135,6 +135,14 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setLooping
 JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     danbroid_andrudio_LibAndrudio
+ * Method:    printStatus
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus
+  (JNIEnv *, jclass, jlong);
+
 #ifdef __cplusplus
 }
 #endif

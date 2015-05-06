@@ -61,7 +61,7 @@ extern void play_thread(player_t *player);
 
 int change_state(player_t *player, audio_state_t state) {
 	int ret = -1;
-	log_trace("change_state() %s",ap_get_state_name(state));
+	log_trace("change_state() %s", ap_get_state_name(state));
 	BEGIN_LOCK(player);
 	audio_state_t old_state = player->state;
 
@@ -143,9 +143,9 @@ double ap_get_audio_clock(player_t *player) {
 }
 
 /* seek in the stream */
-static void stream_seek(player_t *player, int64_t pos, int64_t rel,
-        int seek_by_bytes) {
+static void stream_seek(player_t *player, int64_t pos, int64_t rel) {
 	BEGIN_LOCK(player);
+	log_trace("stream_seek %"PRIu64" : %"PRIu64, pos, rel);
 	if (!player->seek_req) {
 		player->seek_pos = pos;
 		player->seek_rel = rel;
@@ -368,7 +368,7 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 	else {
 		pos = incr;
 	}
-	stream_seek(player, pos, incr, 1);
+	stream_seek(player, pos, incr);
 
 	end:
 	END_LOCK(player);
@@ -486,8 +486,12 @@ int32_t ap_get_position(player_t *player) {
 		log_error("ap_get_position called in illegal state");
 		return 0;
 	}
-	return (int32_t) (player->audio_clock * 1000);
-//return (int32_t) (ap_get_audio_clock(player) * 1000);
+
+
+	double pos = ap_get_audio_clock(player);
+	log_trace("ap_get_position:: clock %f",pos);
+
+	return (int32_t) (ap_get_audio_clock(player) * 1000);
 }
 
 int ap_is_playing(player_t *player) {
