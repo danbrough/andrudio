@@ -16,6 +16,8 @@ For testing there is a ./demo/demo.apk file ready to go.
 There is also a command line application for testing the native code:
 	see:  `./library/test/test.sh`
 
+To use libav instead of ffmpeg set `FFMPEG := 0` in `library/jni/Android.mk`.
+
 =======
 Status
 ------

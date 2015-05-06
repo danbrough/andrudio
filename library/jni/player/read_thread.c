@@ -46,7 +46,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 
 	codec = avcodec_find_decoder(avctx->codec_id);
 	if (!codec)
-		goto fail;
+		goto end;
 
 	avctx->workaround_bugs = workaround_bugs;
 	avctx->idct_algo = idct;
@@ -63,13 +63,13 @@ static int stream_component_open(player_t *player, int stream_index) {
 
 	if ((ret = avcodec_open2(avctx, codec, &opts)) < 0) {
 		ap_print_error("avcodec_open2() failed", ret);
-		goto fail;
+		goto end;
 	}
 
 	if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
 		av_log(NULL, AV_LOG_ERROR, "Option %s not found.\n", t->key);
 		ret = AVERROR_OPTION_NOT_FOUND;
-		goto fail;
+		goto end;
 	}
 
 	/* prepare audio output */
@@ -83,7 +83,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 		if (!avctx->channel_layout) {
 			log_error("unable to guess channel layout");
 			ret = AVERROR_INVALIDDATA;
-			goto fail;
+			goto end;
 		}
 
 		if (avctx->channels == 1)
@@ -96,25 +96,18 @@ static int stream_component_open(player_t *player, int stream_index) {
 
 		int sampleRate = player->sdl_sample_rate;
 		int channelFormat = player->sdl_channels;
-		//wanted_spec.silence = 0;
-		//wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
-		//wanted_spec.callback = (void*) sdl_audio_callback;
-		//wanted_spec.userdata = player;
 
 		if (player->callbacks.on_prepare(player, AV_SAMPLE_FMT_S16, sampleRate,
 		        channelFormat) < 0) {
 			log_error("on_prepare() failed");
 			ret = AVERROR_UNKNOWN;
-			goto fail;
+			goto end;
 		}
 
-		//player->audio_hw_buf_size = spec.size;
 		player->sdl_sample_fmt = AV_SAMPLE_FMT_S16;
 		player->resample_sample_fmt = player->sdl_sample_fmt;
 		player->resample_channel_layout = avctx->channel_layout;
-		//player->resample_sample_rate = avctx->sample_rate;
 		player->resample_sample_rate = player->sdl_sample_rate;
-
 		log_trace("stream_component_open::resample_sample_rate: %d",
 		        player->sdl_sample_rate);
 	}
@@ -129,7 +122,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	memset(&player->audio_pkt, 0, sizeof(player->audio_pkt));
 	packet_queue_init(&player->audioq);
 
-	fail: av_dict_free(&opts);
+	end: av_dict_free(&opts);
 	if (ret == 0)
 		change_state(player, STATE_PREPARED);
 	return ret;
@@ -217,10 +210,6 @@ int read_thread(player_t *player) {
 	if (ic->pb)
 		ic->pb->eof_reached = 0;
 
-	//if (seek_by_bytes < 0)
-	//	seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT);
-	//log_error("seek by bytes: %d", seek_by_bytes);
-
 	player->audio_stream = -1;
 
 	for (i = 0; i < ic->nb_streams; i++)
@@ -277,14 +266,6 @@ int read_thread(player_t *player) {
 				log_warn("av_read_play(ic); done");
 			}
 		}
-
-		/*	if (player->state == STATE_PAUSED
-		 && !strcmp(ic->iformat->name, "rtsp")) {
-		 wait 10 ms to avoid trying to get another packet
-		 XXX: horrible
-		 usleep(10000);
-		 continue;
-		 }*/
 
 		if (player->seek_req) {
 			log_trace("read_thread::seek_req");
@@ -357,35 +338,25 @@ int read_thread(player_t *player) {
 
 		if (ret < 0) {
 			ap_print_error("av_read_frame failed", ret);
-			if (ret == AVERROR_EOF || (ic->pb && ic->pb->eof_reached))
+			if (ret == AVERROR_EOF || (ic->pb && ic->pb->eof_reached)){
+				log_trace("eof == 1");
 				eof = 1;
+			}
 			if (ic->pb && ic->pb->error)
 				break;
-			//usleep(100000); /* wait for user event */
 			goto sleep;
 		}
 
 		if (pkt->stream_index == player->audio_stream) {
-			//log_trace("read_thread::packet_queue_put(&player->audioq, pkt);");
 			packet_queue_put(&player->audioq, pkt);
 		}
 		else {
-			log_trace("read_thread::av_free_packet(pkt);");
 			av_free_packet(pkt);
 		}
 
 		continue;
-		sleep:
-		usleep(1000);
-
-
+		sleep: usleep(1000);
 	}
-
-	/*log_debug("read_thread::waiting for abort request");
-
-	 while (!player->abort_request) {
-	 usleep(100000);
-	 }*/
 
 	ret = 0;
 	fail:
@@ -393,19 +364,12 @@ int read_thread(player_t *player) {
 
 	stream_component_close(player, player->audio_stream);
 
-	if (ret != 0) {
-		/*TODO: log_trace("writing a quit");
-		 ret = 'q';
-		 write(cmd_pipe[1], &ret, 1);*/
-	}
-
 	BEGIN_LOCK(player);
 	if (player->state == STATE_STARTED)
 		change_state(player, STATE_COMPLETED);
 	END_LOCK(player);
 
 	log_trace("read_thread::done returning %d", ret);
-	//pthread_exit(0);
 
 	return ret;
 }

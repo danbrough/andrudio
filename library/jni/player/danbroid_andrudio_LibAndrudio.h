@@ -26,7 +26,7 @@ JNIEXPORT jlong JNICALL Java_danbroid_andrudio_LibAndrudio__1create
 /*
  * Class:     danbroid_andrudio_LibAndrudio
  * Method:    setListener
- * Signature: (JLdanbroid/andrudio/AudioStreamListener;)V
+ * Signature: (JLdanbroid/andrudio/LibAndrudio/AudioStreamListener;)V
  */
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setListener
   (JNIEnv *, jclass, jlong, jobject);
@@ -98,10 +98,10 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getPosition
 /*
  * Class:     danbroid_andrudio_LibAndrudio
  * Method:    seekTo
- * Signature: (JI)I
+ * Signature: (JIZ)I
  */
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo
-  (JNIEnv *, jclass, jlong, jint);
+  (JNIEnv *, jclass, jlong, jint, jboolean);
 
 /*
  * Class:     danbroid_andrudio_LibAndrudio

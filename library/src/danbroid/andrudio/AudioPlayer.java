@@ -36,7 +36,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
         Log.i(TAG, "event seek complete");
         return true;
       case EVENT_STATE_CHANGE:
-        onStateChange(msg.arg1, msg.arg2);
+        onStateChange(stateValues[msg.arg1], stateValues[msg.arg2]);
         return true;
       default:
         Log.e(TAG, "unhandled event: " + msg.what);
@@ -45,33 +45,42 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     }
   });
 
+  public enum State {
+    IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, PAUSED, COMPLETED, STOPPED, ERROR, END;
+  }
+
+  private static final State[] stateValues;
+  static {
+    stateValues = State.values();
+  }
+
   public AudioPlayer() {
     super();
     handle = LibAndrudio.create();
     LibAndrudio.setListener(handle, this);
   }
 
-  protected void onStateChange(int old_state, int state) {
+  protected void onStateChange(State old_state, State state) {
     Log.v(TAG, "onStateChange() " + old_state + " -> " + state);
 
-    if (old_state == STATE_STARTED && state != STATE_PAUSED
-        && state != STATE_COMPLETED) {
+    if (old_state == State.STARTED && state != State.PAUSED
+        && state != State.COMPLETED) {
       Log.v(TAG, "audioTrack.stop()");
       audioTrack.stop();
-    } else if (state == STATE_STARTED) {
+    } else if (state == State.STARTED) {
       Log.v(TAG, "audioTrack.play()");
       audioTrack.play();
-    } else if (state == STATE_PAUSED) {
+    } else if (state == State.PAUSED) {
       Log.v(TAG, "audioTrack.pause()");
       audioTrack.pause();
-    } else if (state == STATE_PREPARED) {
+    } else if (state == State.PREPARED) {
       onPrepared();
-    } else if (state == STATE_COMPLETED) {
-      Log.i(TAG, "onStateChange::STATE_COMPLETED calling stop");
-      if (audioTrack != null)
+    } else if (state == State.COMPLETED) {
+      if (audioTrack != null) {
+        Log.v(TAG, "audioTrack.stop()");
         audioTrack.stop();
+      }
     }
-
   }
 
   public void play(String url) {
@@ -148,7 +157,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
   }
 
   public void seekTo(int msecs) {
-    LibAndrudio.seekTo(handle, msecs);
+    LibAndrudio.seekTo(handle, msecs, false);
   }
 
   public void start() {

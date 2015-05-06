@@ -10,8 +10,11 @@
 cd `dirname $0` && cd ..
 source env.sh
 
-
-export BUILD=$BUILD/build/native
+if (( $FFMPEG )); then
+export BUILD=$BUILD/build/ffmpeg
+else
+export BUILD=$BUILD/build/libav
+fi
 
 if [ ! -d $BUILD ]; then   
   setup_source

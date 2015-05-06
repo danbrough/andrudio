@@ -375,8 +375,9 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying(
 	return ap_is_playing(player);
 }
 
+
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
-        jclass cls, jlong handle, jint msecs) {
+        jclass cls, jlong handle, jint msecs,jboolean relative) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -384,7 +385,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
 		return -1;
 	}
 
-	ap_seek(player, msecs, 0);
+	ap_seek(player, msecs*1000, relative);
 	return 0;
 }
 

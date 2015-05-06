@@ -4,8 +4,6 @@
 
 #include "audioplayer.h"
 
-
-
 #ifndef DISABLE_AUDIO
 #define USING_AO
 #endif
@@ -145,6 +143,8 @@ static void event_loop(player_t *player) {
 	//int PIPE_IN = cmd_pipe[0];
 	double incr;
 	int printed_not_playing = 0;
+	int seek_minute = 1;
+	int seek_relative = 0;
 
 	while (1) {
 		FD_ZERO(&rfds);
@@ -252,17 +252,26 @@ static void event_loop(player_t *player) {
 					switch ((char) c) {
 						case 'D':
 							incr = -10.0;
+							seek_relative = TRUE;
 							goto do_seek;
 						case 'C':
 							incr = 10.0;
+							seek_relative = TRUE;
 							goto do_seek;
 						case 'A':
-							incr = 60.0;
+							incr = 60.0*seek_minute;
+							seek_minute++;
+							log_debug("seeking to minute: %d",seek_minute);
+							seek_relative = FALSE;
 							goto do_seek;
 						case 'B':
-							incr = -60.0;
-							do_seek: ap_seek(player, incr, TRUE);
+							seek_minute--;
+							if(seek_minute == 0) seek_minute = 1;
+							incr = 60.0*seek_minute;
+							log_debug("seeking to minute: %d",seek_minute);
+							seek_relative = FALSE;
 
+							do_seek: ap_seek(player, incr*AV_TIME_BASE, seek_relative);
 							ap_print_status(player);
 
 							break;
@@ -272,7 +281,7 @@ static void event_loop(player_t *player) {
 
 			default:
 				log_error("invalid key: %"PRIu16 ":%c", c, c);
-				log_info("q:\tquit");
+								log_info("q:\tquit");
 				log_info("space:\tpause");
 				log_info("s:\tstart");
 				log_info("d:\tstop");
@@ -283,8 +292,9 @@ static void event_loop(player_t *player) {
 				log_info("o:\tseek to one minute");
 				log_info("right arrow:\tseek +10 seconds");
 				log_info("left arrow:\tseek -10 seconds");
-				log_info("up arrow:\tseek +60 seconds");
-				log_info("down arrow:\tseek -60 seconds");
+				log_info(
+				        "up arrow:\tabsolute seek to the first minute,2nd minute, ...");
+				log_info("down arrow:\tabsolute seek to the previous minute");
 				log_info("1,2,3,4,5..:\tplay a test track");
 				break;
 		}

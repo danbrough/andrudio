@@ -359,16 +359,15 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 	if (!player->audio_st)
 		goto end;
 
-	double pos;
+	int64_t pos;
 	if (relative) {
-		pos = ap_get_audio_clock(player);
+		pos = ap_get_audio_clock(player) * AV_TIME_BASE;
 		pos += incr;
 	}
 	else {
 		pos = incr;
 	}
-	stream_seek(player, (int64_t) (pos * AV_TIME_BASE),
-	        (int64_t) (incr * AV_TIME_BASE), 0);
+	stream_seek(player, pos, incr, 1);
 
 	end:
 	END_LOCK(player);
