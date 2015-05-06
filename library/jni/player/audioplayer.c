@@ -61,6 +61,7 @@ extern void play_thread(player_t *player);
 
 int change_state(player_t *player, audio_state_t state) {
 	int ret = -1;
+	log_trace("change_state() %s",ap_get_state_name(state));
 	BEGIN_LOCK(player);
 	audio_state_t old_state = player->state;
 

@@ -89,7 +89,7 @@ static void callback_on_play(player_t *player, char *data, int len) {
 
 	JNIEnv *env = get_jni_env();
 	if (info->size < len) {
-		log_debug("old buffer too small");
+		log_debug("callback_on_play::old buffer too small");
 		(*env)->DeleteGlobalRef(env, info->buffer);
 		info->buffer = NULL;
 	}
@@ -115,13 +115,16 @@ static int callback_prepare_audio(player_t *player, int sampleFormat,
 	JNIEnv *env = get_jni_env();
 
 	JavaInfo *info = (JavaInfo*) player->extra;
+
 	if (info->audioTrack) {
 		(*env)->DeleteGlobalRef(env, info->audioTrack);
 	}
 
 	info->audioTrack = (*env)->CallObjectMethod(env, info->listener,
 	        fields.prepareAudio, sampleFormat, sampleRate, channelFormat);
+
 	info->audioTrack = (*env)->NewGlobalRef(env, info->audioTrack);
+
 	jclass audioTrackClass = (*env)->FindClass(env, "android/media/AudioTrack");
 
 	return 0;
@@ -398,6 +401,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_audioPrepared(
 		log_error("invalid handle");
 		return;
 	}
+
 	JavaInfo *info = (JavaInfo*) player->extra;
 	info->audioTrack = (*env)->NewGlobalRef(env, jaudioTrack);
 }

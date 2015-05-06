@@ -226,10 +226,13 @@ void play_thread(player_t *player) {
 
 			if (player->abort_request)
 				continue;
-			BEGIN_LOCK(player);
+
+			//log_trace("play_thread::locking player");
+			//BEGIN_LOCK(player);
 			player->callbacks.on_play(player,
 			        (char*) player->audio_buf + player->audio_buf_index, len1);
-			END_LOCK(player);
+			//END_LOCK(player);
+			//log_trace("play_thread::player unlocked");
 
 			len -= len1;
 			//stream += len1;

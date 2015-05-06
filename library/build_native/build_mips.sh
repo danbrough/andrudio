@@ -42,11 +42,6 @@ export FLAGS="--arch=mips"
 export FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
 export FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
-export FLAGS="$FLAGS --cpu=mips32r2 --enable-yasm --disable-mipsfpu --disable-mipsdspr1 --disable-mipsdspr2"
-export ECFLAGS="-std=c99 -O3 -Wall -pipe -fpic -fasm \
-                -ftree-vectorize -ffunction-sections -funwind-tables -fomit-frame-pointer -funswitch-loops \
-                -finline-limit=300 -finline-functions -fpredictive-commoning -fgcse-after-reload -fipa-cp-clone \
-                -Wno-psabi -Wa,--noexecstack"
 
 source ../common_flags.sh
 

@@ -14,6 +14,9 @@ static int driver = -1;
 static ao_device* device = NULL;
 #endif
 
+static int seek_minute = 1;
+static int seek_relative = 0;
+
 static const char* url =
         "http://www.audiocheck.net/Audio/audiocheck.net_putyourhands.mp3";
 
@@ -100,6 +103,7 @@ static void on_event(player_t *player, audio_event_t event, int arg1, int arg2) 
 
 static void play(player_t *player, const char *url) {
 	log_info("play() %s", url);
+	seek_minute = 1;
 	ap_reset(player);
 	ap_set_datasource(player, url);
 	ap_prepare_async(player);
@@ -143,8 +147,6 @@ static void event_loop(player_t *player) {
 	//int PIPE_IN = cmd_pipe[0];
 	double incr;
 	int printed_not_playing = 0;
-	int seek_minute = 1;
-	int seek_relative = 0;
 
 	while (1) {
 		FD_ZERO(&rfds);
@@ -259,19 +261,21 @@ static void event_loop(player_t *player) {
 							seek_relative = TRUE;
 							goto do_seek;
 						case 'A':
-							incr = 60.0*seek_minute;
+							incr = 60.0 * seek_minute;
 							seek_minute++;
-							log_debug("seeking to minute: %d",seek_minute);
+							log_debug("seeking to minute: %d", seek_minute);
 							seek_relative = FALSE;
 							goto do_seek;
 						case 'B':
 							seek_minute--;
-							if(seek_minute == 0) seek_minute = 1;
-							incr = 60.0*seek_minute;
-							log_debug("seeking to minute: %d",seek_minute);
+							if (seek_minute == 0)
+								seek_minute = 1;
+							incr = 60.0 * seek_minute;
+							log_debug("seeking to minute: %d", seek_minute);
 							seek_relative = FALSE;
 
-							do_seek: ap_seek(player, incr*AV_TIME_BASE, seek_relative);
+							do_seek: ap_seek(player, incr * AV_TIME_BASE,
+							        seek_relative);
 							ap_print_status(player);
 
 							break;
@@ -280,8 +284,8 @@ static void event_loop(player_t *player) {
 				break;
 
 			default:
-				log_error("invalid key: %"PRIu16 ":%c", c, c);
-								log_info("q:\tquit");
+log_error("invalid key: %"PRIu16 ":%c", c, c);
+												log_info("q:\tquit");
 				log_info("space:\tpause");
 				log_info("s:\tstart");
 				log_info("d:\tstop");
