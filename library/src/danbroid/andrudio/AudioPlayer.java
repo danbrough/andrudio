@@ -9,7 +9,9 @@ import android.os.Message;
 import android.util.Log;
 
 /**
- * A simple audio player that wraps a {@link AudioTrack} instance
+ * A simple audio player that wraps a {@link AudioTrack} instance.
+ * This is the second tier API that resides on top of {@link LibAndrudio}.
+ * 
  * 
  * @author dan
  */
@@ -83,10 +85,21 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     }
   }
 
+  /**
+   * resets, sets the datasource and prepares the player
+   * 
+   * @param url
+   * the datasource
+   */
+
   public void play(String url) {
     Log.i(TAG, "play() :" + url);
     reset();
-    LibAndrudio.setDataSource(handle, url);
+    setDataSource(url);
+    prepareAsync();
+  }
+
+  public void prepareAsync() {
     LibAndrudio.prepareAsync(handle);
   }
 
@@ -172,9 +185,12 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     LibAndrudio.togglePause(handle);
   }
 
+  /**
+   * Will call {@link #start()}. Do not call super to override this behaviour.
+   */
   protected void onPrepared() {
     Log.v(TAG, "onPrepared()");
-    start();
+    onPeriodicNotification(audioTrack);
   }
 
   @Override
@@ -212,5 +228,13 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   protected void onSeekComplete() {
     Log.v(TAG, "onSeekComplete()");
+  }
+
+  public void setDataSource(String url) {
+    LibAndrudio.setDataSource(handle, url);
+  }
+
+  public boolean isLooping() {
+    return LibAndrudio.isLooping(handle);
   }
 }

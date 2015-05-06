@@ -2,8 +2,22 @@ package danbroid.andrudio;
 
 import android.media.AudioTrack;
 
+/**
+ * This is the low-level interface to the native code and comprises the entry
+ * points
+ * of all native code used.
+ * 
+ * @author dan
+ *
+ */
 public class LibAndrudio {
 
+  /**
+   * Callback interface for the native code
+   * 
+   * @author dan
+   *
+   */
   public interface AudioStreamListener {
 
     public static final int EVENT_THREAD_START = 1;

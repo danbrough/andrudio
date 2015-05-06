@@ -142,24 +142,7 @@ public class MainActivity extends AppCompatActivity {
     player = new AudioPlayer() {
       @Override
       public void onPeriodicNotification(android.media.AudioTrack track) {
-        int duration = getDuration();
-        int position = getPosition();
-        log.debug("onPeriodicNotification() {}:{}", position, duration);
-        player.printStatus();
-
-        if (isSeeking) {
-          log.trace("isSeeking .. wont update seekbar");
-          return;
-        }
-
-        if (duration > 0) {
-          seekBar.setProgress(position);
-          seekBar.setMax(duration);
-          seekBar.setEnabled(true);
-        } else {
-          seekBar.setProgress(0);
-          seekBar.setEnabled(false);
-        }
+        onUpdate();
       }
 
       @Override
@@ -167,8 +150,38 @@ public class MainActivity extends AppCompatActivity {
         super.onSeekComplete();
         isSeeking = false;
       }
+
+      @Override
+      protected void onPrepared() {
+        super.onPrepared();
+        int duration = player.getDuration();
+        seekBar.setProgress(0);
+        if (duration > 0) {
+          seekBar.setEnabled(true);
+          seekBar.setMax(duration);
+        } else {
+          seekBar.setEnabled(false);
+        }
+        start();
+      }
     };
 
+  }
+
+  private void onUpdate() {
+    int duration = player.getDuration();
+    int position = player.getPosition();
+
+    player.printStatus();
+
+    if (isSeeking) {
+      log.trace("isSeeking .. wont update seekbar");
+      return;
+    }
+
+    if (duration > 0) {
+      seekBar.setProgress(position);
+    }
   }
 
   @Override
