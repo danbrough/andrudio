@@ -4,8 +4,6 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.AudioTrack.OnPlaybackPositionUpdateListener;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 /**
@@ -30,22 +28,22 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   private AudioTrack audioTrack;
 
-  private final Handler handler = new Handler(new Handler.Callback() {
-    @Override
-    public boolean handleMessage(Message msg) {
-      switch (msg.what) {
-      case EVENT_SEEK_COMPLETE:
-        onSeekComplete();
-        return true;
-      case EVENT_STATE_CHANGE:
-        onStateChange(stateValues[msg.arg1], stateValues[msg.arg2]);
-        return true;
-      default:
-        Log.e(TAG, "unhandled event: " + msg.what);
+  /*  private final Handler handler = new Handler(new Handler.Callback() {
+      @Override
+      public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+        case EVENT_SEEK_COMPLETE:
+          onSeekComplete();
+          return true;
+        case EVENT_STATE_CHANGE:
+          onStateChange(stateValues[msg.arg1], stateValues[msg.arg2]);
+          return true;
+        default:
+          Log.e(TAG, "unhandled event: " + msg.what);
+        }
+        return false;
       }
-      return false;
-    }
-  });
+    });*/
 
   public enum State {
     IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, PAUSED, COMPLETED, STOPPED, ERROR, END;
@@ -153,7 +151,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
       audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz,
           chanConfig, AudioFormat.ENCODING_PCM_16BIT, minBufferSize,
           AudioTrack.MODE_STREAM);
-      audioTrack.setPlaybackPositionUpdateListener(this, handler);
+      audioTrack.setPlaybackPositionUpdateListener(this);
       audioTrack.setPositionNotificationPeriod(sampleRateInHZ);
     }
 
@@ -162,7 +160,19 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   @Override
   public final void handleEvent(int what, int arg1, int arg2) {
-    handler.sendMessage(handler.obtainMessage(what, arg1, arg2));
+    // handler.sendMessage(handler.obtainMessage(what, arg1, arg2));
+    switch (what) {
+    case EVENT_SEEK_COMPLETE:
+      onSeekComplete();
+      break;
+    case EVENT_STATE_CHANGE:
+      onStateChange(stateValues[arg1], stateValues[arg2]);
+      break;
+    default:
+      Log.e(TAG, "handleEvent() " + what + ":" + arg1 + ":" + arg2
+          + " not handled");
+      break;
+    }
   }
 
   public AudioTrack getAudioTrack() {

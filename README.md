@@ -11,7 +11,7 @@ A LibAV/FFMPEG based drop-in replacement for the android [MediaPlayer](http://de
 You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
 The gradle build scripts are for gradle 2.3.
 
-For testing there is a ./demo/demo.apk file ready to go.
+For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to go.
 
 There is also a command line application for testing the native code:
 	see:  `./library/test/test.sh`

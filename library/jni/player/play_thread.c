@@ -14,7 +14,7 @@
 extern AVPacket flush_pkt;
 
 /* decode one audio frame and returns its uncompressed size */
-static int audio_decode_frame(player_t *player, double *pts_ptr) {
+static int audio_decode_frame(player_t *player) {
 	AVPacket *pkt_temp = &player->audio_pkt_temp;
 	AVPacket *pkt = &player->audio_pkt;
 	AVCodecContext *dec = player->audio_st->codec;
@@ -197,7 +197,6 @@ void play_thread(player_t *player) {
 	assert(player);
 //pthread_cleanup_push(play_thread_cleanup,player);
 	int audio_size, len1;
-	double pts;
 
 	AP_EVENT(player, EVENT_THREAD_START, 0, 0);
 	//audio_callback_time = av_gettime();
@@ -214,7 +213,7 @@ void play_thread(player_t *player) {
 		                || player->state == STATE_PAUSED)
 		        && !player->abort_request) {
 			if (player->audio_buf_index >= player->audio_buf_size) {
-				audio_size = audio_decode_frame(player, &pts);
+				audio_size = audio_decode_frame(player);
 				if (audio_size < 0) {
 					/* if error, just output silence */
 					player->audio_buf = player->silence_buf;

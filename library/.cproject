@@ -134,8 +134,14 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1769071690;cdt.managedbuild.config.gnu.exe.debug.1769071690.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1173600270;cdt.managedbuild.tool.gnu.c.compiler.input.1973936377">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.android.toolchain.gcc.1715808112;com.android.toolchain.gcc.1715808112.1520189032;com.android.gcc.compiler.117644039;com.android.gcc.inputType.1133911619">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.android.AndroidPerProjectProfile"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1769071690;cdt.managedbuild.config.gnu.exe.debug.1769071690.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.627473974;cdt.managedbuild.tool.gnu.cpp.compiler.input.44332775">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

@@ -32,7 +32,6 @@
 #include "audioplayer.h"
 #include "packet_queue.h"
 
-//extern int seek_by_bytes;d
 
 const inline char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
@@ -374,36 +373,7 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 	END_LOCK(player);
 }
 
-/*void ap_seek(player_t *player, int64_t incr) {
- log_debug("ap_seek() :%"PRIi64, incr);
 
- BEGIN_LOCK(player);
- if (!player->audio_st)
- goto end;
- double pos;
- if (seek_by_bytes) {
- log_trace("seek_by_bytes");
- if (player->audio_stream >= 0 && player->audio_pkt.pos >= 0) {
- pos = player->audio_pkt.pos;
- }
- else
- pos = avio_tell(player->ic->pb);
- if (player->ic->bit_rate)
- incr *= player->ic->bit_rate / 8.0;
- else
- incr *= 180000.0;
- pos += incr;
- stream_seek(player, pos, incr, 1);
- }
- else {
- pos = ap_get_audio_clock(player);
- pos += incr;
- stream_seek(player, (int64_t) (pos * AV_TIME_BASE),
- (int64_t) (incr * AV_TIME_BASE), 0);
- }
- end:
- END_LOCK(player);
- }*/
 
 int ap_start(player_t *player) {
 	log_info("ap_start()");
@@ -482,15 +452,6 @@ int32_t ap_get_duration(player_t *player) {
 
 //position in current track in ms
 int32_t ap_get_position(player_t *player) {
-	if (player->state == STATE_ERROR) {
-		log_error("ap_get_position called in illegal state");
-		return 0;
-	}
-
-
-	double pos = ap_get_audio_clock(player);
-	log_trace("ap_get_position:: clock %f",pos);
-
 	return (int32_t) (ap_get_audio_clock(player) * 1000);
 }
 

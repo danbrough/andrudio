@@ -154,23 +154,33 @@ public class MainActivity extends AppCompatActivity {
       @Override
       protected void onPrepared() {
         super.onPrepared();
-        int duration = player.getDuration();
-        seekBar.setProgress(0);
-        if (duration > 0) {
-          seekBar.setEnabled(true);
-          seekBar.setMax(duration);
-        } else {
-          seekBar.setEnabled(false);
-        }
+
+        log.info("onPrepared();");
         start();
+
+        final int duration = player.getDuration();
+        runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            seekBar.setProgress(0);
+            if (duration > 0) {
+              seekBar.setEnabled(true);
+              seekBar.setMax(duration);
+            } else {
+              seekBar.setEnabled(false);
+            }
+          }
+        });
+
       }
     };
 
   }
 
   private void onUpdate() {
-    int duration = player.getDuration();
-    int position = player.getPosition();
+    final int duration = player.getDuration();
+    final int position = player.getPosition();
+    log.trace(position + ":" + duration);
 
     player.printStatus();
 
