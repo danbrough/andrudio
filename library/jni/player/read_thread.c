@@ -166,7 +166,7 @@ static int audio_decode_frame(player_t *player) {
 	/*AVPacket *pkt_temp = &player->audio_pkt_temp;
 	*/
 	AVPacket *pkt = &player->audio_pkt;
-	log_info("audio_decode_frame()");
+	//log_info("audio_decode_frame()");
 	AVCodecContext *dec = player->audio_st->codec;
 	int n, len1, data_size, got_frame;
 
@@ -187,8 +187,6 @@ static int audio_decode_frame(player_t *player) {
 			}
 
 
-
-
 			len1 = avcodec_decode_audio4(dec, player->frame, &got_frame,
 					pkt);
 			if (len1 < 0) {
@@ -197,7 +195,7 @@ static int audio_decode_frame(player_t *player) {
 				pkt->size = 0;
 				break;
 			} else {
-				log_trace("avcodec_decode_audio4 returned %d",len1);
+				//log_trace("avcodec_decode_audio4 returned %d",len1);
 			}
 
 			pkt->data += len1;
@@ -306,7 +304,7 @@ static int audio_decode_frame(player_t *player) {
 				        * pkt->pts;
 			}
 
-			player->callbacks.on_play(player,player->audio_buf,data_size);
+			player->callbacks.on_play(player,(char*)player->audio_buf,data_size);
 
 
 #ifdef DEBUG

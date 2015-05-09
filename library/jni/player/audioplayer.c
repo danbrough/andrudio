@@ -321,7 +321,6 @@ int ap_set_datasource(player_t *player, const char *url) {
 }
 
 extern int read_thread(player_t *player);
-extern void play_thread(player_t *player);
 
 int ap_prepare_async(player_t *player) {
 	int ret = 0;

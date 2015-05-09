@@ -28,6 +28,8 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   private AudioTrack audioTrack;
 
+  private State state;
+
   /*  private final Handler handler = new Handler(new Handler.Callback() {
       @Override
       public boolean handleMessage(Message msg) {
@@ -62,7 +64,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   protected void onStateChange(State old_state, State state) {
     Log.v(TAG, "onStateChange() " + old_state + " -> " + state);
-
+    this.state = state;
     if (old_state == State.STARTED && state != State.PAUSED
         && state != State.COMPLETED) {
       Log.v(TAG, "audioTrack.stop()");
@@ -209,6 +211,8 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   @Override
   public void onPeriodicNotification(AudioTrack track) {
+    if (state == State.PREPARING)
+      return;
     Log.v(TAG, "onPeriodicNotification() position:" + getPosition()
         + " head position: " + track.getPlaybackHeadPosition()
         + " playback rate: " + track.getPlaybackRate() + " duration: "

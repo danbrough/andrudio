@@ -415,3 +415,10 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus
 	}
 	ap_print_status(player);
 }
+
+JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData
+  (JNIEnv *env, jclass cls, jobject map){
+	//TODO
+	log_error("Java_danbroid_andrudio_LibAndrudio_getMetaData() not implemented");
+	return -1;
+}
