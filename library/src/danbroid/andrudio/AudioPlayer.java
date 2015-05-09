@@ -1,5 +1,7 @@
 package danbroid.andrudio;
 
+import java.util.Map;
+
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -29,23 +31,6 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
   private AudioTrack audioTrack;
 
   private State state;
-
-  /*  private final Handler handler = new Handler(new Handler.Callback() {
-      @Override
-      public boolean handleMessage(Message msg) {
-        switch (msg.what) {
-        case EVENT_SEEK_COMPLETE:
-          onSeekComplete();
-          return true;
-        case EVENT_STATE_CHANGE:
-          onStateChange(stateValues[msg.arg1], stateValues[msg.arg2]);
-          return true;
-        default:
-          Log.e(TAG, "unhandled event: " + msg.what);
-        }
-        return false;
-      }
-    });*/
 
   public enum State {
     IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, PAUSED, COMPLETED, STOPPED, ERROR, END;
@@ -250,5 +235,9 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   public boolean isLooping() {
     return LibAndrudio.isLooping(handle);
+  }
+
+  public void getMetaData(Map<String, String> map) {
+    LibAndrudio.getMetaData(handle, map);
   }
 }

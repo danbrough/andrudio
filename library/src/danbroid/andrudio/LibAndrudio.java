@@ -116,6 +116,6 @@ public class LibAndrudio {
 
   public static native void printStatus(long handle);
 
-  public static native int getMetaData(Map<String, String> data);
+  public static native int getMetaData(long handle, Map<String, String> data);
 
 }

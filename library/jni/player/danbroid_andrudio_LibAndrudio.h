@@ -146,10 +146,10 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus
 /*
  * Class:     danbroid_andrudio_LibAndrudio
  * Method:    getMetaData
- * Signature: (Ljava/util/Map;)I
+ * Signature: (JLjava/util/Map;)I
  */
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData
-  (JNIEnv *, jclass, jobject);
+  (JNIEnv *, jclass, jlong, jobject);
 
 #ifdef __cplusplus
 }

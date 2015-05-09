@@ -1,5 +1,7 @@
 package danbroid.andrudio.demo;
 
+import java.util.HashMap;
+
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.AndroidLoggerFactory;
 
@@ -106,12 +108,14 @@ public class MainActivity extends AppCompatActivity {
         player.pause();
       }
     });
+
     findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
         player.start();
       }
     });
+
     findViewById(R.id.stop).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -171,18 +175,19 @@ public class MainActivity extends AppCompatActivity {
             }
           }
         });
-
       }
     };
 
   }
+
+  private final HashMap<String, String> metadata = new HashMap<String, String>();
 
   private void onUpdate() {
     final int duration = player.getDuration();
     final int position = player.getPosition();
     log.trace(position + ":" + duration);
 
-    player.printStatus();
+    // player.printStatus();
 
     if (isSeeking) {
       log.trace("isSeeking .. wont update seekbar");
@@ -192,6 +197,14 @@ public class MainActivity extends AppCompatActivity {
     if (duration > 0) {
       seekBar.setProgress(position);
     }
+
+    metadata.clear();
+
+    player.getMetaData(metadata);
+    for (String key : metadata.keySet()) {
+      log.trace("metadata :{} -> {}", key, metadata.get(key));
+    }
+
   }
 
   @Override
