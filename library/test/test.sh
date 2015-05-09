@@ -40,8 +40,8 @@ if [ ! -z $DISABLE_AUDIO ]; then
   EXTRA_FLAGS="-DDISABLE_AUDIO"
 fi
 
-gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/packet_queue.c ../jni/player/read_thread.c \
-	../jni/player/play_thread.c  ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest \
+gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/read_thread.c \
+  ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest \
    -lavutil -lavformat -lavcodec -lavresample -lao -lpthread -lc -lm -I${BUILD}/include -L${BUILD}/lib || exit 1
 
 WRAPPER=""

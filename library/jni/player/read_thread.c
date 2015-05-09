@@ -2,6 +2,7 @@
 
 #include "audioplayer.h"
 #include <pthread.h>
+#include <libavutil/opt.h>
 
 static int decode_interrupt_cb(player_t *player) {
 	return player && player->abort_request;
@@ -10,7 +11,7 @@ static int decode_interrupt_cb(player_t *player) {
 //see audiostream.c
 // "seek by bytes 0=off 1=on -1=auto"
 //int seek_by_bytes = -1;
-extern AVPacket flush_pkt;
+
 static int workaround_bugs = 1;
 //"non spec compliant optimizations"
 static int fast = 0;
@@ -20,7 +21,7 @@ static enum AVDiscard skip_idct = AVDISCARD_DEFAULT;
 static enum AVDiscard skip_loop_filter = AVDISCARD_DEFAULT;
 static int error_concealment = 3;
 //  "don't limit the input buffer size (useful with realtime streams)"
-static int infinite_buffer = 0;
+
 
 static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
         [AVMEDIA_TYPE_VIDEO] = -1, [AVMEDIA_TYPE_SUBTITLE] = -1, };
@@ -120,7 +121,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	player->audio_buf_index = 0;
 
 	memset(&player->audio_pkt, 0, sizeof(player->audio_pkt));
-	packet_queue_init(&player->audioq);
+	//packet_queue_init(&player->audioq);
 
 	end: av_dict_free(&opts);
 	if (ret == 0)
@@ -139,9 +140,9 @@ static void stream_component_close(player_t *player, int stream_index) {
 	 goto end;*/
 	avctx = ic->streams[stream_index]->codec;
 
-	packet_queue_abort(&player->audioq);
+	//packet_queue_abort(&player->audioq);
 
-	packet_queue_end(&player->audioq);
+	//packet_queue_end(&player->audioq);
 	av_free_packet(&player->audio_pkt);
 	if (player->avr) {
 		avresample_free(&player->avr);
@@ -160,6 +161,198 @@ static void stream_component_close(player_t *player, int stream_index) {
 
 }
 
+/* decode one audio frame and returns its uncompressed size */
+static int audio_decode_frame(player_t *player) {
+	/*AVPacket *pkt_temp = &player->audio_pkt_temp;
+	*/
+	AVPacket *pkt = &player->audio_pkt;
+	log_info("audio_decode_frame()");
+	AVCodecContext *dec = player->audio_st->codec;
+	int n, len1, data_size, got_frame;
+
+	int flush_complete = 0;
+
+	for (;;) {
+		/* NOTE: the audio packet can contain several frames */
+
+		//log_debug("top_loop");usleep(100000);
+		while (pkt->size > 0) {
+			int resample_changed, audio_resample;
+
+			//log_debug("second_loop");
+
+			if (!player->frame) {
+				if (!(player->frame = av_frame_alloc()))
+					return AVERROR(ENOMEM);
+			}
+
+
+
+
+			len1 = avcodec_decode_audio4(dec, player->frame, &got_frame,
+					pkt);
+			if (len1 < 0) {
+				/* if error, we skip the frame */
+				ap_print_error("avcodec_decode_audio4()",len1);
+				pkt->size = 0;
+				break;
+			} else {
+				log_trace("avcodec_decode_audio4 returned %d",len1);
+			}
+
+			pkt->data += len1;
+			pkt->size -= len1;
+
+			if (!got_frame) {
+				/* stop sending empty packets if the decoder is finished */
+			/*	if (!pkt->data
+				        && (dec->codec->capabilities & CODEC_CAP_DELAY)){
+					return 0;
+				}
+*/
+				return 0;
+
+			}
+			data_size = av_samples_get_buffer_size(NULL, dec->channels,
+			        player->frame->nb_samples, player->frame->format, 1);
+
+			audio_resample = player->frame->format != player->sdl_sample_fmt
+			        || player->frame->channel_layout
+			                != player->sdl_channel_layout
+			        || player->frame->sample_rate != player->sdl_sample_rate;
+
+			resample_changed = player->frame->format
+			        != player->resample_sample_fmt
+			        || player->frame->channel_layout
+			                != player->resample_channel_layout
+			        || player->frame->sample_rate
+			                != player->resample_sample_rate;
+
+			if ((!player->avr && audio_resample) || resample_changed) {
+				int ret;
+				if (player->avr)
+					avresample_close(player->avr);
+				else if (audio_resample) {
+					player->avr = avresample_alloc_context();
+					if (!player->avr) {
+						fprintf(stderr,
+						        "error allocating AVAudioResampleContext\n");
+						break;
+					}
+				}
+				if (audio_resample) {
+					av_opt_set_int(player->avr, "in_channel_layout",
+					        player->frame->channel_layout, 0);
+					av_opt_set_int(player->avr, "in_sample_fmt",
+					        player->frame->format, 0);
+					av_opt_set_int(player->avr, "in_sample_rate",
+					        player->frame->sample_rate, 0);
+					av_opt_set_int(player->avr, "out_channel_layout",
+					        player->sdl_channel_layout, 0);
+					av_opt_set_int(player->avr, "out_sample_fmt",
+					        player->sdl_sample_fmt, 0);
+					av_opt_set_int(player->avr, "out_sample_rate",
+					        player->sdl_sample_rate, 0);
+
+					if ((ret = avresample_open(player->avr)) < 0) {
+						fprintf(stderr, "error initializing libavresample\n");
+						break;
+					}
+				}
+				player->resample_sample_fmt = player->frame->format;
+				player->resample_channel_layout = player->frame->channel_layout;
+				player->resample_sample_rate = player->frame->sample_rate;
+			}
+
+			if (audio_resample) {
+				void *tmp_out;
+				int out_samples, out_size, out_linesize;
+				int osize = av_get_bytes_per_sample(player->sdl_sample_fmt);
+				int nb_samples = player->frame->nb_samples;
+
+				out_size = av_samples_get_buffer_size(&out_linesize,
+				        player->sdl_channels, nb_samples,
+				        player->sdl_sample_fmt, 0);
+				tmp_out = av_realloc(player->audio_buf1, out_size);
+				if (!tmp_out)
+					return AVERROR(ENOMEM);
+				player->audio_buf1 = tmp_out;
+
+				out_samples = avresample_convert(player->avr,
+				        &player->audio_buf1, out_linesize, nb_samples,
+				        player->frame->data, player->frame->linesize[0],
+				        player->frame->nb_samples);
+				if (out_samples < 0) {
+					ap_print_error("avresample_convert() failed", out_samples);
+					break;
+				}
+				player->audio_buf = player->audio_buf1;
+				data_size = out_samples * osize * player->sdl_channels;
+			}
+			else {
+				player->audio_buf = player->frame->data[0];
+			}
+
+			/* if no pts, then compute it */
+			/*pts = player->audio_clock;
+			*pts_ptr = pts;*/
+			n = player->sdl_channels
+			        * av_get_bytes_per_sample(player->sdl_sample_fmt);
+			player->audio_clock += (double) data_size
+			        / (double) (n * player->sdl_sample_rate);
+
+			if (pkt->pts != AV_NOPTS_VALUE) {
+				player->audio_clock = av_q2d(player->audio_st->time_base)
+				        * pkt->pts;
+			}
+
+			player->callbacks.on_play(player,player->audio_buf,data_size);
+
+
+#ifdef DEBUG
+			{
+				static double last_clock;
+				printf("audio: delay=%0.3f clock=%0.3f pts=%0.3f\n",
+						player->audio_clock - last_clock,
+						player->audio_clock, pts);
+				last_clock = player->audio_clock;
+			}
+#endif
+			return data_size;
+		}
+
+		/* free the current packet */
+		if (pkt->data)
+			av_free_packet(pkt);
+		memset(pkt, 0, sizeof(*pkt));
+
+		if (player->state == STATE_PAUSED
+		        || player->abort_request) {
+			log_trace("audio_decode_frame::exiting");
+			return -1;
+		}
+
+	/*	 read next packet
+		if ((new_packet = packet_queue_get(&player->audioq, pkt, 1)) < 0)
+			return -1;*/
+
+/*
+		if (pkt->data == flush_pkt.data) {
+			avcodec_flush_buffers(dec);
+			flush_complete = 0;
+		}
+*/
+
+
+
+		/* if update the audio clock with the pts */
+		if (pkt->pts != AV_NOPTS_VALUE) {
+			player->audio_clock = av_q2d(player->audio_st->time_base)
+			        * pkt->pts;
+		}
+	}
+}
+
 /* this thread gets the stream from the disk or the network */
 int read_thread(player_t *player) {
 
@@ -167,8 +360,11 @@ int read_thread(player_t *player) {
 	AVFormatContext *ic = NULL;
 	int err, i, ret;
 	int st_index[AVMEDIA_TYPE_NB] = { 0 };
-	AVPacket pkt1, *pkt = &pkt1;
+	AVPacket *pkt =&player->audio_pkt;
 	int eof = 0;
+
+
+	av_init_packet(pkt);
 
 	AP_EVENT(player, EVENT_THREAD_START, 0, 0);
 
@@ -287,8 +483,8 @@ int read_thread(player_t *player) {
 			}
 			else {
 				if (player->audio_stream >= 0) {
-					packet_queue_flush(&player->audioq);
-					packet_queue_put(&player->audioq, &flush_pkt);
+					//TODO: packet_queue_flush(&player->audioq);
+					//packet_queue_put(&player->audioq, &flush_pkt);
 				}
 			}
 			if (player->callbacks.on_event)
@@ -300,13 +496,13 @@ int read_thread(player_t *player) {
 		/* if the queue are full, no need to read more */
 		//if (!infinite_buffer
 		//  && (player->audioq.size + player->videoq.size + player->subtitleq.size
-		if (!infinite_buffer
+/*		if (!infinite_buffer
 		        && (player->audioq.size > MAX_QUEUE_SIZE
 		                || ((player->audioq.size > MIN_AUDIOQ_SIZE
 		                        || player->audio_stream < 0)))) {
-			/* wait 10 ms */
+			 wait 10 ms
 			goto sleep;
-		}
+		}*/
 
 		if (eof) {
 			//log_trace("read_thread::eof");
@@ -317,10 +513,10 @@ int read_thread(player_t *player) {
 				pkt->data = NULL;
 				pkt->size = 0;
 				pkt->stream_index = player->audio_stream;
-				packet_queue_put(&player->audioq, pkt);
+				//packet_queue_put(&player->audioq, pkt);
 			}
 
-			if (player->audioq.size == 0) {
+/*			if (player->audioq.size == 0) {
 				log_trace("read_thread::player->audioq.size == 0");
 				if (player->looping) {
 					log_trace("read_thread::looping");
@@ -330,7 +526,8 @@ int read_thread(player_t *player) {
 				log_trace("going to fail with AVERROR_EOF");
 				ret = AVERROR_EOF;
 				goto fail;
-			}
+			}*/
+
 			goto sleep;
 		}
 
@@ -348,12 +545,11 @@ int read_thread(player_t *player) {
 		}
 
 		if (pkt->stream_index == player->audio_stream) {
-			packet_queue_put(&player->audioq, pkt);
-		}
-		else {
-			av_free_packet(pkt);
+			//TODO: packet_queue_put(&player->audioq, pkt);
+			audio_decode_frame(player);
 		}
 
+		av_free_packet(pkt);
 		continue;
 		sleep: usleep(1000);
 	}

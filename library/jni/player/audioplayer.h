@@ -71,7 +71,6 @@
 #define log_error(format, ...) if (AS_DEBUG_LEVEL & AS_DEBUG_ERROR)  _log(stderr,COLOR_ERROR_BEGIN"ERROR:" ,format, ## __VA_ARGS__)
 #endif //__ANDROID__
 
-#include "packet_queue.h"
 
 #define MAX_QUEUE_SIZE (15  * 1024)
 #define MIN_AUDIOQ_SIZE (20 * 16 * 1024)
@@ -105,7 +104,6 @@ typedef struct player_t {
 		audio_state_t last_paused;
 		pthread_mutex_t mutex;
 		pthread_t read_thread;
-		pthread_t play_thread;
 		int abort_request;
 		int seek_req;
 		int seek_flags;
@@ -119,7 +117,7 @@ typedef struct player_t {
 		double audio_clock;
 
 		AVStream *audio_st;
-		PacketQueue audioq;
+
 		//int audio_hw_buf_size;
 		uint8_t silence_buf[SDL_AUDIO_BUFFER_SIZE];
 		uint8_t *audio_buf;

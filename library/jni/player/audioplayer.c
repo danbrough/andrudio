@@ -30,7 +30,6 @@
 #include <libavutil/samplefmt.h>
 
 #include "audioplayer.h"
-#include "packet_queue.h"
 
 
 const inline char * ap_get_state_name(audio_state_t state) {
@@ -56,7 +55,6 @@ const inline char * ap_get_state_name(audio_state_t state) {
 	}
 }
 
-extern void play_thread(player_t *player);
 
 int change_state(player_t *player, audio_state_t state) {
 	int ret = -1;
@@ -183,7 +181,6 @@ static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl)
 int ap_init() {
 	log_debug("ap_init()");
 
-	packet_queue_library_init();
 
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	av_log_set_callback(log_callback_help);
@@ -236,13 +233,6 @@ void ap_reset(player_t *player) {
 
 	player->abort_request = 1;
 
-//	if (player->play_thread_alive) {
-	if (player->play_thread) {
-		log_trace("ap_reset::waiting for the play thread");
-		pthread_join(player->play_thread, NULL);
-		log_trace("ap_reset::play thread done");
-	}
-	player->play_thread = 0;
 
 	/*
 	 }
@@ -377,14 +367,7 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 
 int ap_start(player_t *player) {
 	log_info("ap_start()");
-	int ret = 0;
-	BEGIN_LOCK(player);
-	ret = change_state(player, STATE_STARTED);
-	if (ret == 0) {
-		pthread_create(&player->play_thread, NULL, (void*) play_thread, player);
-	}
-	END_LOCK(player);
-	return ret;
+	return change_state(player, STATE_STARTED);
 }
 
 int ap_stop(player_t *player) {
