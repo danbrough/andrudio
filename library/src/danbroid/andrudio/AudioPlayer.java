@@ -237,6 +237,10 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     return LibAndrudio.isLooping(handle);
   }
 
+  public boolean isPaused() {
+    return state == State.PAUSED;
+  }
+
   public void getMetaData(Map<String, String> map) {
     LibAndrudio.getMetaData(handle, map);
   }
