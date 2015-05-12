@@ -36,6 +36,16 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, PAUSED, COMPLETED, STOPPED, ERROR, END;
   }
 
+  public interface AudioPlayerListener {
+    void onStateChange(AudioPlayer player, State old, State state);
+
+    void onSeekComplete(AudioPlayer player);
+
+    void onPeriodicNotification(AudioPlayer player);
+  }
+
+  private AudioPlayerListener listener;
+
   private static final State[] stateValues;
   static {
     stateValues = State.values();
@@ -47,10 +57,14 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     LibAndrudio.setListener(handle, this);
   }
 
-  protected void onStateChange(State old_state, State state) {
-    Log.v(TAG, "onStateChange() " + old_state + " -> " + state);
+  protected void onStateChange(State oldState, State state) {
+    Log.v(TAG, "onStateChange() " + oldState + " -> " + state);
     this.state = state;
-    if (old_state == State.STARTED && state != State.PAUSED
+
+    if (listener != null)
+      listener.onStateChange(this, oldState, state);
+
+    if (oldState == State.STARTED && state != State.PAUSED
         && state != State.COMPLETED) {
       Log.v(TAG, "audioTrack.stop()");
       audioTrack.stop();
@@ -68,6 +82,14 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
         audioTrack.stop();
       }
     }
+  }
+
+  public void setListener(AudioPlayerListener listener) {
+    this.listener = listener;
+  }
+
+  public State getState() {
+    return state;
   }
 
   /**
@@ -97,7 +119,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
   }
 
   public synchronized void release() {
-    Log.i(TAG, "release()");
+    Log.d(TAG, "release()");
     if (handle != 0) {
       LibAndrudio.destroy(handle);
       handle = 0;
@@ -147,7 +169,6 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   @Override
   public final void handleEvent(int what, int arg1, int arg2) {
-    // handler.sendMessage(handler.obtainMessage(what, arg1, arg2));
     switch (what) {
     case EVENT_SEEK_COMPLETE:
       onSeekComplete();
@@ -202,6 +223,8 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
         + " head position: " + track.getPlaybackHeadPosition()
         + " playback rate: " + track.getPlaybackRate() + " duration: "
         + getDuration());
+    if (listener != null)
+      listener.onPeriodicNotification(this);
   }
 
   /**
@@ -227,6 +250,8 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   protected void onSeekComplete() {
     Log.v(TAG, "onSeekComplete()");
+    if (listener != null)
+      listener.onSeekComplete(this);
   }
 
   public void setDataSource(String url) {
@@ -239,6 +264,10 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   public boolean isPaused() {
     return state == State.PAUSED;
+  }
+
+  public boolean isStarted() {
+    return state == State.STARTED;
   }
 
   public void getMetaData(Map<String, String> map) {

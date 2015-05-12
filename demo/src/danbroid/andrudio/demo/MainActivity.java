@@ -17,6 +17,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import danbroid.andrudio.AudioPlayer;
+import danbroid.andrudio.AudioPlayer.AudioPlayerListener;
+import danbroid.andrudio.AudioPlayer.State;
 import danbroid.andrudio.LibAndrudio;
 
 public class MainActivity extends AppCompatActivity {
@@ -143,40 +145,41 @@ public class MainActivity extends AppCompatActivity {
     log.info("onStart();");
     super.onStart();
 
-    player = new AudioPlayer() {
+    player = new AudioPlayer();
+    player.setListener(new AudioPlayerListener() {
+
       @Override
-      public void onPeriodicNotification(android.media.AudioTrack track) {
-        onUpdate();
+      public void onStateChange(AudioPlayer player, State old, State state) {
+        if (state == State.PREPARED) {
+          log.info("State.PREPARED;");
+          player.start();
+
+          final int duration = player.getDuration();
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              seekBar.setProgress(0);
+              if (duration > 0) {
+                seekBar.setEnabled(true);
+                seekBar.setMax(duration);
+              } else {
+                seekBar.setEnabled(false);
+              }
+            }
+          });
+        }
       }
 
       @Override
-      protected void onSeekComplete() {
-        super.onSeekComplete();
+      public void onSeekComplete(AudioPlayer player) {
         isSeeking = false;
       }
 
       @Override
-      protected void onPrepared() {
-        super.onPrepared();
-
-        log.info("onPrepared();");
-        start();
-
-        final int duration = player.getDuration();
-        runOnUiThread(new Runnable() {
-          @Override
-          public void run() {
-            seekBar.setProgress(0);
-            if (duration > 0) {
-              seekBar.setEnabled(true);
-              seekBar.setMax(duration);
-            } else {
-              seekBar.setEnabled(false);
-            }
-          }
-        });
+      public void onPeriodicNotification(AudioPlayer player) {
+        onUpdate();
       }
-    };
+    });
 
   }
 
@@ -202,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
 
     player.getMetaData(metadata);
     for (String key : metadata.keySet()) {
-      log.trace("metadata :{} -> {}", key, metadata.get(key));
+      log.trace("metadata: {}:\t{}", key, metadata.get(key));
     }
 
   }

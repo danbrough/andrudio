@@ -24,6 +24,7 @@ public class AndrudioMediaPlayer extends MediaPlayer {
 
   public AndrudioMediaPlayer() {
     player = new AudioPlayer();
+
   }
 
   @Override
