@@ -8,6 +8,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
+import danbroid.andrudio.AudioPlayer.State;
 
 /**
  * This is the third tier API that sits on top of {@link MediaPlayer} and serves
@@ -21,10 +22,41 @@ public class AndrudioMediaPlayer extends MediaPlayer {
   private static final String TAG = AndrudioMediaPlayer.class.getName();
 
   private final AudioPlayer player;
+  private OnPreparedListener preparedListener;
+
+  private OnSeekCompleteListener onSeekCompleteListener;
 
   public AndrudioMediaPlayer() {
-    player = new AudioPlayer();
+    super();
 
+    player = new AudioPlayer(new AudioPlayer.AudioPlayerListener() {
+      @Override
+      public void onStateChange(AudioPlayer player, State old, State state) {
+        if (state == State.PREPARED && preparedListener != null)
+          preparedListener.onPrepared(AndrudioMediaPlayer.this);
+      }
+
+      @Override
+      public void onSeekComplete(AudioPlayer player) {
+        if (onSeekCompleteListener != null)
+          onSeekCompleteListener.onSeekComplete(AndrudioMediaPlayer.this);
+      }
+
+      @Override
+      public void onPeriodicNotification(AudioPlayer player) {
+
+      }
+    });
+  }
+
+  @Override
+  public void setOnPreparedListener(OnPreparedListener listener) {
+    this.preparedListener = listener;
+  }
+
+  @Override
+  public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+    this.onSeekCompleteListener = listener;
   }
 
   @Override

@@ -52,9 +52,15 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
   }
 
   public AudioPlayer() {
+    this(null);
+  }
+
+  public AudioPlayer(AudioPlayerListener listener) {
     super();
     handle = LibAndrudio.create();
     LibAndrudio.setListener(handle, this);
+    if (listener != null)
+      setListener(listener);
   }
 
   protected void onStateChange(State oldState, State state) {
@@ -211,22 +217,6 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     onPeriodicNotification(audioTrack);
   }
 
-  @Override
-  public void onMarkerReached(AudioTrack track) {
-  }
-
-  @Override
-  public void onPeriodicNotification(AudioTrack track) {
-    if (state == State.PREPARING)
-      return;
-    Log.v(TAG, "onPeriodicNotification() position:" + getPosition()
-        + " head position: " + track.getPlaybackHeadPosition()
-        + " playback rate: " + track.getPlaybackRate() + " duration: "
-        + getDuration());
-    if (listener != null)
-      listener.onPeriodicNotification(this);
-  }
-
   /**
    * 
    * @return playback position in millis or -1 if track is invalid
@@ -272,5 +262,15 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
 
   public void getMetaData(Map<String, String> map) {
     LibAndrudio.getMetaData(handle, map);
+  }
+
+  @Override
+  public void onMarkerReached(AudioTrack track) {
+  }
+
+  @Override
+  public void onPeriodicNotification(AudioTrack track) {
+    if (listener != null)
+      listener.onPeriodicNotification(this);
   }
 }

@@ -8,3 +8,5 @@ library/notes
 **/.settings
 **/local.properties
 **/.checkstyle
+**.iml
+**/.idea

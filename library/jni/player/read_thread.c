@@ -22,7 +22,6 @@ static enum AVDiscard skip_loop_filter = AVDISCARD_DEFAULT;
 static int error_concealment = 3;
 //  "don't limit the input buffer size (useful with realtime streams)"
 
-
 static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
         [AVMEDIA_TYPE_VIDEO] = -1, [AVMEDIA_TYPE_SUBTITLE] = -1, };
 
@@ -164,7 +163,7 @@ static void stream_component_close(player_t *player, int stream_index) {
 /* decode one audio frame and returns its uncompressed size */
 static int audio_decode_frame(player_t *player) {
 	/*AVPacket *pkt_temp = &player->audio_pkt_temp;
-	*/
+	 */
 	AVPacket *pkt = &player->audio_pkt;
 	//log_info("audio_decode_frame()");
 	AVCodecContext *dec = player->audio_st->codec;
@@ -186,15 +185,14 @@ static int audio_decode_frame(player_t *player) {
 					return AVERROR(ENOMEM);
 			}
 
-
-			len1 = avcodec_decode_audio4(dec, player->frame, &got_frame,
-					pkt);
+			len1 = avcodec_decode_audio4(dec, player->frame, &got_frame, pkt);
 			if (len1 < 0) {
 				/* if error, we skip the frame */
-				ap_print_error("avcodec_decode_audio4()",len1);
+				ap_print_error("avcodec_decode_audio4()", len1);
 				pkt->size = 0;
 				break;
-			} else {
+			}
+			else {
 				//log_trace("avcodec_decode_audio4 returned %d",len1);
 			}
 
@@ -203,11 +201,11 @@ static int audio_decode_frame(player_t *player) {
 
 			if (!got_frame) {
 				/* stop sending empty packets if the decoder is finished */
-			/*	if (!pkt->data
-				        && (dec->codec->capabilities & CODEC_CAP_DELAY)){
-					return 0;
-				}
-*/
+				/*	if (!pkt->data
+				 && (dec->codec->capabilities & CODEC_CAP_DELAY)){
+				 return 0;
+				 }
+				 */
 				return 0;
 
 			}
@@ -293,7 +291,7 @@ static int audio_decode_frame(player_t *player) {
 
 			/* if no pts, then compute it */
 			/*pts = player->audio_clock;
-			*pts_ptr = pts;*/
+			 *pts_ptr = pts;*/
 			n = player->sdl_channels
 			        * av_get_bytes_per_sample(player->sdl_sample_fmt);
 			player->audio_clock += (double) data_size
@@ -304,8 +302,8 @@ static int audio_decode_frame(player_t *player) {
 				        * pkt->pts;
 			}
 
-			player->callbacks.on_play(player,(char*)player->audio_buf,data_size);
-
+			player->callbacks.on_play(player, (char*) player->audio_buf,
+			        data_size);
 
 #ifdef DEBUG
 			{
@@ -324,24 +322,21 @@ static int audio_decode_frame(player_t *player) {
 			av_free_packet(pkt);
 		memset(pkt, 0, sizeof(*pkt));
 
-		if (player->state == STATE_PAUSED
-		        || player->abort_request) {
+		if (player->state == STATE_PAUSED || player->abort_request) {
 			log_trace("audio_decode_frame::exiting");
 			return -1;
 		}
 
-	/*	 read next packet
-		if ((new_packet = packet_queue_get(&player->audioq, pkt, 1)) < 0)
-			return -1;*/
+		/*	 read next packet
+		 if ((new_packet = packet_queue_get(&player->audioq, pkt, 1)) < 0)
+		 return -1;*/
 
-/*
-		if (pkt->data == flush_pkt.data) {
-			avcodec_flush_buffers(dec);
-			flush_complete = 0;
-		}
-*/
-
-
+		/*
+		 if (pkt->data == flush_pkt.data) {
+		 avcodec_flush_buffers(dec);
+		 flush_complete = 0;
+		 }
+		 */
 
 		/* if update the audio clock with the pts */
 		if (pkt->pts != AV_NOPTS_VALUE) {
@@ -349,6 +344,8 @@ static int audio_decode_frame(player_t *player) {
 			        * pkt->pts;
 		}
 	}
+
+	return 0;
 }
 
 /* this thread gets the stream from the disk or the network */
@@ -358,9 +355,8 @@ int read_thread(player_t *player) {
 	AVFormatContext *ic = NULL;
 	int err, i, ret;
 	int st_index[AVMEDIA_TYPE_NB] = { 0 };
-	AVPacket *pkt =&player->audio_pkt;
+	AVPacket *pkt = &player->audio_pkt;
 	int eof = 0;
-
 
 	av_init_packet(pkt);
 
@@ -389,11 +385,12 @@ int read_thread(player_t *player) {
 		goto fail;
 	}
 
+
 	player->ic = ic;
 
 	if (genpts)
 		ic->flags |= AVFMT_FLAG_GENPTS;
-
+	log_trace("read_thread::avformat_find_stream_info()");
 	err = avformat_find_stream_info(ic, NULL);
 	if (err < 0) {
 		ap_print_error("read_thread::avformat_find_stream_info failed", err);
@@ -417,6 +414,8 @@ int read_thread(player_t *player) {
 	if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
 		stream_component_open(player, st_index[AVMEDIA_TYPE_AUDIO]);
 	}
+
+	log_trace("read_thread::stream opened");
 
 	/*	ret = -1;
 	 if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
@@ -494,13 +493,13 @@ int read_thread(player_t *player) {
 		/* if the queue are full, no need to read more */
 		//if (!infinite_buffer
 		//  && (player->audioq.size + player->videoq.size + player->subtitleq.size
-/*		if (!infinite_buffer
-		        && (player->audioq.size > MAX_QUEUE_SIZE
-		                || ((player->audioq.size > MIN_AUDIOQ_SIZE
-		                        || player->audio_stream < 0)))) {
-			 wait 10 ms
-			goto sleep;
-		}*/
+		/*		if (!infinite_buffer
+		 && (player->audioq.size > MAX_QUEUE_SIZE
+		 || ((player->audioq.size > MIN_AUDIOQ_SIZE
+		 || player->audio_stream < 0)))) {
+		 wait 10 ms
+		 goto sleep;
+		 }*/
 
 		if (eof) {
 			//log_trace("read_thread::eof");
@@ -514,17 +513,17 @@ int read_thread(player_t *player) {
 				//packet_queue_put(&player->audioq, pkt);
 			}
 
-/*			if (player->audioq.size == 0) {
-				log_trace("read_thread::player->audioq.size == 0");
-				if (player->looping) {
-					log_trace("read_thread::looping");
-					ap_seek(player, 0, 0);
-					continue;
-				}
-				log_trace("going to fail with AVERROR_EOF");
-				ret = AVERROR_EOF;
-				goto fail;
-			}*/
+			/*			if (player->audioq.size == 0) {
+			 log_trace("read_thread::player->audioq.size == 0");
+			 if (player->looping) {
+			 log_trace("read_thread::looping");
+			 ap_seek(player, 0, 0);
+			 continue;
+			 }
+			 log_trace("going to fail with AVERROR_EOF");
+			 ret = AVERROR_EOF;
+			 goto fail;
+			 }*/
 
 			goto sleep;
 		}
@@ -533,7 +532,7 @@ int read_thread(player_t *player) {
 
 		if (ret < 0) {
 			ap_print_error("av_read_frame failed", ret);
-			if (ret == AVERROR_EOF || (ic->pb && ic->pb->eof_reached)){
+			if (ret == AVERROR_EOF || (ic->pb && ic->pb->eof_reached)) {
 				log_trace("eof == 1");
 				eof = 1;
 			}
