@@ -37,9 +37,8 @@ public class MainActivity extends AppCompatActivity {
   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
   private static void init_gingerbread() {
     log.warn("setting strict thread policy");
-    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-        .detectAll().penaltyLog().build();
-    StrictMode.setThreadPolicy(policy);
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+        .detectAll().penaltyLog().penaltyDialog().build());
   }
 
   private AudioPlayer player;
@@ -84,17 +83,29 @@ public class MainActivity extends AppCompatActivity {
     seekBar.setEnabled(false);
     seekBar.setProgress(0);
 
-    // 48khz ogg
+    // 48khz ogg (a test with an odd sample rate)
+    // this tune is driving me insane.
     addURL("http://h1.danbrough.org/media/tests/test48.ogg");
+
+    // audio/x-mpegurl
+    addURL("http://www.listenlive.eu/bbcradio1.m3u");
+
+    // this is the url from the contents of
+    // http://www.listenlive.eu/bbcradio1.m3u (audio/mpeg)
+    addURL("http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
 
     // music that matters
     addURL("http://live-aacplus-64.kexp.org/kexp64.aac");
 
+    // wellington student radio
     addURL("http://stream.radioactive.fm:8000/ractive");
+
     // wmav2 encoded asf stream
     addURL("mmsh://streaming.radionz.co.nz/national-mbr");
+
     // rtsp aac stream
     addURL("rtsp://radionz-wowza.streamguys.com/national/national.stream");
+
     // mp3 stream
     addURL("http://radionz-ice.streamguys.com/national.mp3");
     // audio/aacp

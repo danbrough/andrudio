@@ -26,7 +26,7 @@ export JNIDIR=$ROOT/jni/native/native
 
 if (( $FFMPEG )); then
   export LIBAV=$BUILD/ffmpeg.git
-  export TAG=n2.6.2
+  export TAG=n2.6.2  
 else
   export LIBAV=$BUILD/libav.git
   export TAG=v11.3

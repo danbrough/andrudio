@@ -107,7 +107,7 @@ int change_state(player_t *player, audio_state_t state) {
 void ap_print_error(const char* msg, int err) {
 	char buf[128];
 	if (av_strerror(err, buf, sizeof(buf)) == 0) {
-		log_error("%s: \"%s\"", msg, buf);
+		log_error("%s: code:%d \"%s\"", msg,err, buf);
 	}
 	else {
 		log_error("%s unknown error: %d", msg, err);

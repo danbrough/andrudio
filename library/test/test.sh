@@ -52,6 +52,6 @@ elif [ "$MEMCHECK" == "2" ]; then
 	WRAPPER="valgrind --leak-check=yes --leak-check=full --show-leak-kinds=all "
 fi
 
-$WRAPPER /tmp/playertest $URL
+$WRAPPER /tmp/playertest "$URL"
 
 

@@ -70,8 +70,7 @@ public class AudioPlayer implements LibAndrudio.AudioStreamListener,
     if (listener != null)
       listener.onStateChange(this, oldState, state);
 
-    if (oldState == State.STARTED && state != State.PAUSED
-        && state != State.COMPLETED) {
+    if (oldState == State.STARTED && state != State.PAUSED) {
       Log.v(TAG, "audioTrack.stop()");
       audioTrack.stop();
     } else if (state == State.STARTED) {

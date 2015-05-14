@@ -380,7 +380,7 @@ int read_thread(player_t *player) {
 	log_trace("read_thread::avformat_open_input() %s", player->url);
 	err = avformat_open_input(&ic, player->url, NULL, NULL);
 	if (err < 0) {
-		ap_print_error("read_thread::avformat_open_input failed", err);
+		ap_print_error("read_thread::avformat_open_input failed: %d", err);
 		ret = -1;
 		goto fail;
 	}
@@ -535,6 +535,7 @@ int read_thread(player_t *player) {
 			if (ret == AVERROR_EOF || (ic->pb && ic->pb->eof_reached)) {
 				log_trace("eof == 1");
 				eof = 1;
+				break;
 			}
 			if (ic->pb && ic->pb->error)
 				break;
