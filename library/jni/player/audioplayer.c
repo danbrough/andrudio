@@ -35,23 +35,23 @@
 const inline char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
 		case STATE_IDLE:
-			return "idle";
+			return "STATE_IDLE";
 		case STATE_INITIALIZED:
-			return "initialized";
+			return "STATE_INITIALIZED";
 		case STATE_STOPPED:
-			return "stopped";
+			return "STATE_STOPPED";
 		case STATE_PAUSED:
-			return "paused";
+			return "STATE_PAUSED";
 		case STATE_PREPARING:
-			return "preparing";
+			return "STATE_PREPARING";
 		case STATE_PREPARED:
-			return "prepared";
+			return "STATE_PREPARED";
 		case STATE_STARTED:
-			return "started";
+			return "STATE_STARTED";
 		case STATE_COMPLETED:
-			return "completed";
+			return "STATE_COMPLETED";
 		default:
-			return "illegal state";
+			return "STATE_INVALID";
 	}
 }
 

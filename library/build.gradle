@@ -1,6 +1,5 @@
 buildscript {
     repositories { mavenCentral() }
-
     dependencies { classpath parent.GRADLE_PLUGIN }
 }
 

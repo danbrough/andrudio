@@ -8,50 +8,41 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
-import danbroid.andrudio.AudioPlayer.State;
 
 /**
- * This is the third tier API that sits on top of {@link MediaPlayer} and serves
- * as a drop in replacement for {@link MediaPlayer}.
- * TODO: Unfinished
- * 
- * @author dan
+ * This is a drop-in replacement for a {@link MediaPlayer} with limited
+ * functionality
  *
  */
 public class AndrudioMediaPlayer extends MediaPlayer {
   private static final String TAG = AndrudioMediaPlayer.class.getName();
 
-  private final AudioPlayer player;
-  private OnPreparedListener preparedListener;
+  private final AndroidAudioPlayer player;
+  private OnPreparedListener onPreparedListener;
 
   private OnSeekCompleteListener onSeekCompleteListener;
 
   public AndrudioMediaPlayer() {
     super();
 
-    player = new AudioPlayer(new AudioPlayer.AudioPlayerListener() {
+    player = new AndroidAudioPlayer() {
       @Override
-      public void onStateChange(AudioPlayer player, State old, State state) {
-        if (state == State.PREPARED && preparedListener != null)
-          preparedListener.onPrepared(AndrudioMediaPlayer.this);
-      }
-
-      @Override
-      public void onSeekComplete(AudioPlayer player) {
+      protected void onSeekComplete() {
         if (onSeekCompleteListener != null)
           onSeekCompleteListener.onSeekComplete(AndrudioMediaPlayer.this);
       }
 
       @Override
-      public void onPeriodicNotification(AudioPlayer player) {
-
+      protected void onPrepared() {
+        if (onPreparedListener != null)
+          onPreparedListener.onPrepared(AndrudioMediaPlayer.this);
       }
-    });
+    };
   }
 
   @Override
   public void setOnPreparedListener(OnPreparedListener listener) {
-    this.preparedListener = listener;
+    this.onPreparedListener = listener;
   }
 
   @Override

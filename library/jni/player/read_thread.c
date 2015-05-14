@@ -123,8 +123,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	//packet_queue_init(&player->audioq);
 
 	end: av_dict_free(&opts);
-	if (ret == 0)
-		change_state(player, STATE_PREPARED);
+
 	return ret;
 }
 
@@ -385,7 +384,6 @@ int read_thread(player_t *player) {
 		goto fail;
 	}
 
-
 	player->ic = ic;
 
 	if (genpts)
@@ -439,6 +437,14 @@ int read_thread(player_t *player) {
 	while ((entry = av_dict_get(ic->metadata, "", entry,
 	AV_DICT_IGNORE_SUFFIX)))
 		log_trace("metadata:\t%s:%s", entry->key, entry->value);
+
+	change_state(player, STATE_PREPARED);
+
+	//hangout here until a state change occurs (like ap_start() being called)
+	while ((player->state == STATE_PREPARED || player->state == STATE_PAUSED)
+	        && !player->abort_request) {
+		usleep(100);
+	}
 
 	log_trace("read_thread::beginning read loop");
 	while (!player->abort_request) {

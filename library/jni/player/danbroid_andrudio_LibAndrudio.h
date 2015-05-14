@@ -26,7 +26,7 @@ JNIEXPORT jlong JNICALL Java_danbroid_andrudio_LibAndrudio__1create
 /*
  * Class:     danbroid_andrudio_LibAndrudio
  * Method:    setListener
- * Signature: (JLdanbroid/andrudio/LibAndrudio/AudioStreamListener;)V
+ * Signature: (JLdanbroid/andrudio/LibAndrudio/NativeCallbacks;)V
  */
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setListener
   (JNIEnv *, jclass, jlong, jobject);

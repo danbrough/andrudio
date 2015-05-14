@@ -8,14 +8,13 @@
 typedef struct fields_t {
 	jclass class_audio_stream;
 	jmethodID prepareAudio;
-	jmethodID writeAudio;
+	jmethodID writePCM;
 	jmethodID onStateChanged;
 	jmethodID handleEvent;
 } fields_t;
 
 typedef struct _JavaInfo {
 	jobject listener;
-	jobject audioTrack;
 	jbyteArray buffer;
 	int size;
 } JavaInfo;
@@ -68,15 +67,13 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_initializeLibrary(
 	fields.class_audio_stream = listenerCls;
 
 	fields.prepareAudio = (*env)->GetMethodID(env, listenerCls, "prepareAudio",
-	        "(III)Landroid/media/AudioTrack;");
+	        "(III)V");
 
 	fields.handleEvent = (*env)->GetMethodID(env, listenerCls, "handleEvent",
 	        "(III)V");
 
-	jclass audioTrackClass = (*env)->FindClass(env, "android/media/AudioTrack");
-	if (audioTrackClass)
-		fields.writeAudio = (*env)->GetMethodID(env, audioTrackClass, "write",
-		        "([BII)I");
+	fields.writePCM = (*env)->GetMethodID(env, listenerCls, "writePCM",
+	        "([BII)V");
 
 	return ap_init();
 }
@@ -102,10 +99,9 @@ static void callback_on_play(player_t *player, char *data, int len) {
 
 	(*env)->SetByteArrayRegion(env, info->buffer, 0, len, (jbyte*) data);
 
-	if (info->audioTrack) {
-		(*env)->CallIntMethod(env, info->audioTrack, fields.writeAudio,
-		        info->buffer, 0, len);
-	}
+	(*env)->CallVoidMethod(env, info->listener, fields.writePCM, info->buffer,
+	        0, len);
+
 }
 
 static int callback_prepare_audio(player_t *player, int sampleFormat,
@@ -115,16 +111,8 @@ static int callback_prepare_audio(player_t *player, int sampleFormat,
 
 	JavaInfo *info = (JavaInfo*) player->extra;
 
-	if (info->audioTrack) {
-		(*env)->DeleteGlobalRef(env, info->audioTrack);
-	}
-
-	info->audioTrack = (*env)->CallObjectMethod(env, info->listener,
-	        fields.prepareAudio, sampleFormat, sampleRate, channelFormat);
-
-	info->audioTrack = (*env)->NewGlobalRef(env, info->audioTrack);
-
-	jclass audioTrackClass = (*env)->FindClass(env, "android/media/AudioTrack");
+	(*env)->CallVoidMethod(env, info->listener, fields.prepareAudio,
+	        sampleFormat, sampleRate, channelFormat);
 
 	return 0;
 }
@@ -138,7 +126,7 @@ static void callback_on_event(struct player_t *player, audio_event_t event,
 		case EVENT_THREAD_START:
 			//nothing to do here
 			log_trace("callback_on_event::EVENT_THREAD_START %"PRIX32,
-			        (uint32_t )pthread_self());
+					(uint32_t )pthread_self());
 			break;
 		default:
 			assert(info);
@@ -198,12 +186,6 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_destroy(JNIEnv *env,
 			log_trace(
 			        "Java_danbroid_andrudio_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->listener);");
 			(*env)->DeleteGlobalRef(env, info->listener);
-		}
-
-		if (info->audioTrack) {
-			log_trace(
-			        "Java_danbroid_andrudio_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->audioTrack)");
-			(*env)->DeleteGlobalRef(env, info->audioTrack);
 		}
 	}
 
@@ -390,19 +372,6 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
 	return 0;
 }
 
-JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_audioPrepared(
-        JNIEnv *env, jclass cls, jlong handle, jobject jaudioTrack,
-        jint sampleFormat, jint sampleRate, jint channelFormat) {
-
-	player_t* player = JLONG_TO_PLAYER(handle);
-	if (!player) {
-		log_error("invalid handle");
-		return;
-	}
-
-	JavaInfo *info = (JavaInfo*) player->extra;
-	info->audioTrack = (*env)->NewGlobalRef(env, jaudioTrack);
-}
 
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus(
         JNIEnv *env, jclass cls, jlong handle) {
@@ -429,7 +398,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData(
 	        "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 	AVDictionaryEntry *entry = NULL;
 	while ((entry = av_dict_get(player->ic->metadata, "", entry,
-	AV_DICT_IGNORE_SUFFIX))) {
+	        AV_DICT_IGNORE_SUFFIX))) {
 		//log_trace("metadata:\t%s:%s", entry->key, entry->value);
 		jstring key = (*env)->NewStringUTF(env, entry->key);
 		jstring value = (*env)->NewStringUTF(env, entry->value);

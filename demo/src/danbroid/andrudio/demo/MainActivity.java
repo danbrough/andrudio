@@ -10,15 +10,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
-import danbroid.andrudio.AudioPlayer;
-import danbroid.andrudio.AudioPlayer.AudioPlayerListener;
-import danbroid.andrudio.AudioPlayer.State;
+import danbroid.andrudio.AndroidAudioPlayer;
 import danbroid.andrudio.LibAndrudio;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         .detectAll().penaltyLog().penaltyDialog().build());
   }
 
-  private AudioPlayer player;
+  private AndroidAudioPlayer player;
   private ViewGroup buttons;
   private SeekBar seekBar;
   private boolean isSeeking = false;
@@ -80,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         }
       }
     });
+
     seekBar.setEnabled(false);
     seekBar.setProgress(0);
 
@@ -155,53 +152,28 @@ public class MainActivity extends AppCompatActivity {
   protected void onStart() {
     log.info("onStart();");
     super.onStart();
+    if (player != null)
+      player.release();
 
-    player = new AudioPlayer();
-    player.setListener(new AudioPlayerListener() {
-
+    player = new AndroidAudioPlayer() {
       @Override
-      public void onStateChange(AudioPlayer player, State old, State state) {
-        if (state == State.PREPARED) {
-          log.info("State.PREPARED;");
-          player.start();
-
-          final int duration = player.getDuration();
-          runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              seekBar.setProgress(0);
-              if (duration > 0) {
-                seekBar.setEnabled(true);
-                seekBar.setMax(duration);
-              } else {
-                seekBar.setEnabled(false);
-              }
-            }
-          });
-        }
+      protected void onSeekComplete() {
       }
 
       @Override
-      public void onSeekComplete(AudioPlayer player) {
-        isSeeking = false;
+      protected void onStatusUpdate() {
+        MainActivity.this.onStatusUpdate();
       }
-
-      @Override
-      public void onPeriodicNotification(AudioPlayer player) {
-        onUpdate();
-      }
-    });
+    };
 
   }
 
   private final HashMap<String, String> metadata = new HashMap<String, String>();
 
-  private void onUpdate() {
+  private void onStatusUpdate() {
     final int duration = player.getDuration();
     final int position = player.getPosition();
-    log.trace(position + ":" + duration);
-
-    // player.printStatus();
+    log.trace("onStatusUpdate():" + duration);
 
     if (isSeeking) {
       log.trace("isSeeking .. wont update seekbar");
@@ -226,25 +198,8 @@ public class MainActivity extends AppCompatActivity {
     log.info("onStop();");
     super.onStop();
     player.release();
+    player = null;
     System.gc();
   }
 
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.main, menu);
-    return true;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
-    int id = item.getItemId();
-    if (id == R.id.action_settings) {
-      return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
 }

@@ -87,8 +87,9 @@ static void on_event(player_t *player, audio_event_t event, int arg1, int arg2) 
 			log_trace("on_event::STATE_CHANGE() %s->%s",
 			        ap_get_state_name(old_state), ap_get_state_name(state));
 			if (state == STATE_PREPARED) {
-				log_trace("on_state_change::starting the stream automatically");
+				log_warn("on_state_change::starting the stream automatically");
 				ap_start(player);
+
 			}
 			else if (state == STATE_STARTED) {
 				log_trace(
@@ -334,6 +335,7 @@ int main(int argc, char **argv) {
 	callbacks.on_play = on_play;
 	callbacks.on_prepare = on_prepare;
 	callbacks.on_event = on_event;
+
 	player_t* player = ap_create(callbacks);
 	global_player = player;
 	ap_set_datasource(player, url);

@@ -2,34 +2,42 @@ package danbroid.andrudio;
 
 import java.util.Map;
 
-import android.media.AudioTrack;
-
 /**
  * This is the low-level interface to the native code and comprises the entry
- * points
- * of all native code used.
+ * points of all native code used.
  * 
- * @author dan
- *
  */
 public class LibAndrudio {
 
   /**
-   * Callback interface for the native code
-   * 
-   * @author dan
-   *
+   * Callback interface for the native code.
+   * The native code calls these java methods only.
    */
-  public interface AudioStreamListener {
+  public interface NativeCallbacks {
 
     public static final int EVENT_THREAD_START = 1;
     public static final int EVENT_STATE_CHANGE = 2;
     public static final int EVENT_SEEK_COMPLETE = 3;
 
-    AudioTrack prepareAudio(int sampleFormat, int sampleRateInHZ,
-        int channelConfig);
+    /**
+     * Initialise the audio output
+     * 
+     * @param sampleFormat
+     * @param sampleRateInHZ
+     * @param channelConfig
+     */
+    void prepareAudio(int sampleFormat, int sampleRateInHZ, int channelConfig);
 
     void handleEvent(int what, int arg1, int arg2);
+
+    /**
+     * Play some PCM data
+     * 
+     * @param data
+     * @param offset
+     * @param length
+     */
+    void writePCM(byte data[], int offset, int length);
   }
 
   private static boolean initialized = false;
@@ -37,16 +45,16 @@ public class LibAndrudio {
   public static void initialize() {
     String libs[] = { "avutil", "avresample", "avcodec", "avformat", "andrudio" };
 
-    for (String lib : libs) {
-      System.loadLibrary(lib);
+    for (int i = 0; i < libs.length; i++) {
+      System.loadLibrary(libs[i]);
     }
 
-    initializeLibrary(AudioStreamListener.class);
+    initializeLibrary(NativeCallbacks.class);
     initialized = true;
   }
 
   private static native int initializeLibrary(
-      Class<AudioStreamListener> listenerClass);
+      Class<NativeCallbacks> listenerClass);
 
   public static long create() {
     if (!initialized) {
@@ -60,8 +68,7 @@ public class LibAndrudio {
 
   private static native long _create();
 
-  public static native void setListener(long handle,
-      AudioStreamListener listener);
+  public static native void setListener(long handle, NativeCallbacks listener);
 
   public static native void destroy(long handle);
 
