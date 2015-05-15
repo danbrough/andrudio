@@ -105,6 +105,11 @@ public class AndrudioMediaPlayer extends MediaPlayer {
   }
 
   @Override
+  public boolean isPlaying() {
+    return player.isStarted();
+  }
+
+  @Override
   public int getCurrentPosition() {
     return player.getPosition();
   }

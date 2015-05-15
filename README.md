@@ -2,6 +2,7 @@
 Andrudio Audio Player
 =================
 A LibAV/FFMPEG based drop-in replacement for the android [MediaPlayer](http://developer.android.com/reference/android/media/MediaPlayer.html)
+for use in audio only applications.
     
     git clone git@github.com:danbrough/andrudio
     cd andrudio
@@ -9,7 +10,7 @@ A LibAV/FFMPEG based drop-in replacement for the android [MediaPlayer](http://de
     gradle build
 
 You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
-The gradle build scripts are for gradle 2.3.
+The gradle build scripts are for gradle 2.4.
 
 For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to go.
 
@@ -22,8 +23,7 @@ To use libav instead of ffmpeg set `FFMPEG := 0` in `library/jni/Android.mk`.
 Status
 ------
 
-Basics are all working.
-Some nasty bugs leading to lockups.
+Very much a work in progress.
 
 
 
