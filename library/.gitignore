@@ -1,6 +1,7 @@
 /build_native/build
 /build_native/libav.git
 /build_native/ffmpeg.git
+/build_native/openssl.git
 /player
 /build
 /jni/native/native

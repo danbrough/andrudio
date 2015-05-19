@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         log.debug("player.seekTo() {}", seekProgress);
         player.seekTo(seekProgress);
+        isSeeking = false;
       }
 
       @Override
@@ -161,6 +162,26 @@ public class MainActivity extends AppCompatActivity {
       }
 
       @Override
+      protected void onPrepared() {
+        super.onPrepared();
+
+        runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            int duration = getDuration();
+            if (duration <= 0) {
+              seekBar.setEnabled(false);
+              seekBar.setProgress(0);
+            } else {
+              seekBar.setMax(duration);
+              seekBar.setProgress(getPosition());
+              seekBar.setEnabled(true);
+            }
+          }
+        });
+      }
+
+      @Override
       protected void onStatusUpdate() {
         MainActivity.this.onStatusUpdate();
       }
@@ -173,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
   private void onStatusUpdate() {
     final int duration = player.getDuration();
     final int position = player.getPosition();
-    log.trace("onStatusUpdate():" + duration);
+    log.trace("onStatusUpdate():" + position + ":" + duration);
 
     if (isSeeking) {
       log.trace("isSeeking .. wont update seekbar");

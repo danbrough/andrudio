@@ -6,7 +6,8 @@ LOCAL_MODULE := libandrudio
 LOCAL_SRC_FILES := danbroid_andrudio_LibAndrudio.c audioplayer.c  read_thread.c 
 
 
-LOCAL_SHARED_LIBRARIES := libavresample libavcodec libavformat libavutil
+LOCAL_SHARED_LIBRARIES := libavresample libavcodec libavformat libavutil 
+LOCAL_STATIC_LIBRARIES := libcrypto libssl
 
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../libav/libav/$(TARGET_ARCH_ABI)/include

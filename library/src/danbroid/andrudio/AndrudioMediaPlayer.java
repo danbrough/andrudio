@@ -38,6 +38,7 @@ public class AndrudioMediaPlayer extends MediaPlayer {
           onPreparedListener.onPrepared(AndrudioMediaPlayer.this);
       }
     };
+    player.setStatusUpdateInterval(0);
   }
 
   @Override
@@ -101,22 +102,22 @@ public class AndrudioMediaPlayer extends MediaPlayer {
 
   @Override
   public boolean isLooping() {
-    return player.isLooping();
+    return player == null ? false : player.isLooping();
   }
 
   @Override
   public boolean isPlaying() {
-    return player.isStarted();
+    return player == null ? false : player.isStarted();
   }
 
   @Override
   public int getCurrentPosition() {
-    return player.getPosition();
+    return player == null ? 0 : player.getPosition();
   }
 
   @Override
   public int getDuration() {
-    return player.getDuration();
+    return player == null ? 0 : player.getDuration();
   }
 
   @Override

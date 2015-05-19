@@ -116,15 +116,8 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
   }
 
   @Override
-  protected void onCompleted() {
-    if (audioTrack != null) {
-      Log.v(TAG, "audioTrack.stop()");
-      audioTrack.stop();
-    }
-  }
-
-  @Override
   protected void onPaused() {
+    super.onPaused();
     if (audioTrack != null) {
       Log.v(TAG, "audioTrack.pause()");
       audioTrack.pause();
@@ -133,9 +126,19 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   protected void onStarted() {
+    super.onStarted();
     if (audioTrack != null) {
       Log.v(TAG, "audioTrack.play()");
       audioTrack.play();
+    }
+  }
+
+  @Override
+  protected void onStopped() {
+    super.onStopped();
+    if (audioTrack != null) {
+      Log.v(TAG, "audioTrack.stop()");
+      audioTrack.stop();
     }
   }
 

@@ -565,8 +565,7 @@ int read_thread(player_t *player) {
 	stream_component_close(player, player->audio_stream);
 
 	BEGIN_LOCK(player);
-	if (player->state == STATE_STARTED)
-		change_state(player, STATE_COMPLETED);
+	change_state(player, STATE_COMPLETED);
 	END_LOCK(player);
 
 	log_trace("read_thread::done returning %d", ret);

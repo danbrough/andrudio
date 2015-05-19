@@ -41,7 +41,7 @@ public abstract class AbstractAudioPlayer implements
     Log.v(TAG, "onStateChange() " + oldState + " -> " + state);
     this.state = state;
 
-    if (oldState == State.STARTED && state != State.PAUSED) {
+    if (state == State.STOPPED) {
       onStopped();
     } else if (state == State.STARTED) {
       onStarted();
@@ -140,7 +140,8 @@ public abstract class AbstractAudioPlayer implements
   }
 
   protected void onCompleted() {
-    Log.v(TAG, "onCompleted()");
+    Log.v(TAG, "onCompleted() .. calling stop()");
+    stop();
   }
 
   protected void onPaused() {
