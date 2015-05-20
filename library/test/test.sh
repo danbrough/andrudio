@@ -10,13 +10,17 @@
 
 cd `dirname $0` 
 TEST_ROOT=`pwd`
-cd ..
-source env.sh
 
+export ANDROID_NDK=/tmp/notneeded
+cd .. && . env.sh
+
+log "this test program will require libao to be installed"
 if (( $FFMPEG )); then
 export BUILD=$TEST_ROOT/ffmpeg
+log compiling ffmpeg
 else
 export BUILD=$TEST_ROOT/libav
+log compiling libav
 fi
 
 if [ ! -d $BUILD ]; then   
@@ -54,6 +58,7 @@ if [ "$MEMCHECK" == "1" ]; then
 elif [ "$MEMCHECK" == "2" ]; then
 	WRAPPER="valgrind --leak-check=yes --leak-check=full --show-leak-kinds=all "
 fi
+export LD_LIBRARY_PATH=$BUILD/lib
 
 $WRAPPER /tmp/playertest "$URL"
 
