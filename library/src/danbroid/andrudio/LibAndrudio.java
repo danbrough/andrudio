@@ -43,8 +43,7 @@ public class LibAndrudio {
   private static boolean initialized = false;
 
   public static void initialize() {
-    // System.load("libcrypto.so.1.0.0");
-    // System.load("libssl.so.1.0.0");
+
     String libs[] = { "crypto", "ssl", "avutil", "avresample", "avcodec",
         "avformat", "andrudio" };
 

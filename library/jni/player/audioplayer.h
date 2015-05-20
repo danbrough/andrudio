@@ -103,6 +103,7 @@ typedef struct player_t {
 		audio_state_t state;
 		audio_state_t last_paused;
 		pthread_mutex_t mutex;
+		pthread_cond_t cond_state_change;
 		pthread_t read_thread;
 		int abort_request;
 		int seek_req;

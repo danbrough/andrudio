@@ -45,7 +45,6 @@ export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
 
 source ../common_flags.sh
 
-
 ./configure $FLAGS --extra-cflags="$ECFLAGS" --extra-ldflags="$ELDFLAGS" --prefix="$DEST" | tee $DEST/configuration.txt
 [ $PIPESTATUS == 0 ] || exit 1
 cat $DEST/configuration.txt

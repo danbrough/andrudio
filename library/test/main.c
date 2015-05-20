@@ -87,8 +87,8 @@ static void on_event(player_t *player, audio_event_t event, int arg1, int arg2) 
 			log_trace("on_event::STATE_CHANGE() %s->%s",
 			        ap_get_state_name(old_state), ap_get_state_name(state));
 			if (state == STATE_PREPARED) {
-				log_warn("on_state_change::starting the stream automatically");
-				ap_start(player);
+				//log_warn("on_state_change::starting the stream automatically");
+				//ap_start(player);
 
 			}
 			else if (state == STATE_STARTED) {
@@ -244,6 +244,10 @@ static void event_loop(player_t *player) {
 			case 'm':
 				ap_print_metadata(player);
 				break;
+			case 'l':
+				player->looping = !player->looping;
+				log_info("player->looping == %s", (player->looping ? "true" : "false"));
+				break;
 			case 'o':
 				ap_seek(player, 60000, 0);
 				break;
@@ -295,6 +299,7 @@ log_error("invalid key: %"PRIu16 ":%c", c, c);
 				log_info("z:\tseek to start");
 				log_info("m:\tprint metadata");
 				log_info("o:\tseek to one minute");
+				log_info("l:\ttoggle loop mode");
 				log_info("right arrow:\tseek +10 seconds");
 				log_info("left arrow:\tseek -10 seconds");
 				log_info(
@@ -337,6 +342,7 @@ int main(int argc, char **argv) {
 	callbacks.on_event = on_event;
 
 	player_t* player = ap_create(callbacks);
+
 	global_player = player;
 	ap_set_datasource(player, url);
 	ap_prepare_async(player);
