@@ -7,13 +7,16 @@
 # see: https://libav.org/ and http://xiph.org/ao/
 ###########################################################################
 
-cd `dirname $0` && cd ..
+
+cd `dirname $0` 
+TEST_ROOT=`pwd`
+cd ..
 source env.sh
 
 if (( $FFMPEG )); then
-export BUILD=$BUILD/build/ffmpeg
+export BUILD=$TEST_ROOT/ffmpeg
 else
-export BUILD=$BUILD/build/libav
+export BUILD=$TEST_ROOT/libav
 fi
 
 if [ ! -d $BUILD ]; then   

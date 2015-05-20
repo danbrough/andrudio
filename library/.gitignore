@@ -7,3 +7,5 @@
 /jni/native/native
 /Test
 /libs
+/test/libav
+/test/ffmpeg

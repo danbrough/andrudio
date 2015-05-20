@@ -24,6 +24,7 @@ FLAGS="$FLAGS --enable-small --enable-runtime-cpudetect"
 FLAGS="$FLAGS --extra-ldexeflags=-pie" 
 
 if (( $SSL )); then
+log adding ssl support
 FLAGS="$FLAGS --enable-openssl"
 fi
 
