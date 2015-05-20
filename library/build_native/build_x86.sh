@@ -2,7 +2,7 @@
 
 log building x86
 
-#setup_source
+setup_source
 cd $BUILD
 
 # Detect OS
@@ -17,24 +17,6 @@ fi
 
 CROSS_PREFIX=i686-linux-android-
 ABI="x86"
-
-export OPENSSL_BUILD=$ROOT/jni/native/openssl/$ABI
-if (( $SSL )); then
-  log should build ssl
-  cd $OPENSSL
-  export ANDROID_NDK_ROOT="$NDK" 
-  . ../setenv-android.sh
-  perl -pi -e 's/install: all install_docs install_sw/install: install_docs install_sw/g' Makefile.org || exit 1
-  
-  rm -rf $OPENSSL_BUILD && mkdir -p $OPENSSL_BUILD 2> /dev/null
-  ./config shared no-ssl2 no-ssl3 no-comp no-hw no-engine --openssldir=$OPENSSL_BUILD || exit 1
-  log building openssl
-  make depend > /dev/null || exit 1
-  log doing a make all
-  make all || exit 1
-  log installing
-  make install  || exit 1
-fi
 
 ECFLAGS=""
 ELDFLAGS=""
@@ -51,6 +33,7 @@ export STRIP=${CROSS_PREFIX}strip
 DEST=$BUILD/build
 cd $LIBAV
 
+
 DEST="$DEST/$ABI"
 mkdir -p $DEST
 
@@ -59,13 +42,9 @@ export FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
 export FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
 
-export FLAGS="$FLAGS --enable-openssl"
-export ECFLAGS="$ECFLAGS -I$OPENSSL_BUILD/include -I$OPENSSL_BUILD/include/openssl   -Bstatic -lcrypto -lssl"
-export ELDFLAGS="$ELDFLAGS -L$OPENSSL_BUILD/lib "
-
 source ../common_flags.sh
 
-./configure $FLAGS --extra-cflags="$ECFLAGS"  --extra-ldflags="$ELDFLAGS" --prefix="$DEST"  | tee $DEST/configuration.txt
+./configure $FLAGS --extra-cflags="$ECFLAGS" --extra-ldflags="$ELDFLAGS" --prefix="$DEST"  | tee $DEST/configuration.txt
 [ $PIPESTATUS == 0 ] || exit 1
 cat $DEST/configuration.txt
 make clean

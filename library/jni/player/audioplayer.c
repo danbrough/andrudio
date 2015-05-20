@@ -31,7 +31,6 @@
 
 #include "audioplayer.h"
 
-
 const inline char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
 		case STATE_IDLE:
@@ -55,10 +54,9 @@ const inline char * ap_get_state_name(audio_state_t state) {
 	}
 }
 
-
 int change_state(player_t *player, audio_state_t state) {
 	int ret = -1;
-	log_trace("change_state() %s", ap_get_state_name(state));
+	log_trace("[%" PRIXPTR "] change_state() %s", pthread_self(),ap_get_state_name(state));
 	BEGIN_LOCK(player);
 	audio_state_t old_state = player->state;
 
@@ -92,22 +90,29 @@ int change_state(player_t *player, audio_state_t state) {
 
 	if (ret == SUCCESS) {
 		player->state = state;
-		if (player->callbacks.on_event)
+		log_trace("[%" PRIXPTR "] change_state::signaling state change to %s",pthread_self(),ap_get_state_name(state));
+		pthread_cond_broadcast(&player->cond_state_change);
+		if (player->callbacks.on_event){
+			log_trace("[%" PRIXPTR "] change_state::calling state change callback",pthread_self());
 			player->callbacks.on_event(player, EVENT_STATE_CHANGE, old_state,
 			        state);
+		}
 	}
 	else {
 		log_error("invalid state change: %s -> %s",
 		        ap_get_state_name(old_state), ap_get_state_name(state));
 	}
+
+
 	END_LOCK(player);
+	log_trace("change_state::finished with state: %s",ap_get_state_name(player->state));
 	return ret;
 }
 
 void ap_print_error(const char* msg, int err) {
 	char buf[128];
 	if (av_strerror(err, buf, sizeof(buf)) == 0) {
-		log_error("%s: code:%d \"%s\"", msg,err, buf);
+		log_error("%s: code:%d \"%s\"", msg, err, buf);
 	}
 	else {
 		log_error("%s unknown error: %d", msg, err);
@@ -181,7 +186,6 @@ static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl)
 int ap_init() {
 	log_debug("ap_init()");
 
-
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	av_log_set_callback(log_callback_help);
 	/* register all codecs, demux and protocols */
@@ -214,6 +218,10 @@ player_t* ap_create(player_callbacks_t callbacks) {
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&player->mutex, &attr);
 	pthread_mutexattr_destroy(&attr);
+
+
+	pthread_cond_init(&player->cond_state_change, NULL);
+
 	return player;
 }
 
@@ -224,6 +232,8 @@ void ap_delete(player_t* player) {
 
 	ap_reset(player);
 
+	pthread_cond_destroy(&player->cond_state_change);
+
 	pthread_mutex_destroy(&player->mutex);
 	free(player);
 }
@@ -233,33 +243,16 @@ void ap_reset(player_t *player) {
 
 	player->abort_request = 1;
 
-
-	/*
-	 }
-	 else {
-	 log_trace("ap_reset::play thread hasnt been started");
-	 }
-	 */
-
-	//if (player->read_thread_alive) {
-	if (player->read_thread) {
-		log_trace("ap_reset::waiting for the read thread..");
-		pthread_join(player->read_thread, NULL);
-		log_trace("ap_reset::read thread done");
+	if (player->state != STATE_IDLE) {
+		log_trace("ap_reset::changing state to idle");
+		change_state(player, STATE_IDLE);
 	}
-	/*	}
-	 else {
-	 log_trace("ap_reset::read thread hasnt been started");
-	 }*/
 
-	/*
-	 #if !CONFIG_AVFILTER
-	 if (player->img_convert_ctx)
-	 sws_freeContext(player->img_convert_ctx);
-	 #endif
-	 */
+	log_trace("ap_reset::signaled state change. waiting for read thread ...");
+	pthread_join(player->read_thread, NULL);
+	log_trace("ap_reset::read thread done. cleaning up..");
 
-	log_trace("ap_reset::cleaning up..");
+
 	if (player->avr) {
 		log_trace("ap_reset::avresample_free()");
 		avresample_free(&player->avr);
@@ -270,35 +263,12 @@ void ap_reset(player_t *player) {
 		av_frame_free(&player->frame);
 	}
 
-	log_trace("ap_reset::freeing packet");
-	av_free_packet(&player->audio_pkt);
-	//av_free_packet(&player->audio_pkt_temp);
-	/*
-
-	 if (player->audio_buf) {
-	 log_error("ap_reset::freeing audio buf");
-	 av_free(player->audio_buf);
-	 player->audio_buf = NULL;
-	 }
-	 if (player->audio_buf1) {
-	 log_error("ap_reset::freeing audio buf1");
-	 av_free(player->audio_buf1);
-	 player->audio_buf1 = NULL;
-	 }
-	 */
-
 	if (player->ic) {
 		log_trace("ap_reset::avformat_close_input()");
 		avformat_close_input(&player->ic);
 		avformat_free_context(player->ic);
 	}
 
-	end:
-
-	if (player->state != STATE_IDLE) {
-		log_trace("ap_reset::changing state to idle");
-		change_state(player, STATE_IDLE);
-	}
 	player->audio_stream = -1;
 	player->audio_st = NULL;
 	player->abort_request = 0;
@@ -306,6 +276,7 @@ void ap_reset(player_t *player) {
 	player->ic = NULL;
 	player->frame = NULL;
 	player->url[0] = 0;
+
 
 	log_trace("ap_reset::done");
 
@@ -361,8 +332,6 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 	end:
 	END_LOCK(player);
 }
-
-
 
 int ap_start(player_t *player) {
 	log_info("ap_start()");

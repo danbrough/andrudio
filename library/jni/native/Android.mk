@@ -26,7 +26,6 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 
 
-
 #include $(CLEAR_VARS)
 #LOCAL_MODULE := libswscale
 #LOCAL_SRC_FILES := libav/$(TARGET_ARCH_ABI)/lib/$(LOCAL_MODULE).so

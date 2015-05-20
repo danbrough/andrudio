@@ -27,6 +27,31 @@ static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
 
 extern int change_state(player_t *player, audio_state_t state);
 
+/*static audio_state_t wait_for_state_change(player_t *player) {
+ BEGIN_LOCK(player);
+ pthread_cond_wait(&player->cond_state_change, &player->mutex);
+ END_LOCK(player);
+ return player->state;
+ }*/
+
+static audio_state_t wait_for_state_change(player_t *player,
+        audio_state_t state) {
+	if (player->state != state)
+		return player->state;
+	BEGIN_LOCK(player);
+
+	if (player->state == state) {
+		log_trace("[%" PRIXPTR "] wait_for_state_change::current state: %s",
+		        pthread_self(), ap_get_state_name(player->state));
+		pthread_cond_wait(&player->cond_state_change, &player->mutex);
+		log_trace("[%" PRIXPTR "] wait_for_state_change::wait over: %s -> %s",
+		       pthread_self(), ap_get_state_name(state), ap_get_state_name(player->state));
+	}
+
+	END_LOCK(player);
+	return player->state;
+}
+
 /* open a given stream. Return 0 if OK */
 static int stream_component_open(player_t *player, int stream_index) {
 	AVFormatContext *ic = player->ic;
@@ -120,7 +145,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	player->audio_buf_index = 0;
 
 	memset(&player->audio_pkt, 0, sizeof(player->audio_pkt));
-	//packet_queue_init(&player->audioq);
+//packet_queue_init(&player->audioq);
 
 	end: av_dict_free(&opts);
 
@@ -138,9 +163,6 @@ static void stream_component_close(player_t *player, int stream_index) {
 	 goto end;*/
 	avctx = ic->streams[stream_index]->codec;
 
-	//packet_queue_abort(&player->audioq);
-
-	//packet_queue_end(&player->audioq);
 	av_free_packet(&player->audio_pkt);
 	if (player->avr) {
 		avresample_free(&player->avr);
@@ -153,7 +175,7 @@ static void stream_component_close(player_t *player, int stream_index) {
 	ic->streams[stream_index]->discard = AVDISCARD_ALL;
 	avcodec_close(avctx);
 
-	//end: ;
+//end: ;
 	END_LOCK(player);
 	log_debug("stream_component_close::done");
 
@@ -164,11 +186,9 @@ static int audio_decode_frame(player_t *player) {
 	/*AVPacket *pkt_temp = &player->audio_pkt_temp;
 	 */
 	AVPacket *pkt = &player->audio_pkt;
-	//log_info("audio_decode_frame()");
+//log_info("audio_decode_frame()");
 	AVCodecContext *dec = player->audio_st->codec;
 	int n, len1, data_size, got_frame;
-
-	int flush_complete = 0;
 
 	for (;;) {
 		/* NOTE: the audio packet can contain several frames */
@@ -350,7 +370,7 @@ static int audio_decode_frame(player_t *player) {
 /* this thread gets the stream from the disk or the network */
 int read_thread(player_t *player) {
 
-	log_debug("read_thread()");
+	log_debug("[%" PRIXPTR "] read_thread()", pthread_self());
 	AVFormatContext *ic = NULL;
 	int err, i, ret;
 	int st_index[AVMEDIA_TYPE_NB] = { 0 };
@@ -370,7 +390,7 @@ int read_thread(player_t *player) {
 	if (!ic) {
 		av_log(NULL, AV_LOG_FATAL, "Could not allocate context.\n");
 		ret = AVERROR(ENOMEM);
-		goto fail;
+		goto end;
 	}
 
 	ic->interrupt_callback.opaque = player;
@@ -381,7 +401,7 @@ int read_thread(player_t *player) {
 	if (err < 0) {
 		ap_print_error("read_thread::avformat_open_input failed: %d", err);
 		ret = -1;
-		goto fail;
+		goto end;
 	}
 
 	player->ic = ic;
@@ -393,7 +413,7 @@ int read_thread(player_t *player) {
 	if (err < 0) {
 		ap_print_error("read_thread::avformat_find_stream_info failed", err);
 		ret = err;
-		goto fail;
+		goto end;
 	}
 
 	if (ic->pb)
@@ -413,8 +433,6 @@ int read_thread(player_t *player) {
 		stream_component_open(player, st_index[AVMEDIA_TYPE_AUDIO]);
 	}
 
-	log_trace("read_thread::stream opened");
-
 	/*	ret = -1;
 	 if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
 	 ret = stream_component_open(player, st_index[AVMEDIA_TYPE_VIDEO]);
@@ -427,7 +445,7 @@ int read_thread(player_t *player) {
 	if (player->audio_stream < 0) {
 		log_error("read_thread::%s: could not open codecs", player->url);
 		ret = -1;
-		goto fail;
+		goto end;
 	}
 
 	log_trace("read_thread:: stream opened .. reading metadata..");
@@ -439,16 +457,15 @@ int read_thread(player_t *player) {
 		log_trace("metadata:\t%s:%s", entry->key, entry->value);
 
 	change_state(player, STATE_PREPARED);
+	log_trace("read_thread::state is now %s. waiting for change from PREPARED",
+	        ap_get_state_name(player->state));
 
-	//hangout here until a state change occurs (like ap_start() being called)
-	while ((player->state == STATE_PREPARED || player->state == STATE_PAUSED)
-	        && !player->abort_request) {
-		usleep(100);
-	}
+	wait_for_state_change(player, STATE_PREPARED);
+	log_trace("read_thread::got state change to %s",
+	        ap_get_state_name(player->state));
 
-	log_trace("read_thread::beginning read loop");
 	while (!player->abort_request) {
-		//log_trace("read_thread::loop");
+		loop: ;
 		int is_paused = player->state == STATE_PAUSED;
 
 		if (is_paused)
@@ -558,15 +575,22 @@ int read_thread(player_t *player) {
 		sleep: usleep(1000);
 	}
 
-	ret = 0;
-	fail:
-	log_trace("read_loop::finished loop eof: %d", eof);
+	ret = SUCCESS;
+	end:
+	log_trace("read_loop::finished  state: %s eof: %d  ret: %d looping: %d",
+	        ap_get_state_name(player->state), eof, ret, player->looping);
+
+	if (eof) {
+		if (player->looping) {
+			log_info("read_thread::looping");
+			ap_seek(player, 0, 0);
+			goto loop;
+		}
+	}
 
 	stream_component_close(player, player->audio_stream);
 
-	BEGIN_LOCK(player);
 	change_state(player, STATE_COMPLETED);
-	END_LOCK(player);
 
 	log_trace("read_thread::done returning %d", ret);
 

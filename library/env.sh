@@ -55,6 +55,7 @@ setup_source(){
   cd $LIBAV
   git clean -xdf && git reset --hard > /dev/null 2>&1
   git checkout $TAG  
+  
   if [ $SSL == "1" ]; then
     log setting up openssl source
     if [ ! -d $OPENSSL ]; then
