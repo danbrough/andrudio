@@ -59,9 +59,11 @@ export FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
 export FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
 
-export FLAGS="$FLAGS --enable-openssl"
+
+if (( $SSL )); then
 export ECFLAGS="$ECFLAGS -I$OPENSSL_BUILD/include -I$OPENSSL_BUILD/include/openssl   -Bstatic -lcrypto -lssl"
 export ELDFLAGS="$ELDFLAGS -L$OPENSSL_BUILD/lib "
+fi
 
 source ../common_flags.sh
 

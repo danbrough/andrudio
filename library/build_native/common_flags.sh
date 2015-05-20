@@ -23,6 +23,10 @@ FLAGS="$FLAGS --disable-debug"
 FLAGS="$FLAGS --enable-small --enable-runtime-cpudetect"
 FLAGS="$FLAGS --extra-ldexeflags=-pie" 
 
+if (( $SSL )); then
+FLAGS="$FLAGS --enable-openssl"
+fi
+
 FLAGS="$FLAGS --enable-demuxer=asf,ac3,aac,flac,m4v,mp3,ogg,pcm_alaw,pcm_f32be,pcm_f32le,pcm_f64be,pcm_f64le,pcm_mulaw,pcm_s16be,pcm_s16le,pcm_s24be"
 FLAGS="$FLAGS --enable-demuxer=aac,ac3,asf,au,avi,flac,flv,pcm_u32be,pcm_u32le,pcm_u8,m4v,avi,matroska,rtp,rtsp,mov,mp3,ogg,flac,pcm_alaw,pcm_f32be,pcm_f32le,pcm_f64be,pcm_f64le,pcm_mulaw,wav,pcm_s16be,pcm_s16le,pcm_s24be,pcm_s24le,pcm_s32be,pcm_s32le,pcm_s8,pcm_u16be,pcm_u16le,pcm_u24be,pcm_u24le"
 FLAGS="$FLAGS --enable-parser=ac3,aac,aac_latm,flac,mpegaudio,vorbis,vp3,vp8,vp9"
