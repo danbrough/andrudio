@@ -87,9 +87,8 @@ static void on_event(player_t *player, audio_event_t event, int arg1, int arg2) 
 			log_trace("on_event::STATE_CHANGE() %s->%s",
 			        ap_get_state_name(old_state), ap_get_state_name(state));
 			if (state == STATE_PREPARED) {
-				//log_warn("on_state_change::starting the stream automatically");
-				//ap_start(player);
-
+				log_warn("on_state_change::STATE_PREPARED: starting the stream automatically");
+				ap_start(player);
 			}
 			else if (state == STATE_STARTED) {
 				log_trace(

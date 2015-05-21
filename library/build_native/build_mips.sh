@@ -40,7 +40,6 @@ mkdir -p $DEST
 
 export FLAGS="--arch=mips"
 export FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
-export FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
 
 source ../common_flags.sh

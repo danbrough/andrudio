@@ -22,6 +22,7 @@ FLAGS="$FLAGS --disable-demuxers"
 FLAGS="$FLAGS --disable-debug"
 FLAGS="$FLAGS --enable-small --enable-runtime-cpudetect"
 FLAGS="$FLAGS --extra-ldexeflags=-pie" 
+FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 
 if (( $SSL )); then
 log adding ssl support

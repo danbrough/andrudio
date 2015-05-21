@@ -56,7 +56,7 @@ const inline char * ap_get_state_name(audio_state_t state) {
 
 int change_state(player_t *player, audio_state_t state) {
 	int ret = -1;
-	log_trace("[%" PRIXPTR "] change_state() %s", pthread_self(),ap_get_state_name(state));
+	log_trace("[%" PRIXPTR "] change_state() %s", (intptr_t)pthread_self(),ap_get_state_name(state));
 	BEGIN_LOCK(player);
 	audio_state_t old_state = player->state;
 
@@ -90,10 +90,10 @@ int change_state(player_t *player, audio_state_t state) {
 
 	if (ret == SUCCESS) {
 		player->state = state;
-		log_trace("[%" PRIXPTR "] change_state::signaling state change to %s",pthread_self(),ap_get_state_name(state));
+		log_trace("[%" PRIXPTR "] change_state::signaling state change to %s",(intptr_t)pthread_self(),ap_get_state_name(state));
 		pthread_cond_broadcast(&player->cond_state_change);
 		if (player->callbacks.on_event){
-			log_trace("[%" PRIXPTR "] change_state::calling state change callback",pthread_self());
+			log_trace("[%" PRIXPTR "] change_state::calling state change callback",(intptr_t)pthread_self());
 			player->callbacks.on_event(player, EVENT_STATE_CHANGE, old_state,
 			        state);
 		}
@@ -188,14 +188,7 @@ int ap_init() {
 
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	av_log_set_callback(log_callback_help);
-	/* register all codecs, demux and protocols */
 	avcodec_register_all();
-	/*
-	 #if CONFIG_AVDEVICE
-	 avdevice_register_all();
-	 #endif
-	 */
-
 	av_register_all();
 	avformat_network_init();
 
@@ -233,7 +226,6 @@ void ap_delete(player_t* player) {
 	ap_reset(player);
 
 	pthread_cond_destroy(&player->cond_state_change);
-
 	pthread_mutex_destroy(&player->mutex);
 	free(player);
 }
@@ -246,10 +238,14 @@ void ap_reset(player_t *player) {
 	if (player->state != STATE_IDLE) {
 		log_trace("ap_reset::changing state to idle");
 		change_state(player, STATE_IDLE);
+	} else {
+		log_error("BROADCASTING STUFF HERE!!");
+		pthread_cond_broadcast(&player->cond_state_change);
 	}
 
+
 	log_trace("ap_reset::signaled state change. waiting for read thread ...");
-	pthread_join(player->read_thread, NULL);
+	//pthread_join(player->read_thread, NULL);
 	log_trace("ap_reset::read thread done. cleaning up..");
 
 
@@ -301,10 +297,14 @@ int ap_prepare_async(player_t *player) {
 	player->abort_request = 0;
 	if ((ret = change_state(player, STATE_PREPARING)) == SUCCESS) {
 		log_trace("ap_prepare_async::starting decode thread..");
-		if ((ret = pthread_create(&player->read_thread, NULL,
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
+		if ((ret = pthread_create(&player->read_thread, &attr,
 		        (void*) read_thread, player)) != SUCCESS) {
 			log_error("failed to start decode thread: %s", strerror(errno));
 		}
+		pthread_attr_destroy(&attr);
 	}
 	END_LOCK(player);
 
