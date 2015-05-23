@@ -27,39 +27,12 @@ static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
 
 extern int change_state(player_t *player, audio_state_t state);
 
-/*static audio_state_t wait_for_state_change(player_t *player) {
- BEGIN_LOCK(player);
- pthread_cond_wait(&player->cond_state_change, &player->mutex);
- END_LOCK(player);
- return player->state;
- }*/
-
-static audio_state_t wait_for_state_change(player_t *player,
-		audio_state_t state) {
-	if (player->state != state)
-		return player->state;
-	BEGIN_LOCK(player);
-
-	if (player->state == state) {
-		log_trace("[%" PRIXPTR "] wait_for_state_change::current state: %s",
-				pthread_self(), ap_get_state_name(player->state));
-		pthread_cond_wait(&player->cond_state_change, &player->mutex);
-		log_trace("[%" PRIXPTR "] wait_for_state_change::wait over: %s -> %s",
-				pthread_self(), ap_get_state_name(state),
-				ap_get_state_name(player->state));
-	}
-
-	END_LOCK(player);
-	return player->state;
-}
 
 /* open a given stream. Return 0 if OK */
 static int stream_component_open(player_t *player, int stream_index) {
 	AVFormatContext *ic = player->ic;
 	AVCodecContext *avctx;
 	AVCodec *codec;
-
-	AVDictionary *opts = NULL;
 	AVDictionaryEntry *t = NULL;
 	int ret = 0;
 
@@ -531,17 +504,6 @@ int read_thread(player_t *player) {
 			player->seek_req = 0;
 			eof = 0;
 		}
-
-		/* if the queue are full, no need to read more */
-		//if (!infinite_buffer
-		//  && (player->audioq.size + player->videoq.size + player->subtitleq.size
-		/*		if (!infinite_buffer
-		 && (player->audioq.size > MAX_QUEUE_SIZE
-		 || ((player->audioq.size > MIN_AUDIOQ_SIZE
-		 || player->audio_stream < 0)))) {
-		 wait 10 ms
-		 goto sleep;
-		 }*/
 
 		if (eof) {
 			log_trace("read_thread::eof");

@@ -211,8 +211,6 @@ player_t* ap_create(player_callbacks_t callbacks) {
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&player->mutex, &attr);
 	pthread_mutexattr_destroy(&attr);
-
-
 	pthread_cond_init(&player->cond_state_change, NULL);
 
 	return player;
