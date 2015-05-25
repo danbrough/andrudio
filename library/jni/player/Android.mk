@@ -5,7 +5,7 @@ include $(CLEAR_VARS)
 
 
 LOCAL_MODULE := libandrudio 
-LOCAL_SRC_FILES := danbroid_andrudio_LibAndrudio.c audioplayer.c  read_thread.c 
+LOCAL_SRC_FILES := danbroid_andrudio_LibAndrudio.c audioplayer.c  player_thread.c 
 
 LOCAL_SHARED_LIBRARIES := libavresample libavcodec libavformat libavutil 
 #LOCAL_STATIC_LIBRARIES := libavresample libavcodec libavformat libavutil

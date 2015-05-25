@@ -2,6 +2,7 @@
 #define _AUDIOPLAYER_H_
 
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <libavcodec/avcodec.h>
@@ -71,7 +72,6 @@
 #define log_error(format, ...) if (AS_DEBUG_LEVEL & AS_DEBUG_ERROR)  _log(stderr,COLOR_ERROR_BEGIN"ERROR:" ,format, ## __VA_ARGS__)
 #endif //__ANDROID__
 
-
 #define MAX_QUEUE_SIZE (15  * 1024)
 #define MIN_AUDIOQ_SIZE (20 * 16 * 1024)
 #define SDL_AUDIO_BUFFER_SIZE 1024
@@ -96,89 +96,92 @@ typedef enum {
 	EVENT_THREAD_START = 1, EVENT_STATE_CHANGE, EVENT_SEEK_COMPLETE
 } audio_event_t;
 
+typedef enum {
+	CMD_SET_DATASOURCE,
+	CMD_PREPARE,
+	CMD_START,
+	CMD_PAUSE,
+	CMD_STOP,
+	CMD_SEEK,
+	CMD_RESET,
+	CMD_EXIT
+} audio_cmd_t;
+
 const char* ap_get_state_name(audio_state_t state);
 
 typedef struct player_t {
-		int looping;
-		audio_state_t state;
-		audio_state_t last_paused;
-		pthread_mutex_t mutex;
-		pthread_cond_t cond_state_change;
-		pthread_t read_thread;
-		int abort_request;
-		int seek_req;
-		int seek_flags;
-		int64_t seek_pos;
-		int64_t seek_rel;
-		//int read_pause_return;
-		AVFormatContext *ic;
+	int looping;
+	int abort_call;
+	audio_state_t state;
+	audio_state_t last_paused;
+	pthread_mutex_t mutex;
+	pthread_t player_thread;
+	int seek_req;
+	int seek_flags;
+	int64_t seek_pos;
+	int64_t seek_rel;
+	AVFormatContext *ic;
 
-		int audio_stream;
+	int audio_stream;
+	int pipe[2];
 
-		double audio_clock;
+	double audio_clock;
 
-		AVStream *audio_st;
+	AVStream *audio_st;
 
-		//int audio_hw_buf_size;
-		uint8_t silence_buf[SDL_AUDIO_BUFFER_SIZE];
-		uint8_t *audio_buf;
-		uint8_t *audio_buf1;
-		unsigned int audio_buf_size; /* in bytes */
-		int audio_buf_index; /* in bytes */
-		AVPacket audio_pkt_temp;
-		AVPacket audio_pkt;
-		enum AVSampleFormat sdl_sample_fmt;
+	//int audio_hw_buf_size;
+	uint8_t silence_buf[SDL_AUDIO_BUFFER_SIZE];
+	uint8_t *audio_buf;
+	uint8_t *audio_buf1;
+	unsigned int audio_buf_size; /* in bytes */
+	int audio_buf_index; /* in bytes */
+	AVPacket audio_pkt_temp;
+	AVPacket audio_pkt;
+	enum AVSampleFormat sdl_sample_fmt;
 
-		uint64_t sdl_channel_layout;
-		int sdl_channels;
-		int sdl_sample_rate;
+	uint64_t sdl_channel_layout;
+	int sdl_channels;
+	int sdl_sample_rate;
 
-		enum AVSampleFormat resample_sample_fmt;
-		uint64_t resample_channel_layout;
-		int resample_sample_rate;
+	enum AVSampleFormat resample_sample_fmt;
+	uint64_t resample_channel_layout;
+	int resample_sample_rate;
 
-		AVAudioResampleContext *avr;
-		AVFrame *frame;
+	AVAudioResampleContext *avr;
+	AVFrame *frame;
 
-		int16_t *sample_array[SAMPLE_ARRAY_SIZE];
-		int sample_array_index;
+	int16_t *sample_array[SAMPLE_ARRAY_SIZE];
+	int sample_array_index;
 
-		/*
-		 #if !CONFIG_AVFILTER
-		 struct SwsContext *img_convert_ctx;
-		 #endif
-		 */
+	char url[1024];
 
-		//    QETimer *video_timer;
-		char url[1024];
+	struct _player_callbacks_t {
 
-		struct _player_callbacks_t {
+		void (*on_event)(struct player_t *player, audio_event_t event, int arg1,
+				int arg2);
 
-				void (*on_event)(struct player_t *player, audio_event_t event,
-				        int arg1, int arg2);
+		void (*on_play)(struct player_t *player, char *data, int len);
 
-				void (*on_play)(struct player_t *player, char *data, int len);
+		int (*on_prepare)(struct player_t *player, int sampleFormat,
+				int sampleRate, int channelFormat);
 
-				int (*on_prepare)(struct player_t *player, int sampleFormat,
-				        int sampleRate, int channelFormat);
+	} callbacks;
 
-		} callbacks;
-
-		void *extra;
+	void *extra;
 
 } player_t;
 
 typedef struct _player_callbacks_t player_callbacks_t;
 
 typedef void (*on_state_change_t)(player_t *player, audio_state_t old_state,
-        audio_state_t new_state);
+		audio_state_t new_state);
 
 typedef void (*on_play_t)(player_t *player, char *data, int len);
 
 typedef void (*callback_t)(player_t *player);
 
 typedef int (*on_prepare_t)(struct player_t *player, int sampleFormat,
-        int sampleRate, int channelFormat);
+		int sampleRate, int channelFormat);
 
 //one off initialization of the library
 int ap_init();
@@ -202,7 +205,7 @@ int ap_set_datasource(player_t *player, const char* url);
 
 int ap_prepare_async(player_t *player);
 
-void ap_reset(player_t *player);
+int ap_reset(player_t *player);
 
 void ap_seek(player_t *player, int64_t pos, int relative);
 

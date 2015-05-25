@@ -18,103 +18,74 @@
  * License along with Libav; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-
+#define _GNU_SOURCE
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>
 #include <fcntl.h>
-
 #include <libavutil/avstring.h>
 #include <libavutil/dict.h>
 #include <libavutil/samplefmt.h>
 
 #include "audioplayer.h"
 
-const inline char * ap_get_state_name(audio_state_t state) {
+const char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
-		case STATE_IDLE:
-			return "STATE_IDLE";
-		case STATE_INITIALIZED:
-			return "STATE_INITIALIZED";
-		case STATE_STOPPED:
-			return "STATE_STOPPED";
-		case STATE_PAUSED:
-			return "STATE_PAUSED";
-		case STATE_PREPARING:
-			return "STATE_PREPARING";
-		case STATE_PREPARED:
-			return "STATE_PREPARED";
-		case STATE_STARTED:
-			return "STATE_STARTED";
-		case STATE_COMPLETED:
-			return "STATE_COMPLETED";
-		default:
-			return "STATE_INVALID";
+	case STATE_IDLE:
+		return "STATE_IDLE";
+	case STATE_INITIALIZED:
+		return "STATE_INITIALIZED";
+	case STATE_STOPPED:
+		return "STATE_STOPPED";
+	case STATE_PAUSED:
+		return "STATE_PAUSED";
+	case STATE_PREPARING:
+		return "STATE_PREPARING";
+	case STATE_PREPARED:
+		return "STATE_PREPARED";
+	case STATE_STARTED:
+		return "STATE_STARTED";
+	case STATE_COMPLETED:
+		return "STATE_COMPLETED";
+
+	default:
+		return "STATE_INVALID";
 	}
 }
 
-int change_state(player_t *player, audio_state_t state) {
-	int ret = -1;
-	log_trace("[%" PRIXPTR "] change_state() %s", (intptr_t)pthread_self(),ap_get_state_name(state));
-	BEGIN_LOCK(player);
-	audio_state_t old_state = player->state;
-
-	if ((state == STATE_IDLE || state == STATE_ERROR || state == STATE_END)
-	        || (old_state == STATE_IDLE && state == STATE_INITIALIZED)
-
-	        || (old_state == STATE_INITIALIZED
-	                && (state == STATE_PREPARING || state == STATE_PREPARED))
-
-	        || (old_state == STATE_PREPARING && state == STATE_PREPARED)
-
-	        || (old_state == STATE_PREPARED
-	                && (state == STATE_STOPPED || state == STATE_STARTED))
-
-	        || (old_state == STATE_STARTED
-	                && (state == STATE_PAUSED || STATE_STOPPED
-	                        || STATE_COMPLETED))
-
-	        || (old_state == STATE_PAUSED
-	                && (state == STATE_STOPPED || state == STATE_STARTED))
-
-	        || (old_state == STATE_COMPLETED
-	                && (state == STATE_STOPPED || state == STATE_STARTED))
-
-	        || (old_state == STATE_STOPPED
-	                && (state == STATE_PREPARING || state == STATE_PREPARED))
-
-	        ) {
-		ret = SUCCESS;
+const char* ap_get_cmd_name(audio_cmd_t cmd) {
+	switch (cmd) {
+	case CMD_PREPARE:
+		return "CMD_PREPARE";
+	case CMD_START:
+		return "CMD_START";
+	case CMD_PAUSE:
+		return "CMD_PAUSE";
+	case CMD_STOP:
+		return "CMD_STOP";
+	case CMD_SEEK:
+		return "CMD_SEEK";
+	case CMD_RESET:
+		return "CMD_RESET";
+	case CMD_EXIT:
+		return "CMD_EXIT";
+	case CMD_SET_DATASOURCE:
+		return "CMD_SET_DATASOURCE";
 	}
+	return "CMD_UNKNOWN";
+}
 
-	if (ret == SUCCESS) {
-		player->state = state;
-		log_trace("[%" PRIXPTR "] change_state::signaling state change to %s",(intptr_t)pthread_self(),ap_get_state_name(state));
-		pthread_cond_broadcast(&player->cond_state_change);
-		if (player->callbacks.on_event){
-			log_trace("[%" PRIXPTR "] change_state::calling state change callback",(intptr_t)pthread_self());
-			player->callbacks.on_event(player, EVENT_STATE_CHANGE, old_state,
-			        state);
-		}
-	}
-	else {
-		log_error("invalid state change: %s -> %s",
-		        ap_get_state_name(old_state), ap_get_state_name(state));
-	}
-
-
-	END_LOCK(player);
-	log_trace("change_state::finished with state: %s",ap_get_state_name(player->state));
-	return ret;
+int ap_send_cmd(player_t *player, audio_cmd_t cmd) {
+	log_trace("ap_send_cmd::%s", ap_get_cmd_name(cmd));
+	return write(player->pipe[1], &cmd, sizeof(cmd));
 }
 
 void ap_print_error(const char* msg, int err) {
 	char buf[128];
 	if (av_strerror(err, buf, sizeof(buf)) == 0) {
 		log_error("%s: code:%d \"%s\"", msg, err, buf);
-	}
-	else {
+	} else {
 		log_error("%s unknown error: %d", msg, err);
 	}
 }
@@ -136,7 +107,7 @@ double ap_get_audio_clock(player_t *player) {
 	bytes_per_sec = 0;
 	if (player->audio_st) {
 		bytes_per_sec = player->sdl_sample_rate * player->sdl_channels
-		        * av_get_bytes_per_sample(player->sdl_sample_fmt);
+				* av_get_bytes_per_sample(player->sdl_sample_fmt);
 	}
 
 	if (bytes_per_sec)
@@ -163,20 +134,8 @@ static void stream_seek(player_t *player, int64_t pos, int64_t rel) {
 /* pause or resume the video */
 int ap_pause(player_t *player) {
 	log_trace("ap_pause()");
-	BEGIN_LOCK(player);
-	int ret = 0;
-	if (player->state == STATE_PAUSED) {
-		ret = change_state(player, STATE_STARTED);
-	}
-	else if (player->state == STATE_STARTED) {
-		ret = change_state(player, STATE_PAUSED);
-	}
-	else {
-		log_error("ap_pause::invalid state %s",
-		        ap_get_state_name(player->state));
-	}
-	END_LOCK(player);
-	return ret;
+	return ap_send_cmd(player,
+			player->state == STATE_STARTED ? CMD_PAUSE : CMD_START);
 }
 
 static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl) {
@@ -200,7 +159,27 @@ void ap_uninit() {
 	avformat_network_deinit();
 }
 
+extern int player_thread(player_t *player);
+
+static int start_thread(player_t *player) {
+	int ret = 0;
+	BEGIN_LOCK(player);
+	log_info("start_thread()");
+
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	if ((ret = pthread_create(&player->player_thread, &attr,
+			(void*) player_thread, player)) != SUCCESS) {
+		log_error("failed to start decode thread: %s", strerror(errno));
+	}
+	pthread_attr_destroy(&attr);
+	END_LOCK(player);
+	return ret;
+}
+
 player_t* ap_create(player_callbacks_t callbacks) {
+	log_info("ap_create()");
 	player_t *player = malloc(sizeof(player_t));
 	if (!player)
 		return NULL;
@@ -211,7 +190,18 @@ player_t* ap_create(player_callbacks_t callbacks) {
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&player->mutex, &attr);
 	pthread_mutexattr_destroy(&attr);
-	pthread_cond_init(&player->cond_state_change, NULL);
+
+	if (pipe2(player->pipe, O_NONBLOCK) != 0) {
+		log_error("pipe failed");
+		ap_delete(player);
+		return NULL;
+	}
+
+	if (start_thread(player) != SUCCESS) {
+		log_error("ap_create::failed to start thread");
+		ap_delete(player);
+		return NULL;
+	}
 
 	return player;
 }
@@ -222,96 +212,39 @@ void ap_delete(player_t* player) {
 		return;
 
 	ap_reset(player);
+	ap_send_cmd(player, CMD_EXIT);
 
-	pthread_cond_destroy(&player->cond_state_change);
-	pthread_mutex_destroy(&player->mutex);
-	free(player);
 }
 
-void ap_reset(player_t *player) {
+int ap_reset(player_t *player) {
 	log_debug("ap_reset()");
-
-	player->abort_request = 1;
-
-	if (player->state != STATE_IDLE) {
-		log_trace("ap_reset::changing state to idle");
-		change_state(player, STATE_IDLE);
-	} else {
-		log_error("BROADCASTING STUFF HERE!!");
-		pthread_cond_broadcast(&player->cond_state_change);
-	}
-
-
-	log_trace("ap_reset::signaled state change. waiting for read thread ...");
-	//pthread_join(player->read_thread, NULL);
-	log_trace("ap_reset::read thread done. cleaning up..");
-
-
-	if (player->avr) {
-		log_trace("ap_reset::avresample_free()");
-		avresample_free(&player->avr);
-	}
-
-	if (player->frame) {
-		log_trace("ap_reset::av_frame_free()");
-		av_frame_free(&player->frame);
-	}
-
-	if (player->ic) {
-		log_trace("ap_reset::avformat_close_input()");
-		avformat_close_input(&player->ic);
-		avformat_free_context(player->ic);
-	}
-
-	player->audio_stream = -1;
-	player->audio_st = NULL;
-	player->abort_request = 0;
-	player->avr = NULL;
-	player->ic = NULL;
-	player->frame = NULL;
-	player->url[0] = 0;
-
-
-	log_trace("ap_reset::done");
-
+	return ap_send_cmd(player, CMD_RESET);
 }
 
 int ap_set_datasource(player_t *player, const char *url) {
 	log_info("ap_set_datasource() %s", url);
-	BEGIN_LOCK(player);
-	av_strlcpy(player->url, url, sizeof(player->url));
-	int ret = change_state(player, STATE_INITIALIZED);
-	END_LOCK(player);
+	int ret = -1;
+	if (player->state == STATE_IDLE) {
+		av_strlcpy(player->url, url, sizeof(player->url));
+		ret = ap_send_cmd(player, CMD_SET_DATASOURCE);
+	} else {
+		log_error("ap_set_datasource::invalid state: %s",
+				ap_get_state_name(player->state));
+		ret = FAILURE;
+
+	}
 	return ret;
 }
 
-extern int read_thread(player_t *player);
-
 int ap_prepare_async(player_t *player) {
-	int ret = 0;
-	log_debug("ap_prepare_async()");
-
-	BEGIN_LOCK(player);
-	player->abort_request = 0;
-	if ((ret = change_state(player, STATE_PREPARING)) == SUCCESS) {
-		log_trace("ap_prepare_async::starting decode thread..");
-		pthread_attr_t attr;
-		pthread_attr_init(&attr);
-		pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-		if ((ret = pthread_create(&player->read_thread, &attr,
-		        (void*) read_thread, player)) != SUCCESS) {
-			log_error("failed to start decode thread: %s", strerror(errno));
-		}
-		pthread_attr_destroy(&attr);
-	}
-	END_LOCK(player);
-
-	return ret;
+	log_error("ap_prepare_async()");
+	ap_send_cmd(player, CMD_PREPARE);
+	return SUCCESS;
 }
 
 void ap_seek(player_t *player, int64_t incr, int relative) {
 	log_debug("ap_seek() :%"PRIi64" relative: %s", incr,
-	        relative ? "true" : "false");
+			relative ? "true" : "false");
 
 	BEGIN_LOCK(player);
 	if (!player->audio_st)
@@ -321,8 +254,7 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 	if (relative) {
 		pos = ap_get_audio_clock(player) * AV_TIME_BASE;
 		pos += incr;
-	}
-	else {
+	} else {
 		pos = incr;
 	}
 	stream_seek(player, pos, incr);
@@ -333,13 +265,13 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 
 int ap_start(player_t *player) {
 	log_info("ap_start()");
-	return change_state(player, STATE_STARTED);
+	return ap_send_cmd(player, CMD_START);
 }
 
 int ap_stop(player_t *player) {
 	log_info("ap_stop()");
-	player->abort_request = 1;
-	return change_state(player, STATE_STOPPED);
+
+	return ap_send_cmd(player, CMD_STOP);
 }
 
 void ap_print_status(player_t *player) {
@@ -356,18 +288,17 @@ void ap_print_status(player_t *player) {
 	if (duration == AV_NOPTS_VALUE) {
 		duration = -1;
 		hours = mins = secs = 0;
-	}
-	else {
+	} else {
 		duration = duration / AV_TIME_BASE;
 		secs = duration % 60;
 		hours = (duration / (60 * 60));
 		mins = (duration - hours * 60 * 60) / 60;
 	}
 	log_trace(
-	        "ap_print_status(): state:%s pos:%.2f duration:%"PRIi64" %02d:%02d:%02d",
-	        ap_get_state_name(player->state), ap_get_audio_clock(player),
-	        player->ic->duration == AV_NOPTS_VALUE ? 0 : player->ic->duration,
-	        hours, mins, secs);
+			"ap_print_status(): state:%s pos:%.2f duration:%"PRIi64" %02d:%02d:%02d",
+			ap_get_state_name(player->state), ap_get_audio_clock(player),
+			player->ic->duration == AV_NOPTS_VALUE ? 0 : player->ic->duration,
+			hours, mins, secs);
 	end:
 	END_LOCK(player);
 }
@@ -385,16 +316,15 @@ void ap_print_metadata(player_t *player) {
 int32_t ap_get_duration(player_t *player) {
 
 	if (player->state == STATE_PREPARED || player->state == STATE_STARTED
-	        || player->state == STATE_PAUSED || player->state == STATE_STOPPED
-	        || player->state == STATE_COMPLETED) {
+			|| player->state == STATE_PAUSED || player->state == STATE_STOPPED
+			|| player->state == STATE_COMPLETED) {
 		if (player && player->ic
-		        && player->ic->duration
-		                > 0&& player->ic->duration != AV_NOPTS_VALUE)
+				&& player->ic->duration
+						> 0&& player->ic->duration != AV_NOPTS_VALUE)
 			return (int32_t) (player->ic->duration / 1000);
-	}
-	else {
+	} else {
 		log_error("ap_get_duration() called in illegal state: %s",
-		        ap_get_state_name(player->state));
+				ap_get_state_name(player->state));
 	}
 	return -1;
 }

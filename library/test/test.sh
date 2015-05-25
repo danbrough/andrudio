@@ -53,7 +53,7 @@ if [ "$LIBAO" == "0" ]; then
   EXTRA_FLAGS="-DDISABLE_AUDIO"
 fi
 
-gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/read_thread.c \
+gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/player_thread.c \
   ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest  $BUILD/lib/lib*.a  \
  -lao -lz -lbz2 -lc -lm -lavutil -lavcodec -lavformat -lavresample -lpthread -I${BUILD}/include -L${BUILD}/lib || exit 1  
 
