@@ -19,6 +19,7 @@ TEST_ROOT=`pwd`
 
 export ANDROID_NDK=/tmp/notneeded
 cd .. && . env.sh
+rm /tmp/playertest
 
 log "this test program will require libao to be installed"
 if (( $FFMPEG )); then
@@ -51,18 +52,20 @@ fi
 EXTRA_FLAGS=""
 if [ "$LIBAO" == "0" ]; then
   EXTRA_FLAGS="-DDISABLE_AUDIO"
+else
+  LDFLAGS="-lao"
 fi
 
 gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/player_thread.c \
   ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest  $BUILD/lib/lib*.a  \
- -lao -lz -lbz2 -lc -lm -lavutil -lavcodec -lavformat -lavresample -lpthread -I${BUILD}/include -L${BUILD}/lib || exit 1  
+ $LDFLAGS -lz -lbz2 -lc -lm -lavutil -lavcodec -lavformat -lavresample -lpthread -I${BUILD}/include -L${BUILD}/lib || exit 1  
 
 WRAPPER=""
 
 if [ "$MEMCHECK" == "1" ]; then
 	WRAPPER="valgrind --leak-check=yes" 
 elif [ "$MEMCHECK" == "2" ]; then
-	WRAPPER="valgrind --leak-check=yes --leak-check=full --show-leak-kinds=all "
+	WRAPPER="valgrind -v --leak-check=yes --leak-check=full --show-leak-kinds=all "
 fi
 
 

@@ -61,19 +61,19 @@ void jniThrowException(JNIEnv* env, const char* className, const char* msg) {
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_initializeLibrary(
-        JNIEnv *env, jclass jCls, jclass listenerCls) {
+		JNIEnv *env, jclass jCls, jclass listenerCls) {
 	log_info("Java_danbroid_andrudio_LibAndrudio_initializeLibrary()");
 
 	fields.class_audio_stream = listenerCls;
 
 	fields.prepareAudio = (*env)->GetMethodID(env, listenerCls, "prepareAudio",
-	        "(III)V");
+			"(III)V");
 
 	fields.handleEvent = (*env)->GetMethodID(env, listenerCls, "handleEvent",
-	        "(III)V");
+			"(III)V");
 
 	fields.writePCM = (*env)->GetMethodID(env, listenerCls, "writePCM",
-	        "([BII)V");
+			"([BII)V");
 
 	return ap_init();
 }
@@ -100,46 +100,71 @@ static void callback_on_play(player_t *player, char *data, int len) {
 	(*env)->SetByteArrayRegion(env, info->buffer, 0, len, (jbyte*) data);
 
 	(*env)->CallVoidMethod(env, info->listener, fields.writePCM, info->buffer,
-	        0, len);
+			0, len);
 
 }
 
 static int callback_prepare_audio(player_t *player, int sampleFormat,
-        int sampleRate, int channelFormat) {
+		int sampleRate, int channelFormat) {
 	log_trace("callback_prepare_audio()");
 	JNIEnv *env = get_jni_env();
 
 	JavaInfo *info = (JavaInfo*) player->extra;
 
 	(*env)->CallVoidMethod(env, info->listener, fields.prepareAudio,
-	        sampleFormat, sampleRate, channelFormat);
+			sampleFormat, sampleRate, channelFormat);
 
 	return 0;
 }
 
 static void callback_on_event(struct player_t *player, audio_event_t event,
-        int arg1, int arg2) {
+		int arg1, int arg2) {
 	JavaInfo *info = (JavaInfo*) player->extra;
 	JNIEnv *env = 0;
 
 	switch (event) {
-		case EVENT_THREAD_START:
-			//nothing to do here
-			log_trace("callback_on_event::EVENT_THREAD_START %"PRIX32,
-					(uint32_t )pthread_self());
-			break;
-		default:
-			assert(info);
-			assert(info->listener);
-			env = get_jni_env();
-			(*env)->CallVoidMethod(env, info->listener, fields.handleEvent,
-			        event, arg1, arg2);
-			break;
+	case EVENT_THREAD_START:
+		//nothing to do here
+		log_trace("callback_on_event::EVENT_THREAD_START %"PRIX32,
+				(uint32_t )pthread_self());
+		break;
+	default:
+		assert(info);
+		assert(info->listener);
+		env = get_jni_env();
+		(*env)->CallVoidMethod(env, info->listener, fields.handleEvent, event,
+				arg1, arg2);
+		break;
+	}
+
+	if (event == EVENT_STATE_CHANGE && player->state == STATE_END) {
+
+		log_info("callback_on_event::cleaning up JNI");
+		JavaInfo *info = (JavaInfo*) player->extra;
+
+		jbyteArray buf = info->buffer;
+		if (info) {
+			if (info->buffer) {
+				log_trace(
+						"callback_on_event::(*env)->DeleteGlobalRef(env, info->buffer);");
+				(*env)->DeleteGlobalRef(env, info->buffer);
+			}
+			info->buffer = NULL;
+
+			if (info->listener) {
+				log_trace(
+						"callback_on_event::(*env)->DeleteGlobalRef(env, info->listener);");
+				(*env)->DeleteGlobalRef(env, info->listener);
+			}
+		}
+
+		log_trace("callback_on_event::free(info)");
+		free(info);
 	}
 }
 
 JNIEXPORT jlong JNICALL Java_danbroid_andrudio_LibAndrudio__1create(JNIEnv *env,
-        jclass jCls) {
+		jclass jCls) {
 	log_info("Java_danbroid_andrudio_LibAndrudio__1create()");
 	player_callbacks_t callbacks;
 	memset(&callbacks, 0, sizeof(player_callbacks_t));
@@ -161,41 +186,19 @@ JNIEXPORT jlong JNICALL Java_danbroid_andrudio_LibAndrudio__1create(JNIEnv *env,
 	return PLAYER_TO_JLONG(audio);
 }
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_destroy(JNIEnv *env,
-        jclass jCls, jlong handle) {
+		jclass jCls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
 		return;
 	}
 	log_info("Java_danbroid_andrudio_LibAndrudio_destroy()");
-
-	JavaInfo *info = (JavaInfo*) player->extra;
-
 	ap_delete(player);
-
-	jbyteArray buf = info->buffer;
-	if (info) {
-		if (info->buffer) {
-			log_trace(
-			        "Java_danbroid_andrudio_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->buffer);");
-			(*env)->DeleteGlobalRef(env, info->buffer);
-		}
-		info->buffer = NULL;
-
-		if (info->listener) {
-			log_trace(
-			        "Java_danbroid_andrudio_LibAndrudio_destroy::(*env)->DeleteGlobalRef(env, info->listener);");
-			(*env)->DeleteGlobalRef(env, info->listener);
-		}
-	}
-
-	log_trace("Java_danbroid_andrudio_LibAndrudio_destroy::free(info)");
-	free(info);
 	log_trace("Java_danbroid_andrudio_LibAndrudio_destroy::done");
 
 }
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setListener(
-        JNIEnv *env, jclass cls, jlong handle, jobject listener) {
+		JNIEnv *env, jclass cls, jlong handle, jobject listener) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -214,7 +217,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setListener(
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_stop(JNIEnv *env,
-        jclass cls, jlong handle) {
+		jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -224,7 +227,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_stop(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_reset(JNIEnv *env,
-        jclass cls, jlong handle) {
+		jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -236,7 +239,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_reset(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_start(JNIEnv *env,
-        jclass cls, jlong handle) {
+		jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -247,7 +250,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_start(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_togglePause(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -258,7 +261,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_togglePause(
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getDuration(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -274,7 +277,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getDuration(
  * Signature: (J)J
  */
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getPosition(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -290,7 +293,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getPosition(
  * Signature: (JLjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio__1setDataSource(
-        JNIEnv *env, jclass cls, jlong handle, jstring jdatasource) {
+		JNIEnv *env, jclass cls, jlong handle, jstring jdatasource) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -308,7 +311,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio__1setDataSource(
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_prepareAsync(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -320,7 +323,7 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_prepareAsync(
 }
 
 JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isLooping(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -332,7 +335,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isLooping(
 }
 
 JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setLooping(
-        JNIEnv *env, jclass cls, jlong handle, jboolean looping) {
+		JNIEnv *env, jclass cls, jlong handle, jboolean looping) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -348,7 +351,7 @@ JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_setLooping(
  * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying(
-        JNIEnv *env, jclass cls, jlong handle) {
+		JNIEnv *env, jclass cls, jlong handle) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -360,7 +363,7 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying(
 }
 
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
-        jclass cls, jlong handle, jint msecs, jboolean relative) {
+		jclass cls, jlong handle, jint msecs, jboolean relative) {
 
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
@@ -372,19 +375,8 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_seekTo(JNIEnv *env,
 	return 0;
 }
 
-
-JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus(
-        JNIEnv *env, jclass cls, jlong handle) {
-	player_t* player = JLONG_TO_PLAYER(handle);
-	if (!player) {
-		log_error("invalid handle");
-		return;
-	}
-	ap_print_status(player);
-}
-
 JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData(
-        JNIEnv *env, jclass cls, jlong handle, jobject map) {
+		JNIEnv *env, jclass cls, jlong handle, jobject map) {
 	player_t* player = JLONG_TO_PLAYER(handle);
 	if (!player) {
 		log_error("invalid handle");
@@ -395,10 +387,10 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData(
 
 	jclass map_clazz = (*env)->GetObjectClass(env, map);
 	jmethodID put_method = (*env)->GetMethodID(env, map_clazz, "put",
-	        "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+			"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 	AVDictionaryEntry *entry = NULL;
 	while ((entry = av_dict_get(player->ic->metadata, "", entry,
-	        AV_DICT_IGNORE_SUFFIX))) {
+	AV_DICT_IGNORE_SUFFIX))) {
 		//log_trace("metadata:\t%s:%s", entry->key, entry->value);
 		jstring key = (*env)->NewStringUTF(env, entry->key);
 		jstring value = (*env)->NewStringUTF(env, entry->value);

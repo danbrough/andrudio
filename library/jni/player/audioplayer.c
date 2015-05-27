@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #define _GNU_SOURCE
+
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
@@ -48,7 +49,8 @@ const char * ap_get_state_name(audio_state_t state) {
 		return "STATE_STARTED";
 	case STATE_COMPLETED:
 		return "STATE_COMPLETED";
-
+	case STATE_END:
+		return "STATE_END";
 	default:
 		return "STATE_INVALID";
 	}
@@ -72,6 +74,8 @@ const char* ap_get_cmd_name(audio_cmd_t cmd) {
 		return "CMD_EXIT";
 	case CMD_SET_DATASOURCE:
 		return "CMD_SET_DATASOURCE";
+	case CMD_TEST:
+		return "CMD_TEST";
 	}
 	return "CMD_UNKNOWN";
 }
@@ -90,19 +94,13 @@ void ap_print_error(const char* msg, int err) {
 	}
 }
 
-/* get the current audio output buffer size, in samples. With SDL, we
- cannot have a precise information */
-static int audio_write_get_buf_size(player_t *player) {
-	return player->audio_buf_size - player->audio_buf_index;
-}
-
 /* get the current audio clock value */
 double ap_get_audio_clock(player_t *player) {
 	double pts = 0;
 	int hw_buf_size, bytes_per_sec;
 	pts = player->audio_clock;
 
-	hw_buf_size = audio_write_get_buf_size(player);
+	hw_buf_size = player->audio_buf_size - player->audio_buf_index;
 
 	bytes_per_sec = 0;
 	if (player->audio_st) {
@@ -113,22 +111,6 @@ double ap_get_audio_clock(player_t *player) {
 	if (bytes_per_sec)
 		pts -= (double) hw_buf_size / bytes_per_sec;
 	return pts;
-}
-
-/* seek in the stream */
-static void stream_seek(player_t *player, int64_t pos, int64_t rel) {
-	BEGIN_LOCK(player);
-	log_trace("stream_seek %"PRIu64" : %"PRIu64, pos, rel);
-	if (!player->seek_req) {
-		player->seek_pos = pos;
-		player->seek_rel = rel;
-		player->seek_flags = AVSEEK_FLAG_FRAME;
-		/*	player->seek_flags &= ~AVSEEK_FLAG_BYTE;
-		 if (seek_by_bytes)
-		 player->seek_flags |= AVSEEK_FLAG_BYTE;*/
-		player->seek_req = 1;
-	}
-	END_LOCK(player);
 }
 
 /* pause or resume the video */
@@ -143,19 +125,17 @@ static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl)
 }
 
 int ap_init() {
-	log_debug("ap_init()");
-
+	log_info("ap_init()");
 	av_log_set_flags(AV_LOG_SKIP_REPEATED);
 	av_log_set_callback(log_callback_help);
 	avcodec_register_all();
 	av_register_all();
 	avformat_network_init();
-
 	return 0;
 }
 
 void ap_uninit() {
-	log_debug("ap_uninit()");
+	log_info("ap_uninit()");
 	avformat_network_deinit();
 }
 
@@ -165,11 +145,10 @@ static int start_thread(player_t *player) {
 	int ret = 0;
 	BEGIN_LOCK(player);
 	log_info("start_thread()");
-
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if ((ret = pthread_create(&player->player_thread, &attr,
+	if ((ret = pthread_create(&player->player_thread, NULL,
 			(void*) player_thread, player)) != SUCCESS) {
 		log_error("failed to start decode thread: %s", strerror(errno));
 	}
@@ -180,12 +159,13 @@ static int start_thread(player_t *player) {
 
 player_t* ap_create(player_callbacks_t callbacks) {
 	log_info("ap_create()");
-	player_t *player = malloc(sizeof(player_t));
+	player_t *player = av_mallocz(sizeof(player_t));
 	if (!player)
 		return NULL;
-	memset(player, 0, sizeof(player_t));
+
 	player->callbacks = callbacks;
 	pthread_mutexattr_t attr;
+
 	pthread_mutexattr_init(&attr);
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&player->mutex, &attr);
@@ -207,39 +187,29 @@ player_t* ap_create(player_callbacks_t callbacks) {
 }
 
 void ap_delete(player_t* player) {
-	log_info("ap_delete()");
 	if (!player)
 		return;
-
-	ap_reset(player);
+	player->abort_call = 1;
 	ap_send_cmd(player, CMD_EXIT);
-
+	log_info("ap_delete::calling join on %d", player->player_thread);
+	pthread_join(player->player_thread, NULL);
+	log_info("ap_delete::done");
+	av_freep(&player);
 }
 
 int ap_reset(player_t *player) {
-	log_debug("ap_reset()");
 	return ap_send_cmd(player, CMD_RESET);
 }
 
 int ap_set_datasource(player_t *player, const char *url) {
-	log_info("ap_set_datasource() %s", url);
-	int ret = -1;
-	if (player->state == STATE_IDLE) {
-		av_strlcpy(player->url, url, sizeof(player->url));
-		ret = ap_send_cmd(player, CMD_SET_DATASOURCE);
-	} else {
-		log_error("ap_set_datasource::invalid state: %s",
-				ap_get_state_name(player->state));
-		ret = FAILURE;
+	log_info("ap_set_datasource() url:%s", url);
+	av_strlcpy(player->url, url, sizeof(player->url));
+	return ap_send_cmd(player, CMD_SET_DATASOURCE);
 
-	}
-	return ret;
 }
 
 int ap_prepare_async(player_t *player) {
-	log_error("ap_prepare_async()");
-	ap_send_cmd(player, CMD_PREPARE);
-	return SUCCESS;
+	return ap_send_cmd(player, CMD_PREPARE);
 }
 
 void ap_seek(player_t *player, int64_t incr, int relative) {
@@ -247,17 +217,22 @@ void ap_seek(player_t *player, int64_t incr, int relative) {
 			relative ? "true" : "false");
 
 	BEGIN_LOCK(player);
-	if (!player->audio_st)
-		goto end;
 
-	int64_t pos;
-	if (relative) {
-		pos = ap_get_audio_clock(player) * AV_TIME_BASE;
-		pos += incr;
-	} else {
-		pos = incr;
+	if (player->audio_st && !player->seek_req) {
+		int64_t pos;
+		if (relative) {
+			pos = ap_get_audio_clock(player) * AV_TIME_BASE;
+			pos += incr;
+		} else {
+			pos = incr;
+		}
+
+		player->seek_pos = pos;
+		player->seek_rel = relative;
+		player->seek_flags = AVSEEK_FLAG_FRAME;
+		player->seek_req = 1;
+		ap_send_cmd(player, CMD_SEEK);
 	}
-	stream_seek(player, pos, incr);
 
 	end:
 	END_LOCK(player);
@@ -274,33 +249,9 @@ int ap_stop(player_t *player) {
 	return ap_send_cmd(player, CMD_STOP);
 }
 
-void ap_print_status(player_t *player) {
-	int hours, mins, secs;
-
-	BEGIN_LOCK(player);
-
-	if (!player->audio_st) {
-		log_trace("ap_print_status():: not playing");
-		goto end;
-	}
-
-	int64_t duration = player->ic->duration;
-	if (duration == AV_NOPTS_VALUE) {
-		duration = -1;
-		hours = mins = secs = 0;
-	} else {
-		duration = duration / AV_TIME_BASE;
-		secs = duration % 60;
-		hours = (duration / (60 * 60));
-		mins = (duration - hours * 60 * 60) / 60;
-	}
-	log_trace(
-			"ap_print_status(): state:%s pos:%.2f duration:%"PRIi64" %02d:%02d:%02d",
-			ap_get_state_name(player->state), ap_get_audio_clock(player),
-			player->ic->duration == AV_NOPTS_VALUE ? 0 : player->ic->duration,
-			hours, mins, secs);
-	end:
-	END_LOCK(player);
+int ap_test(player_t *player) {
+	log_info("ap_test()");
+	return ap_send_cmd(player, CMD_TEST);
 }
 
 void ap_print_metadata(player_t *player) {
@@ -314,7 +265,6 @@ void ap_print_metadata(player_t *player) {
 
 //duration of current track in ms
 int32_t ap_get_duration(player_t *player) {
-
 	if (player->state == STATE_PREPARED || player->state == STATE_STARTED
 			|| player->state == STATE_PAUSED || player->state == STATE_STOPPED
 			|| player->state == STATE_COMPLETED) {

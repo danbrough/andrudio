@@ -123,8 +123,6 @@ public class LibAndrudio {
 
   public static native boolean isPlaying(long handle);
 
-  public static native void printStatus(long handle);
-
   public static native int getMetaData(long handle, Map<String, String> data);
 
 }

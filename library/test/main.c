@@ -1,9 +1,11 @@
+#define _GNU_SOURCE
 #include <signal.h>
-
+#include <sys/epoll.h>
 #include <termios.h>
 
 #include "audioplayer.h"
 
+#include <ao/ao.h>
 #ifndef DISABLE_AUDIO
 #define USING_AO
 #endif
@@ -134,10 +136,11 @@ static void do_exit(void) {
 
 	log_debug("do_exit::done.");
 	pthread_exit(0);
-	exit(0);
 }
 
-#include <sys/epoll.h>
+static void print_status(player_t *player) {
+	log_debug("print_status() %s", ap_get_state_name(player->state));
+}
 
 static void event_loop(player_t *player) {
 
@@ -146,7 +149,6 @@ static void event_loop(player_t *player) {
 	int c = 0;
 
 	double incr;
-	int printed_not_playing = 0;
 	//FD_ZERO(&rfds);
 	//FD_SET(STDIN_FILENO, &rfds);
 	const int MAX_EVENTS = 64;
@@ -162,7 +164,7 @@ static void event_loop(player_t *player) {
 	}
 
 	memset(&event, 0, sizeof(struct epoll_event));
-	event.events = EPOLLIN|EPOLLOUT;
+	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = STDIN_FILENO;
 
 	if (epoll_ctl(efd, EPOLL_CTL_ADD, STDIN_FILENO, &event) < 0) {
@@ -184,7 +186,7 @@ static void event_loop(player_t *player) {
 
 		for (int n = 0; n < nfds; n++) {
 			if (events[n].data.fd == STDIN_FILENO) {
-				log_warn("stdin event events: %d",event.events);
+				log_warn("stdin event events: %d", event.events);
 				read(STDIN_FILENO, &c, 1);
 				break;
 			}
@@ -240,15 +242,7 @@ static void event_loop(player_t *player) {
 			ap_pause(player);
 			break;
 		case 'p':
-			if (!player->audio_st) {
-				if (!printed_not_playing) {
-					ap_print_status(player);
-					printed_not_playing = 1;
-				}
-			} else {
-				printed_not_playing = 0;
-				ap_print_status(player);
-			}
+			print_status(player);
 			break;
 		case 's':
 			ap_start(player);
@@ -258,6 +252,9 @@ static void event_loop(player_t *player) {
 			break;
 		case 'r':
 			ap_reset(player);
+			break;
+		case 't':
+			ap_test(player);
 			break;
 		case 'z':
 			ap_seek(player, 0, FALSE);
@@ -303,7 +300,7 @@ static void event_loop(player_t *player) {
 
 					do_seek: ap_seek(player, incr * AV_TIME_BASE,
 							seek_relative);
-					ap_print_status(player);
+					print_status(player);
 
 					break;
 				}
@@ -319,6 +316,7 @@ static void event_loop(player_t *player) {
 			log_info("r:\treset");
 			log_info("p:\tstatus");
 			log_info("z:\tseek to start");
+
 			log_info("m:\tprint metadata");
 			log_info("o:\tseek to one minute");
 			log_info("l:\ttoggle loop mode");

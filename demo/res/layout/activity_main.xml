@@ -12,23 +12,29 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
-    <ImageButton
+    <Button
       android:id="@+id/pause"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:src="@drawable/ic_pause_white_24dp" />
+      android:text="Pause" />
 
-    <ImageButton
+    <Button
       android:id="@+id/stop"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:src="@drawable/ic_stop_white_24dp" />
+      android:text="Stop" />
 
-    <ImageButton
-      android:id="@+id/play"
+    <Button
+      android:id="@+id/start"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:src="@drawable/ic_play_arrow_white_24dp" />
+      android:text="Start" />
+
+    <Button
+      android:id="@+id/reset"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Reset" />
   </LinearLayout>
 
   <SeekBar

@@ -6,6 +6,7 @@
 #include <sys/epoll.h>
 
 static int decode_interrupt_cb(player_t *player) {
+	//log_trace("decode_interrupt returning %d", player && player->abort_call);
 	return player && player->abort_call;
 }
 
@@ -28,6 +29,10 @@ static int st_index[AVMEDIA_TYPE_NB] = { 0 };
 static int epoll_timeout = -1;
 
 static int eof = 0;
+static AVAudioResampleContext *avr = NULL;
+static AVFrame *frame = NULL;
+static AVPacket pkt;
+static uint8_t *audio_buf = NULL;
 
 static int wanted_stream[AVMEDIA_TYPE_NB] = { [AVMEDIA_TYPE_AUDIO] = -1,
 		[AVMEDIA_TYPE_VIDEO] = -1, [AVMEDIA_TYPE_SUBTITLE] = -1, };
@@ -99,6 +104,8 @@ static int stream_component_open(player_t *player, int stream_index) {
 	AVCodec *codec;
 	int ret = 0;
 
+	log_info("stream_component_open()");
+
 	if (stream_index < 0 || stream_index >= ic->nb_streams)
 		return -1;
 	avctx = ic->streams[stream_index]->codec;
@@ -123,7 +130,8 @@ static int stream_component_open(player_t *player, int stream_index) {
 		ap_print_error("avcodec_open2() failed", ret);
 		goto end;
 	}
-
+	if (player->abort_call)
+		return FAILURE;
 	/* prepare audio output */
 	if (avctx->codec_type == AVMEDIA_TYPE_AUDIO) {
 		player->sdl_sample_rate = avctx->sample_rate;
@@ -171,7 +179,7 @@ static int stream_component_open(player_t *player, int stream_index) {
 	player->audio_buf_size = 0;
 	player->audio_buf_index = 0;
 
-	memset(&player->audio_pkt, 0, sizeof(player->audio_pkt));
+	memset(&pkt, 0, sizeof(pkt));
 
 	end:
 
@@ -181,37 +189,36 @@ static int stream_component_open(player_t *player, int stream_index) {
 void stream_component_close(player_t *player, int stream_index) {
 	log_info("stream_component_close() index:%d", stream_index);
 	AVFormatContext *ic = player->ic;
-	AVCodecContext *avctx;
-	if (stream_index == -1)
-		return;
+
+
 	BEGIN_LOCK(player);
-	/*if (stream_index < 0 || stream_index >= ic->nb_streams)
-	 goto end;*/
-	avctx = ic->streams[stream_index]->codec;
 
-	av_free_packet(&player->audio_pkt);
-	if (player->avr) {
-		avresample_free(&player->avr);
-		player->avr = NULL;
+	av_free_packet(&pkt);
+
+	if (avr) {
+		avresample_free(&avr);
 	}
-	av_freep(&player->audio_buf1);
-	player->audio_buf = NULL;
-	av_frame_free(&player->frame);
 
-	ic->streams[stream_index]->discard = AVDISCARD_ALL;
-	avcodec_close(avctx);
+	if (audio_buf) {
+		av_freep(&audio_buf);
+	}
 
-//end: ;
+	av_frame_free(&frame);
+
+	player->audio_st->discard = AVDISCARD_ALL;
+
+	avcodec_close(player->audio_st->codec);
+	avformat_close_input(&player->ic);
+
 	END_LOCK(player);
-	log_debug("stream_component_close::done");
-
+	log_trace("stream_component_close::done");
 }
 
 /* decode one audio frame and returns its uncompressed size */
 static int audio_decode_frame(player_t *player) {
 	/*AVPacket *pkt_temp = &player->audio_pkt_temp;
 	 */
-	AVPacket *pkt = &player->audio_pkt;
+
 //log_info("audio_decode_frame()");
 	AVCodecContext *dec = player->audio_st->codec;
 	int n, len1, data_size, got_frame;
@@ -220,32 +227,33 @@ static int audio_decode_frame(player_t *player) {
 		/* NOTE: the audio packet can contain several frames */
 
 		//log_debug("top_loop");usleep(100000);
-		while (pkt->size > 0) {
+		while (pkt.size > 0) {
 			int resample_changed, audio_resample;
 
 			//log_debug("second_loop");
 
-			if (!player->frame) {
-				if (!(player->frame = av_frame_alloc()))
+			if (!frame) {
+				if (!(frame = av_frame_alloc()))
 					return AVERROR(ENOMEM);
 			}
-
-			len1 = avcodec_decode_audio4(dec, player->frame, &got_frame, pkt);
+			if (player->abort_call)
+				return FAILURE;
+			len1 = avcodec_decode_audio4(dec, frame, &got_frame, &pkt);
 			if (len1 < 0) {
 				/* if error, we skip the frame */
 				ap_print_error("avcodec_decode_audio4()", len1);
-				pkt->size = 0;
+				pkt.size = 0;
 				break;
 			} else {
 				//log_trace("avcodec_decode_audio4 returned %d",len1);
 			}
 
-			pkt->data += len1;
-			pkt->size -= len1;
+			pkt.data += len1;
+			pkt.size -= len1;
 
 			if (!got_frame) {
 				/* stop sending empty packets if the decoder is finished */
-				/*	if (!pkt->data
+				/*	if (!pkt.data
 				 && (dec->codec->capabilities & CODEC_CAP_DELAY)){
 				 return 0;
 				 }
@@ -254,82 +262,78 @@ static int audio_decode_frame(player_t *player) {
 
 			}
 			data_size = av_samples_get_buffer_size(NULL, dec->channels,
-					player->frame->nb_samples, player->frame->format, 1);
+					frame->nb_samples, frame->format, 1);
 
-			audio_resample = player->frame->format != player->sdl_sample_fmt
-					|| player->frame->channel_layout
-							!= player->sdl_channel_layout
-					|| player->frame->sample_rate != player->sdl_sample_rate;
+			audio_resample = frame->format != player->sdl_sample_fmt
+					|| frame->channel_layout != player->sdl_channel_layout
+					|| frame->sample_rate != player->sdl_sample_rate;
 
-			resample_changed = player->frame->format
-					!= player->resample_sample_fmt
-					|| player->frame->channel_layout
-							!= player->resample_channel_layout
-					|| player->frame->sample_rate
-							!= player->resample_sample_rate;
+			resample_changed = frame->format != player->resample_sample_fmt
+					|| frame->channel_layout != player->resample_channel_layout
+					|| frame->sample_rate != player->resample_sample_rate;
 
-			if ((!player->avr && audio_resample) || resample_changed) {
+			if ((!avr && audio_resample) || resample_changed) {
 				int ret;
-				if (player->avr)
-					avresample_close(player->avr);
+				if (avr)
+					avresample_close(avr);
 				else if (audio_resample) {
-					player->avr = avresample_alloc_context();
-					if (!player->avr) {
+					avr = avresample_alloc_context();
+					if (!avr) {
 						fprintf(stderr,
 								"error allocating AVAudioResampleContext\n");
 						break;
 					}
 				}
 				if (audio_resample) {
-					av_opt_set_int(player->avr, "in_channel_layout",
-							player->frame->channel_layout, 0);
-					av_opt_set_int(player->avr, "in_sample_fmt",
-							player->frame->format, 0);
-					av_opt_set_int(player->avr, "in_sample_rate",
-							player->frame->sample_rate, 0);
-					av_opt_set_int(player->avr, "out_channel_layout",
+					av_opt_set_int(avr, "in_channel_layout",
+							frame->channel_layout, 0);
+					av_opt_set_int(avr, "in_sample_fmt", frame->format, 0);
+					av_opt_set_int(avr, "in_sample_rate", frame->sample_rate,
+							0);
+					av_opt_set_int(avr, "out_channel_layout",
 							player->sdl_channel_layout, 0);
-					av_opt_set_int(player->avr, "out_sample_fmt",
+					av_opt_set_int(avr, "out_sample_fmt",
 							player->sdl_sample_fmt, 0);
-					av_opt_set_int(player->avr, "out_sample_rate",
+					av_opt_set_int(avr, "out_sample_rate",
 							player->sdl_sample_rate, 0);
 
-					if ((ret = avresample_open(player->avr)) < 0) {
+					if ((ret = avresample_open(avr)) < 0) {
 						fprintf(stderr, "error initializing libavresample\n");
 						break;
 					}
 				}
-				player->resample_sample_fmt = player->frame->format;
-				player->resample_channel_layout = player->frame->channel_layout;
-				player->resample_sample_rate = player->frame->sample_rate;
+				player->resample_sample_fmt = frame->format;
+				player->resample_channel_layout = frame->channel_layout;
+				player->resample_sample_rate = frame->sample_rate;
 			}
+
+			uint8_t *play_buf = NULL;
 
 			if (audio_resample) {
 				void *tmp_out;
 				int out_samples, out_size, out_linesize;
 				int osize = av_get_bytes_per_sample(player->sdl_sample_fmt);
-				int nb_samples = player->frame->nb_samples;
+				int nb_samples = frame->nb_samples;
 
 				out_size = av_samples_get_buffer_size(&out_linesize,
 						player->sdl_channels, nb_samples,
 						player->sdl_sample_fmt, 0);
-				tmp_out = av_realloc(player->audio_buf1, out_size);
+				tmp_out = av_realloc(audio_buf, out_size);
 				if (!tmp_out)
 					return AVERROR(ENOMEM);
-				player->audio_buf1 = tmp_out;
-
-				out_samples = avresample_convert(player->avr,
-						&player->audio_buf1, out_linesize, nb_samples,
-						player->frame->data, player->frame->linesize[0],
-						player->frame->nb_samples);
+				audio_buf = tmp_out;
+				play_buf = audio_buf;
+				out_samples = avresample_convert(avr, &play_buf, out_linesize,
+						nb_samples, frame->data, frame->linesize[0],
+						frame->nb_samples);
 				if (out_samples < 0) {
 					ap_print_error("avresample_convert() failed", out_samples);
 					break;
 				}
-				player->audio_buf = player->audio_buf1;
 				data_size = out_samples * osize * player->sdl_channels;
+
 			} else {
-				player->audio_buf = player->frame->data[0];
+				play_buf = frame->data[0];
 			}
 
 			/* if no pts, then compute it */
@@ -340,13 +344,13 @@ static int audio_decode_frame(player_t *player) {
 			player->audio_clock += (double) data_size
 					/ (double) (n * player->sdl_sample_rate);
 
-			if (pkt->pts != AV_NOPTS_VALUE) {
+			if (pkt.pts != AV_NOPTS_VALUE) {
 				player->audio_clock = av_q2d(player->audio_st->time_base)
-						* pkt->pts;
+						* pkt.pts;
 			}
-
-			player->callbacks.on_play(player, (char*) player->audio_buf,
-					data_size);
+			if (player->abort_call)
+				return FAILURE;
+			player->callbacks.on_play(player, (char*) play_buf, data_size);
 
 #ifdef DEBUG
 			{
@@ -361,9 +365,9 @@ static int audio_decode_frame(player_t *player) {
 		}
 
 		/* free the current packet */
-		if (pkt->data)
-			av_free_packet(pkt);
-		memset(pkt, 0, sizeof(*pkt));
+		if (pkt.data)
+			av_free_packet(&pkt);
+		memset(&pkt, 0, sizeof(pkt));
 
 		if (player->state == STATE_PAUSED) {
 			log_trace("audio_decode_frame::exiting");
@@ -371,35 +375,46 @@ static int audio_decode_frame(player_t *player) {
 		}
 
 		/* if update the audio clock with the pts */
-		if (pkt->pts != AV_NOPTS_VALUE) {
-			player->audio_clock = av_q2d(player->audio_st->time_base)
-					* pkt->pts;
+		if (pkt.pts != AV_NOPTS_VALUE) {
+			player->audio_clock = av_q2d(player->audio_st->time_base) * pkt.pts;
 		}
 	}
 
 	return 0;
 }
 
-static int prepare_stream(player_t *player) {
+static int cmd_prepare(player_t *player) {
+	log_info("cmd_prepare(): %s", player->url);
+	int i, ret;
+	if (change_state(player, STATE_PREPARING) != SUCCESS)
+		return FAILURE;
 
-	log_info("prepare_stream::avformat_open_input() %s", player->url);
-	int err = avformat_open_input(&player->ic, player->url, NULL, NULL);
-	int ret = 0;
-	int i = 0;
-	if (err < 0) {
-		ap_print_error("prepare_stream::avformat_open_input failed: ", err);
-		ret = -1;
-		goto end;
+	if (player->ic) {
+		log_trace("cmd_prepare::avformat_close_input(&player->ic);");
+		avformat_close_input(&player->ic);
 	}
+
+	log_debug("cmd_prepare::avformat_open_input() %s", player->url);
+	ret = avformat_open_input(&player->ic, player->url, NULL, NULL);
+	log_debug("cmd_prepare:avformat_open_input retured");
+
+	if (ret < 0) {
+		ap_print_error("cmd_prepare::avformat_open_input failed: ", ret);
+		return FAILURE;
+	}
+
+	player->ic->interrupt_callback.opaque = player;
+	player->ic->interrupt_callback.callback = (void*) decode_interrupt_cb;
 
 	if (genpts)
 		player->ic->flags |= AVFMT_FLAG_GENPTS;
-	log_trace("prepare_stream::avformat_find_stream_info()");
-	err = avformat_find_stream_info(player->ic, NULL);
-	if (err < 0) {
-		ap_print_error("prepare_stream::avformat_find_stream_info failed", err);
-		ret = err;
-		goto end;
+	log_debug("cmd_prepare::avformat_find_stream_info()");
+	ret = avformat_find_stream_info(player->ic, NULL);
+	log_debug("cmd_prepare:avformat_find_stream_info retured");
+
+	if (ret < 0) {
+		ap_print_error("cmd_prepare::avformat_find_stream_info failed", ret);
+		return FAILURE;
 	}
 
 	if (player->ic->pb)
@@ -421,32 +436,58 @@ static int prepare_stream(player_t *player) {
 	}
 
 	if (player->audio_stream < 0) {
-		log_error("prepare_stream::%s: could not open codecs", player->url);
-		ret = -1;
-		goto end;
+		log_error("cmd_prepare::%s: could not open codecs", player->url);
+		return FAILURE;
 	}
 
-	log_trace("prepare_stream:: stream opened .. reading metadata..");
+	log_debug("cmd_prepare:: stream opened .. reading metadata..");
 
 	av_dump_format(player->ic, 0, player->url, 0);
 	AVDictionaryEntry *entry = NULL;
 	while ((entry = av_dict_get(player->ic->metadata, "", entry,
 	AV_DICT_IGNORE_SUFFIX)))
-		log_trace("metadata:\t%s:%s", entry->key, entry->value);
+		log_debug("metadata:\t%s:%s", entry->key, entry->value);
 
-	ret = SUCCESS;
-	end: return ret;
+	return change_state(player, STATE_PREPARED);
 }
 
-static int cmd_prepare(player_t *player) {
-	log_info("cmd_prepare(): %s", player->url);
-	if (change_state(player, STATE_PREPARING) == SUCCESS) {
-		if (prepare_stream(player) == SUCCESS) {
-			return change_state(player, STATE_PREPARED);
-		}
+static int cmd_reset(player_t *player) {
+	log_info("cmd_reset(): %s", player->url);
+
+	if (player->state == STATE_IDLE) {
+		return SUCCESS;
 	}
-	return FAILURE;
+
+	if (player->state != STATE_END)
+		change_state(player, STATE_IDLE);
+
+	if (avr) {
+		log_trace("cmd_reset::avresample_free()");
+		avresample_free(&avr);
+		avr = NULL;
+	}
+
+	if (frame) {
+		log_trace("cmd_reset::av_frame_free()");
+		av_frame_free(&frame);
+		frame = NULL;
+	}
+
+	if (player->ic) {
+		log_trace("cmd_reset::avformat_close_input(&player->ic)");
+		avformat_close_input(&player->ic);
+	}
+
+	player->audio_stream = -1;
+	player->audio_st = NULL;
+	epoll_timeout = -1;
+
+	player->abort_call = 0;
+
+	log_trace("cmd_reset::done");
+	return SUCCESS;
 }
+
 static int cmd_pause(player_t *player) {
 	log_info("cmd_pause(): %s", player->url);
 	int ret = FAILURE;
@@ -462,10 +503,20 @@ static int cmd_pause(player_t *player) {
 static int cmd_start(player_t *player) {
 	log_info("cmd_start(): %s", player->url);
 	int ret = FAILURE;
+
+	if (player->state == STATE_STARTED)
+		return SUCCESS;
+
+	if (player->state == STATE_STOPPED) {
+		cmd_reset(player);
+		return cmd_prepare(player);
+	}
+
 	if (player->state == STATE_PAUSED) {
-		log_trace("ret = av_read_play(player->ic)");
+		log_trace("av_read_play(player->ic)");
 		ret = av_read_play(player->ic);
 	}
+
 	if ((ret = change_state(player, STATE_STARTED)) == SUCCESS) {
 		epoll_timeout = 0; //dont block when waiting for events
 	}
@@ -473,15 +524,13 @@ static int cmd_start(player_t *player) {
 }
 
 static int cmd_stop(player_t *player) {
-	log_info("cmd_stop(): %s", player->url);
-	if (change_state(player, STATE_STOPPED) == SUCCESS) {
-		epoll_timeout = -1; //block when waiting for events
-	}
-	return FAILURE;
+	log_info("cmd_stop()");
+	epoll_timeout = -1; //block when waiting for events
+	return change_state(player, STATE_STOPPED);
 }
 
 static int cmd_seek(player_t *player) {
-	log_error("cmd_seek(): %s not implemented", player->url);
+	log_trace("cmd_seek()");
 	int ret = FAILURE;
 	int64_t seek_target = player->seek_pos;
 	int64_t seek_min =
@@ -490,12 +539,16 @@ static int cmd_seek(player_t *player) {
 	int64_t seek_max =
 			player->seek_rel < 0 ? seek_target - player->seek_rel - 2 :
 			INT64_MAX;
-	// FIXME the +-2 is due to rounding being not done in the correct direction in generation
-	//      of the seek_pos/seek_rel variables
+// FIXME the +-2 is due to rounding being not done in the correct direction in generation
+//      of the seek_pos/seek_rel variables
 
 	log_trace("cmd_seek::avformat_seek_file()");
 	ret = avformat_seek_file(player->ic, -1, seek_min, seek_target, seek_max,
 			player->seek_flags);
+	player->seek_req = 0;
+
+	if (player->abort_call)
+		return -1;
 
 	if (ret < 0) {
 		ap_print_error("cmd_seek::error in seek", ret);
@@ -503,54 +556,11 @@ static int cmd_seek(player_t *player) {
 		player->callbacks.on_event(player, EVENT_SEEK_COMPLETE, 0, 0);
 	}
 
-	player->seek_req = 0;
-
 	return ret;
 }
 
-static int cmd_reset(player_t *player) {
-	log_info("cmd_reset(): %s", player->url);
-	int ret = FAILURE;
-
-	if (player->state == STATE_IDLE) {
-		return SUCCESS;
-	}
-
-	if ((ret = change_state(player, STATE_IDLE)) != SUCCESS) {
-		return ret;
-	}
-
-	if (player->avr) {
-		log_trace("cmd_reset::avresample_free()");
-		avresample_free(&player->avr);
-	}
-
-	if (player->frame) {
-		log_trace("cmd_reset::av_frame_free()");
-		av_frame_free(&player->frame);
-	}
-
-	if (player->ic) {
-		log_trace("cmd_reset::avformat_close_input()");
-		avformat_close_input(&player->ic);
-		avformat_free_context(player->ic);
-	}
-
-	player->audio_stream = -1;
-	player->audio_st = NULL;
-	epoll_timeout = -1;
-	player->avr = NULL;
-	player->ic = NULL;
-	player->frame = NULL;
-	player->url[0] = 0;
-	player->abort_call = 0;
-
-	log_trace("cmd_reset::done");
-	return SUCCESS;
-}
-
 static int cmd_set_datasource(player_t *player) {
-	int ret = 0;
+
 	log_info("cmd_set_datasource(): %s", player->url);
 	if (player->state != STATE_IDLE) {
 		log_error("cmd_set_datasource::invalid state: %s",
@@ -560,6 +570,10 @@ static int cmd_set_datasource(player_t *player) {
 	return change_state(player, STATE_INITIALIZED);
 }
 
+static int cmd_test(player_t *player) {
+	log_info("cmd_test()");
+
+}
 /* this thread gets the stream from the disk or the network */
 int player_thread(player_t *player) {
 
@@ -567,20 +581,20 @@ int player_thread(player_t *player) {
 
 	int ret, i;
 
-	AVPacket *pkt = &player->audio_pkt;
-
 	const int MAX_EVENTS = 8;
 	struct epoll_event event;
 	struct epoll_event events[MAX_EVENTS];
-	int efd = epoll_create1(0);
-
-	av_init_packet(pkt);
-
-	AP_EVENT(player, EVENT_THREAD_START, 0, 0);
+	int efd = 0;
 
 	memset(st_index, -1, sizeof(st_index));
 	memset(&events, 0, sizeof(events));
 	player->audio_stream = -1;
+	av_init_packet(&pkt);
+
+	pkt.data = NULL;
+	pkt.size = 0;
+
+	AP_EVENT(player, EVENT_THREAD_START, 0, 0);
 
 	log_trace("player_thread::avformat_alloc_context()");
 	player->ic = avformat_alloc_context();
@@ -593,7 +607,8 @@ int player_thread(player_t *player) {
 	player->ic->interrupt_callback.opaque = player;
 	player->ic->interrupt_callback.callback = (void*) decode_interrupt_cb;
 
-	efd = epoll_create1(0);
+	efd = epoll_create(MAX_EVENTS);
+	log_trace("efd: %d", efd);
 
 	memset(&event, 0, sizeof(struct epoll_event));
 	event.events = EPOLLIN;
@@ -601,13 +616,15 @@ int player_thread(player_t *player) {
 	event.data.fd = pipe_fd;
 
 	if ((ret = epoll_ctl(efd, EPOLL_CTL_ADD, pipe_fd, &event)) < 0) {
-		log_error("epoll set insertion error: fd=%d0", pipe_fd);
+		log_error("epoll set insertion error: fd=%d0: %s", pipe_fd,
+				strerror(errno));
 		goto end;
 	}
 
 	log_trace("player_thread::starting loop");
+	int quit = 0;
 
-	while (1) {
+	while (!quit) {
 		int nfds = epoll_wait(efd, events, MAX_EVENTS, epoll_timeout);
 
 		if (nfds < 0) {
@@ -623,6 +640,7 @@ int player_thread(player_t *player) {
 						ap_get_cmd_name(cmd), ap_get_state_name(player->state));
 				switch (cmd) {
 				case CMD_PREPARE:
+					eof = 0;
 					cmd_prepare(player);
 					break;
 				case CMD_START:
@@ -643,6 +661,15 @@ int player_thread(player_t *player) {
 				case CMD_SET_DATASOURCE:
 					cmd_set_datasource(player);
 					break;
+				case CMD_EXIT:
+					quit = 1;
+					continue;
+				case CMD_TEST:
+					cmd_test(player);
+					break;
+				default:
+					log_error("player_thread::invalid command: %d", cmd);
+					break;
 				}
 			}
 		}
@@ -651,7 +678,7 @@ int player_thread(player_t *player) {
 			continue;
 
 		//log_trace("player_thread::av_read_frame()");
-		ret = av_read_frame(player->ic, pkt);
+		ret = av_read_frame(player->ic, &pkt);
 
 		if (ret < 0) {
 			ap_print_error("player_thread::av_read_frame failed", ret);
@@ -665,8 +692,9 @@ int player_thread(player_t *player) {
 					ap_seek(player, 0, 0);
 					continue;
 				}
+			} else {
+				continue;
 			}
-			continue;
 		}
 
 		if (eof) {
@@ -674,37 +702,63 @@ int player_thread(player_t *player) {
 			if (player->audio_stream >= 0
 					&& (player->audio_st->codec->codec->capabilities
 							& CODEC_CAP_DELAY)) {
-				av_init_packet(pkt);
-				pkt->data = NULL;
-				pkt->size = 0;
-				pkt->stream_index = player->audio_stream;
+				av_init_packet(&pkt);
+				pkt.data = NULL;
+				pkt.size = 0;
+				pkt.stream_index = player->audio_stream;
 			}
+			change_state(player, STATE_COMPLETED);
+			epoll_timeout = -1;
 			continue;
 		}
 
-		if (pkt->stream_index == player->audio_stream) {
+		if (pkt.stream_index == player->audio_stream) {
 			audio_decode_frame(player);
 		}
 
-		av_free_packet(pkt);
+		av_free_packet(&pkt);
 
 	}
 	ret = SUCCESS;
 	end:
 	log_info("read_loop::finished  state: %s eof: %d  ret: %d looping: %d",
 			ap_get_state_name(player->state), eof, ret, player->looping);
-	stream_component_close(player, player->audio_stream);
+
+	change_state(player, STATE_END);
+
+	if (player->audio_st && player->audio_st->codec) {
+		avcodec_close(player->audio_st->codec);
+	}
+
+	if (audio_buf) {
+		log_warn("read_loop::av_freep(&audio_buf);");
+		av_freep(&audio_buf);
+	}
+
+	if (avr) {
+		log_warn("read_loop::avresample_free()");
+		avresample_free(&avr);
+	}
+
+	av_free_packet(&pkt);
+
+	if (frame) {
+		log_warn("read_loop::av_frame_free()");
+		av_frame_free(&frame);
+	}
+
+	if (player->ic) {
+		log_warn("avformat_close_input(&player->ic)");
+		avformat_close_input(&player->ic);
+
+	}
 
 	pthread_mutex_destroy(&player->mutex);
 
-	if (player->pipe[0]) {
-		close(player->pipe[0]);
-	}
-	if (player->pipe[1]) {
-		close(player->pipe[1]);
-	}
-	free(player);
-	log_trace("pthread_exit(0);");
+	close(player->pipe[0]);
+	close(player->pipe[1]);
+
+	log_warn("read_loop::done");
 	pthread_exit(0);
 	return ret;
 }

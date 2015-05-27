@@ -1,6 +1,5 @@
 #ifndef _AUDIOPLAYER_H_
 #define _AUDIOPLAYER_H_
-
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
@@ -104,7 +103,8 @@ typedef enum {
 	CMD_STOP,
 	CMD_SEEK,
 	CMD_RESET,
-	CMD_EXIT
+	CMD_EXIT,
+	CMD_TEST
 } audio_cmd_t;
 
 const char* ap_get_state_name(audio_state_t state);
@@ -113,11 +113,11 @@ typedef struct player_t {
 	int looping;
 	int abort_call;
 	audio_state_t state;
-	audio_state_t last_paused;
 	pthread_mutex_t mutex;
 	pthread_t player_thread;
 	int seek_req;
 	int seek_flags;
+
 	int64_t seek_pos;
 	int64_t seek_rel;
 	AVFormatContext *ic;
@@ -131,12 +131,10 @@ typedef struct player_t {
 
 	//int audio_hw_buf_size;
 	uint8_t silence_buf[SDL_AUDIO_BUFFER_SIZE];
-	uint8_t *audio_buf;
-	uint8_t *audio_buf1;
+
 	unsigned int audio_buf_size; /* in bytes */
 	int audio_buf_index; /* in bytes */
-	AVPacket audio_pkt_temp;
-	AVPacket audio_pkt;
+
 	enum AVSampleFormat sdl_sample_fmt;
 
 	uint64_t sdl_channel_layout;
@@ -146,9 +144,6 @@ typedef struct player_t {
 	enum AVSampleFormat resample_sample_fmt;
 	uint64_t resample_channel_layout;
 	int resample_sample_rate;
-
-	AVAudioResampleContext *avr;
-	AVFrame *frame;
 
 	int16_t *sample_array[SAMPLE_ARRAY_SIZE];
 	int sample_array_index;
@@ -208,8 +203,6 @@ int ap_prepare_async(player_t *player);
 int ap_reset(player_t *player);
 
 void ap_seek(player_t *player, int64_t pos, int relative);
-
-void ap_print_status(player_t *player);
 
 void ap_print_metadata(player_t *player);
 

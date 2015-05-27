@@ -84,13 +84,12 @@ public class MainActivity extends AppCompatActivity {
     // 48khz ogg (a test with an odd sample rate)
     // this tune is driving me insane.
     addURL("http://h1.danbrough.org/media/tests/test48.ogg");
+    // local tests
+    addURL("http://192.168.1.2/test.ogg");
+    addURL("http://192.168.1.2/test.mp3");
 
-    // audio/x-mpegurl
-    addURL("http://www.listenlive.eu/bbcradio1.m3u");
-
-    // this is the url from the contents of
-    // http://www.listenlive.eu/bbcradio1.m3u (audio/mpeg)
-    addURL("http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
+    // wmav2 encoded asf stream
+    addURL("mmsh://streaming.radionz.co.nz/national-mbr");
 
     // music that matters
     addURL("http://live-aacplus-64.kexp.org/kexp64.aac");
@@ -98,8 +97,14 @@ public class MainActivity extends AppCompatActivity {
     // wellington student radio
     addURL("http://stream.radioactive.fm:8000/ractive");
 
-    // wmav2 encoded asf stream
-    addURL("mmsh://streaming.radionz.co.nz/national-mbr");
+    // streams below aren't working too well or not at all
+
+    // audio/x-mpegurl
+    addURL("http://www.listenlive.eu/bbcradio1.m3u");
+
+    // this is the url from the contents of
+    // http://www.listenlive.eu/bbcradio1.m3u (audio/mpeg)
+    addURL("http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
 
     // rtsp aac stream
     addURL("rtsp://radionz-wowza.streamguys.com/national/national.stream");
@@ -109,10 +114,6 @@ public class MainActivity extends AppCompatActivity {
     // audio/aacp
     addURL("http://radionz-ice.streamguys.com/national");
 
-    // local tests
-    addURL("http://192.168.1.2/test.ogg");
-    addURL("http://192.168.1.2/test.mp3");
-
     findViewById(R.id.pause).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-    findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
+    findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
         player.start();
@@ -133,7 +134,12 @@ public class MainActivity extends AppCompatActivity {
         player.stop();
       }
     });
-
+    findViewById(R.id.reset).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        player.reset();
+      }
+    });
   }
 
   private void addURL(final String url) {

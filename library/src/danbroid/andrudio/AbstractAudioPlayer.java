@@ -41,7 +41,7 @@ public abstract class AbstractAudioPlayer implements
     Log.v(TAG, "onStateChange() " + oldState + " -> " + state);
     this.state = state;
 
-    if (state == State.STOPPED) {
+    if (state == State.STOPPED || state == State.END) {
       onStopped();
     } else if (state == State.STARTED) {
       onStarted();
@@ -175,10 +175,6 @@ public abstract class AbstractAudioPlayer implements
    */
   public int getDuration() {
     return LibAndrudio.getDuration(handle);
-  }
-
-  public void printStatus() {
-    LibAndrudio.printStatus(handle);
   }
 
   public void setDataSource(String url) {

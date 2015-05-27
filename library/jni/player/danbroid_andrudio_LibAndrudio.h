@@ -137,14 +137,6 @@ JNIEXPORT jboolean JNICALL Java_danbroid_andrudio_LibAndrudio_isPlaying
 
 /*
  * Class:     danbroid_andrudio_LibAndrudio
- * Method:    printStatus
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_danbroid_andrudio_LibAndrudio_printStatus
-  (JNIEnv *, jclass, jlong);
-
-/*
- * Class:     danbroid_andrudio_LibAndrudio
  * Method:    getMetaData
  * Signature: (JLjava/util/Map;)I
  */
