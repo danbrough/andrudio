@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import danbroid.andrudio.AndroidAudioPlayer;
 import danbroid.andrudio.LibAndrudio;
 
@@ -98,6 +99,16 @@ public class MainActivity extends AppCompatActivity {
     addURL("http://stream.radioactive.fm:8000/ractive");
 
     // streams below aren't working too well or not at all
+    Button btn = new Button(this);
+    btn.setText("URL's below aren't working or not working well");
+    buttons.addView(btn);
+    btn.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Toast.makeText(getApplicationContext(), "Fix Me!", Toast.LENGTH_SHORT)
+            .show();
+      }
+    });
 
     // audio/x-mpegurl
     addURL("http://www.listenlive.eu/bbcradio1.m3u");

@@ -190,7 +190,6 @@ void stream_component_close(player_t *player, int stream_index) {
 	log_info("stream_component_close() index:%d", stream_index);
 	AVFormatContext *ic = player->ic;
 
-
 	BEGIN_LOCK(player);
 
 	av_free_packet(&pkt);

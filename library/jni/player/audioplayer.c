@@ -121,7 +121,10 @@ int ap_pause(player_t *player) {
 }
 
 static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl) {
-	vfprintf(stdout, fmt, vl);
+	//vfprintf(stdout, fmt, vl);
+	char buf[128] = { 0 };
+	vsnprintf(buf, sizeof(buf), fmt, vl);
+	log_info("%s", buf);
 }
 
 int ap_init() {
@@ -191,7 +194,8 @@ void ap_delete(player_t* player) {
 		return;
 	player->abort_call = 1;
 	ap_send_cmd(player, CMD_EXIT);
-	log_info("ap_delete::calling join on %d", player->player_thread);
+	log_info("ap_delete::calling join on %"PRIXPTR,
+			(intptr_t )player->player_thread);
 	pthread_join(player->player_thread, NULL);
 	log_info("ap_delete::done");
 	av_freep(&player);
