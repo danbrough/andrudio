@@ -460,6 +460,11 @@ static int cmd_reset(player_t *player) {
 	if (player->state != STATE_END)
 		change_state(player, STATE_IDLE);
 
+	if (player->audio_st && player->audio_st->codec) {
+		log_trace("avcodec_close(player->audio_st->codec)");
+		avcodec_close(player->audio_st->codec);
+	}
+
 	if (avr) {
 		log_trace("cmd_reset::avresample_free()");
 		avresample_free(&avr);
@@ -663,9 +668,6 @@ int player_thread(player_t *player) {
 				case CMD_EXIT:
 					quit = 1;
 					continue;
-				case CMD_TEST:
-					cmd_test(player);
-					break;
 				default:
 					log_error("player_thread::invalid command: %d", cmd);
 					break;
@@ -749,7 +751,6 @@ int player_thread(player_t *player) {
 	if (player->ic) {
 		log_warn("avformat_close_input(&player->ic)");
 		avformat_close_input(&player->ic);
-
 	}
 
 	pthread_mutex_destroy(&player->mutex);

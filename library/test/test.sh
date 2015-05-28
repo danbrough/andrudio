@@ -19,7 +19,8 @@ TEST_ROOT=`pwd`
 
 export ANDROID_NDK=/tmp/notneeded
 cd .. && . env.sh
-rm /tmp/playertest
+EXE=/tmp/playertest
+[ -f $EXE ] && rm $EXE
 
 log "this test program will require libao to be installed"
 if (( $FFMPEG )); then
@@ -57,7 +58,7 @@ else
 fi
 
 gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/player_thread.c \
-  ../jni/player/audioplayer.c  -I../jni/player/  -o /tmp/playertest  $BUILD/lib/lib*.a  \
+  ../jni/player/audioplayer.c  -I../jni/player/  -o $EXE  $BUILD/lib/lib*.a  \
  $LDFLAGS -lz -lbz2 -lc -lm -lavutil -lavcodec -lavformat -lavresample -lpthread -I${BUILD}/include -L${BUILD}/lib || exit 1  
 
 WRAPPER=""
@@ -69,6 +70,6 @@ elif [ "$MEMCHECK" == "2" ]; then
 fi
 
 
-$WRAPPER /tmp/playertest "$URL"
+$WRAPPER $EXE "$URL"
 
 

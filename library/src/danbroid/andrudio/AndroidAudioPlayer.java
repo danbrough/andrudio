@@ -4,6 +4,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.AudioTrack.OnPlaybackPositionUpdateListener;
+import android.os.Handler;
 import android.util.Log;
 
 /**
@@ -24,6 +25,8 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
   private AudioTrack audioTrack;
 
   private long statusUpdateInterval = 1000;
+
+  private final Handler handler = new Handler();
 
   @Override
   public synchronized void reset() {
@@ -117,7 +120,6 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   protected void onPaused() {
-    super.onPaused();
     if (audioTrack != null) {
       Log.v(TAG, "audioTrack.pause()");
       audioTrack.pause();
@@ -126,7 +128,6 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   protected void onStarted() {
-    super.onStarted();
     if (audioTrack != null) {
       Log.v(TAG, "audioTrack.play()");
       audioTrack.play();
@@ -135,7 +136,6 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   protected void onStopped() {
-    super.onStopped();
     if (audioTrack != null) {
       Log.v(TAG, "audioTrack.stop()");
       audioTrack.stop();
@@ -143,7 +143,30 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
   }
 
   @Override
+  protected void onCompleted() {
+    Log.v(TAG, "onCompleted()");
+    handler.post(new Runnable() {
+      @Override
+      public void run() {
+        onStatusUpdate();
+        onStopped();
+      }
+    });
+  }
+
+  @Override
   public void writePCM(byte[] data, int offset, int length) {
     audioTrack.write(data, offset, length);
+  }
+
+  @Override
+  protected void onPrepared() {
+    Log.v(TAG, "onPrepared() .. calling start()..");
+    start();
+  }
+
+  @Override
+  protected void onSeekComplete() {
+    Log.v(TAG, "onSeekComplete()");
   }
 }

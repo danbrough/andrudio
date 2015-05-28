@@ -2,11 +2,7 @@ package danbroid.andrudio;
 
 import java.util.Map;
 
-import android.media.AudioTrack;
-import android.util.Log;
-
 /**
- * A simple audio player that wraps a {@link AudioTrack} instance.
  * 
  * This is the second tier API that resides on top of {@link LibAndrudio}.
  * You don't have to use this class, instead you can use {@link LibAndrudio}
@@ -15,8 +11,6 @@ import android.util.Log;
 
 public abstract class AbstractAudioPlayer implements
     LibAndrudio.NativeCallbacks {
-
-  private static final String TAG = AbstractAudioPlayer.class.getName();
 
   private long handle = 0;
 
@@ -38,7 +32,6 @@ public abstract class AbstractAudioPlayer implements
   }
 
   protected void onStateChange(State oldState, State state) {
-    Log.v(TAG, "onStateChange() " + oldState + " -> " + state);
     this.state = state;
 
     if (state == State.STOPPED || state == State.END) {
@@ -66,7 +59,6 @@ public abstract class AbstractAudioPlayer implements
    */
 
   public void play(String url) {
-    Log.i(TAG, "play() :" + url);
     reset();
     setDataSource(url);
     prepareAsync();
@@ -81,7 +73,6 @@ public abstract class AbstractAudioPlayer implements
   }
 
   public synchronized void release() {
-    Log.d(TAG, "release()");
     if (handle != 0) {
       LibAndrudio.destroy(handle);
       handle = 0;
@@ -108,10 +99,6 @@ public abstract class AbstractAudioPlayer implements
     case EVENT_STATE_CHANGE:
       onStateChange(stateValues[arg1], stateValues[arg2]);
       break;
-    default:
-      Log.e(TAG, "handleEvent() " + what + ":" + arg1 + ":" + arg2
-          + " not handled");
-      break;
     }
   }
 
@@ -131,34 +118,17 @@ public abstract class AbstractAudioPlayer implements
     LibAndrudio.togglePause(handle);
   }
 
-  /**
-   * Will call {@link #start()}
-   */
-  protected void onPrepared() {
-    Log.v(TAG, "onPrepared()");
-    start();
-  }
+  protected abstract void onPrepared();
 
-  protected void onCompleted() {
-    Log.v(TAG, "onCompleted() .. calling stop()");
-    stop();
-  }
+  protected abstract void onCompleted();
 
-  protected void onPaused() {
-    Log.v(TAG, "onPaused()");
-  }
+  protected abstract void onPaused();
 
-  protected void onStopped() {
-    Log.v(TAG, "onStopped()");
-  }
+  protected abstract void onStopped();
 
-  protected void onStarted() {
-    Log.v(TAG, "onStarted()");
-  }
+  protected abstract void onStarted();
 
-  protected void onSeekComplete() {
-    Log.v(TAG, "onSeekComplete()");
-  }
+  protected abstract void onSeekComplete();
 
   /**
    * 

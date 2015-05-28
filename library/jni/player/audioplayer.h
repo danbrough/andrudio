@@ -32,9 +32,7 @@
 #define AS_DEBUG_LEVEL_ERROR 1
 #define AS_DEBUG_LEVEL_ALL AS_DEBUG_LEVEL_TRACE
 
-#ifndef AS_DEBUG_LEVEL
-#define AS_DEBUG_LEVEL AS_DEBUG_LEVEL_ALL
-#endif
+extern int AS_DEBUG_LEVEL;
 
 #ifdef USE_COLOR
 #define COLOR_ERROR_BEGIN "\x1b[31m"
@@ -54,7 +52,6 @@
 
 #ifdef __ANDROID__
 #include <android/log.h>
-//#include <SLES/OpenSLES_Android.h>
 
 #define ANDROID_PRINT __android_log_print
 #define log_error(format, ...)  if (AS_DEBUG_LEVEL & AS_DEBUG_ERROR) ANDROID_PRINT(ANDROID_LOG_ERROR, LOG_TAG, format,## __VA_ARGS__)
@@ -103,8 +100,7 @@ typedef enum {
 	CMD_STOP,
 	CMD_SEEK,
 	CMD_RESET,
-	CMD_EXIT,
-	CMD_TEST
+	CMD_EXIT
 } audio_cmd_t;
 
 const char* ap_get_state_name(audio_state_t state);
@@ -221,7 +217,9 @@ void ap_set_looping(player_t *player, int looping);
 void ap_print_error(const char* msg, int err);
 
 #define BEGIN_LOCK(player) pthread_mutex_lock(&player->mutex)
+
 #define END_LOCK(player) pthread_mutex_unlock(&player->mutex)
+
 #define AP_EVENT(player,event,arg1,arg2) if (player->callbacks.on_event)\
 		player->callbacks.on_event(player,event,arg1,arg2)
 

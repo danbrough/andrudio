@@ -253,9 +253,6 @@ static void event_loop(player_t *player) {
 		case 'r':
 			ap_reset(player);
 			break;
-		case 't':
-			ap_test(player);
-			break;
 		case 'z':
 			ap_seek(player, 0, FALSE);
 			break;

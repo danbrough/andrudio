@@ -29,7 +29,11 @@
 #include <libavutil/dict.h>
 #include <libavutil/samplefmt.h>
 
+
+
 #include "audioplayer.h"
+
+int AS_DEBUG_LEVEL = AS_DEBUG_LEVEL_INFO;
 
 const char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
@@ -74,8 +78,6 @@ const char* ap_get_cmd_name(audio_cmd_t cmd) {
 		return "CMD_EXIT";
 	case CMD_SET_DATASOURCE:
 		return "CMD_SET_DATASOURCE";
-	case CMD_TEST:
-		return "CMD_TEST";
 	}
 	return "CMD_UNKNOWN";
 }
@@ -121,10 +123,14 @@ int ap_pause(player_t *player) {
 }
 
 static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl) {
-	//vfprintf(stdout, fmt, vl);
-	char buf[128] = { 0 };
-	vsnprintf(buf, sizeof(buf), fmt, vl);
-	log_info("%s", buf);
+#ifdef __ANDROID__
+	if (AS_DEBUG_LEVEL & AS_DEBUG_TRACE) {
+		__android_log_vprint(ANDROID_LOG_VERBOSE, "danbroid.ffmpeg",
+				fmt,vl);
+	}
+#else
+	vfprintf(stdout, fmt, vl);
+#endif
 }
 
 int ap_init() {
@@ -251,11 +257,6 @@ int ap_stop(player_t *player) {
 	log_info("ap_stop()");
 
 	return ap_send_cmd(player, CMD_STOP);
-}
-
-int ap_test(player_t *player) {
-	log_info("ap_test()");
-	return ap_send_cmd(player, CMD_TEST);
 }
 
 void ap_print_metadata(player_t *player) {

@@ -56,11 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
-        log.trace("onStopTrackingTouch()");
-
-        log.debug("player.seekTo() {}", seekProgress);
+        log.debug("onStopTrackingTouch(): player.seekTo() {}", seekProgress);
         player.seekTo(seekProgress);
-        isSeeking = false;
       }
 
       @Override
@@ -176,6 +173,8 @@ public class MainActivity extends AppCompatActivity {
     player = new AndroidAudioPlayer() {
       @Override
       protected void onSeekComplete() {
+        log.trace("onSeekComplete()");
+        isSeeking = false;
       }
 
       @Override
@@ -185,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
           @Override
           public void run() {
+            log.trace("onPrepared::configuring seekBar");
             int duration = getDuration();
             if (duration <= 0) {
               seekBar.setEnabled(false);
@@ -196,6 +196,22 @@ public class MainActivity extends AppCompatActivity {
             }
           }
         });
+      }
+
+      @Override
+      public synchronized void reset() {
+        log.debug("reset();");
+        super.reset();
+        seekBar.setEnabled(false);
+        seekBar.setProgress(0);
+      }
+
+      @Override
+      public synchronized void stop() {
+        log.debug("stop();");
+        super.stop();
+        seekBar.setEnabled(false);
+        seekBar.setProgress(0);
       }
 
       @Override
