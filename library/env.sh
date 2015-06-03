@@ -39,7 +39,7 @@ if (( $FFMPEG )); then
   #export TAG=master
 else
   export LIBAV=$BUILD/libav.git
-  export TAG=v11.3
+  export TAG=v11.4
   #export TAG=master
 fi
 
