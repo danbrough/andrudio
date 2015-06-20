@@ -35,7 +35,7 @@ OPENSSL=$BUILD/openssl.git
 
 if (( $FFMPEG )); then
   export LIBAV=$BUILD/ffmpeg.git
-  export TAG=n2.7
+  export TAG=n2.7.1
   #export TAG=master
 else
   export LIBAV=$BUILD/libav.git
