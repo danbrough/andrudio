@@ -156,7 +156,10 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   public void writePCM(byte[] data, int offset, int length) {
-    audioTrack.write(data, offset, length);
+    if (audioTrack != null)
+      audioTrack.write(data, offset, length);
+    else
+      Log.e(TAG, "audioTrack is null");
   }
 
   @Override

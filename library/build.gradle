@@ -1,7 +1,3 @@
-buildscript {
-    repositories { mavenCentral() }
-    dependencies { classpath parent.GRADLE_PLUGIN }
-}
 
 apply plugin: 'android-library'
 apply plugin: 'maven-publish'

@@ -14,6 +14,7 @@ LOCAL_SHARED_LIBRARIES := libavresample libavcodec libavformat libavutil
 #LOCAL_LDLIBS += -lOpenSLES  -llog 
 LOCAL_LDLIBS +=  -llog  
 
+#LOCAL_LDFLAGS += -Wl,-soname,libandrudio.so
 
 include $(BUILD_SHARED_LIBRARY)
 

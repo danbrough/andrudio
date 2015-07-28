@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
   private static void init_gingerbread() {
     log.warn("setting strict thread policy");
-    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-        .detectAll().penaltyLog().penaltyDialog().build());
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDialog().build());
   }
 
   private AndroidAudioPlayer player;
@@ -67,8 +67,7 @@ public class MainActivity extends AppCompatActivity {
       }
 
       @Override
-      public void onProgressChanged(SeekBar seekBar, int progress,
-          boolean fromUser) {
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
           seekProgress = progress;
           log.trace("progress: " + progress);
@@ -102,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
     btn.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Toast.makeText(getApplicationContext(), "Fix Me!", Toast.LENGTH_SHORT)
-            .show();
+        Toast.makeText(getApplicationContext(), "Fix Me!", Toast.LENGTH_SHORT).show();
       }
     });
 
@@ -151,9 +149,11 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void addURL(final String url) {
-    Button btn = new Button(this);
+    View view = LayoutInflater.from(this).inflate(R.layout.url_test, buttons, false);
+
+    Button btn = (Button) view.findViewById(R.id.button);
     btn.setText(url);
-    buttons.addView(btn);
+
     btn.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -161,6 +161,8 @@ public class MainActivity extends AppCompatActivity {
         player.play(url);
       }
     });
+
+    buttons.addView(view);
   }
 
   @Override
