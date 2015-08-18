@@ -210,7 +210,7 @@ static void event_loop(player_t *player) {
 			break;
 		case '3':
 			play(player,
-					"rtsp://radionz-wowza.streamguys.com/national/national.stream");
+					"http://199.180.75.6/");
 			break;
 		case '4':
 			play(player, "http://radionz-ice.streamguys.com/national.mp3");
