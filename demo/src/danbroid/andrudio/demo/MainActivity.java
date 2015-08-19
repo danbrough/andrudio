@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
     // wellington student radio
     addURL("http://stream.radioactive.fm:8000/ractive");
 
+    addURL("http://xstream1.somafm.com:8900");
+
     // streams below aren't working too well or not at all
     Button btn = new Button(this);
     btn.setText("URL's below aren't working or not working well");
@@ -104,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Fix Me!", Toast.LENGTH_SHORT).show();
       }
     });
+
+    // audio/x-scpls
+    addURL("http://somafm.com/deepspaceone.pls");
 
     // audio/x-mpegurl
     addURL("http://www.listenlive.eu/bbcradio1.m3u");

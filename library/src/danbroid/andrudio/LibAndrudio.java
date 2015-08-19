@@ -10,8 +10,8 @@ import java.util.Map;
 public class LibAndrudio {
 
   /**
-   * Callback interface for the native code.
-   * The native code calls these java methods only.
+   * Callback interface for the native code. The native code calls these java
+   * methods only.
    */
   public interface NativeCallbacks {
 
@@ -44,8 +44,7 @@ public class LibAndrudio {
 
   public static void initialize() {
 
-    String libs[] = { "crypto", "ssl", "avutil", "avresample", "avcodec",
-        "avformat", "andrudio" };
+    String libs[] = { "crypto", "ssl", "avutil", "avresample", "avcodec", "avformat", "andrudio" };
 
     for (int i = 0; i < libs.length; i++) {
       System.loadLibrary(libs[i]);
@@ -55,8 +54,7 @@ public class LibAndrudio {
     initialized = true;
   }
 
-  private static native int initializeLibrary(
-      Class<NativeCallbacks> listenerClass);
+  private static native int initializeLibrary(Class<NativeCallbacks> listenerClass);
 
   public static long create() {
     if (!initialized) {
@@ -74,8 +72,7 @@ public class LibAndrudio {
 
   public static native void destroy(long handle);
 
-  public static native int prepareAsync(long handle)
-      throws IllegalStateException;
+  public static native int prepareAsync(long handle) throws IllegalStateException;
 
   public static native int start(long handle);
 

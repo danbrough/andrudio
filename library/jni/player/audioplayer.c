@@ -33,7 +33,7 @@
 
 #include "audioplayer.h"
 
-int AS_DEBUG_LEVEL = AS_DEBUG_LEVEL_INFO;
+int AS_DEBUG_LEVEL = AS_DEBUG_LEVEL_ALL;
 
 const char * ap_get_state_name(audio_state_t state) {
 	switch (state) {
@@ -129,7 +129,7 @@ static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl)
 				fmt,vl);
 	}
 #else
-	vfprintf(stdout, fmt, vl);
+	vfprintf(stderr, fmt, vl);
 #endif
 }
 

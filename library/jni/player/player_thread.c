@@ -229,8 +229,6 @@ static int audio_decode_frame(player_t *player) {
 		while (pkt.size > 0) {
 			int resample_changed, audio_resample;
 
-			//log_debug("second_loop");
-
 			if (!frame) {
 				if (!(frame = av_frame_alloc()))
 					return AVERROR(ENOMEM);
@@ -242,7 +240,7 @@ static int audio_decode_frame(player_t *player) {
 				/* if error, we skip the frame */
 				ap_print_error("avcodec_decode_audio4()", len1);
 				pkt.size = 0;
-				break;
+
 			} else {
 				//log_trace("avcodec_decode_audio4 returned %d",len1);
 			}
@@ -383,10 +381,14 @@ static int audio_decode_frame(player_t *player) {
 }
 
 static int cmd_prepare(player_t *player) {
-	log_info("cmd_prepare(): %s", player->url);
+	log_info("cmd_prepare(): %s in state: %s", player->url,ap_get_state_name(player->state));
 	int i, ret;
-	if (change_state(player, STATE_PREPARING) != SUCCESS)
+	if (change_state(player, STATE_PREPARING) != SUCCESS){
+		log_error("cmd_prepare::failed to change to preparing");
 		return FAILURE;
+	}
+
+	log_debug("cmd_prepare::1");
 
 	if (player->ic) {
 		log_trace("cmd_prepare::avformat_close_input(&player->ic);");

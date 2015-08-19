@@ -216,7 +216,7 @@ static void event_loop(player_t *player) {
 			play(player, "http://radionz-ice.streamguys.com/national.mp3");
 			break;
 		case '5':
-			play(player, "http://stream.radioactive.fm:8000/ractive");
+			play(player, "http://xstream1.somafm.com:2020");
 			break;
 		case '6':
 			play(player, "http://live-aacplus-64.kexp.org/kexp64.aac");
