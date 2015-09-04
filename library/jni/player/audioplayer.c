@@ -33,7 +33,7 @@
 
 #include "audioplayer.h"
 
-int AS_DEBUG_LEVEL = AS_DEBUG_LEVEL_ALL;
+int AS_DEBUG_LEVEL = AS_DEBUG_LEVEL_DEBUG;
 
 const char * ap_get_state_name(audio_state_t state) {
 	switch (state) {

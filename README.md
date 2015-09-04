@@ -7,10 +7,9 @@ for use in audio only applications.
     git clone git@github.com:danbrough/andrudio
     cd andrudio
     ./library/build.sh
-    gradle build
+    ./gradlew build
 
 You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
-The gradle build scripts are for gradle 2.4.
 
 For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to go.
 
@@ -23,7 +22,10 @@ To use libav instead of ffmpeg set `FFMPEG := 0` in `library/jni/Android.mk`.
 Status
 ------
 
-Very much a work in progress.
+It works. It plays stuff.
+Doesn't play .m3u or .pls playlists but you can implement that yourself by
+parsing these files from your code.
+
 
 
 

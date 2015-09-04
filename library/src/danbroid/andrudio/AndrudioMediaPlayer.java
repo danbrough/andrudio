@@ -52,21 +52,19 @@ public class AndrudioMediaPlayer extends MediaPlayer {
   }
 
   @Override
-  public void setDataSource(Context context, Uri uri,
-      Map<String, String> headers) throws IOException,
-      IllegalArgumentException, SecurityException, IllegalStateException {
+  public void setDataSource(Context context, Uri uri, Map<String, String> headers)
+      throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
     Log.e(TAG, "setDataSource() Not implemented");
   }
 
   @Override
-  public void setDataSource(FileDescriptor fd) throws IOException,
-      IllegalArgumentException, IllegalStateException {
+  public void setDataSource(FileDescriptor fd) throws IOException, IllegalArgumentException, IllegalStateException {
     Log.e(TAG, "setDataSource() Not implemented");
   }
 
   @Override
-  public void setDataSource(String path) throws IOException,
-      IllegalArgumentException, SecurityException, IllegalStateException {
+  public void setDataSource(String path)
+      throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
     player.setDataSource(path);
   }
 
@@ -128,5 +126,9 @@ public class AndrudioMediaPlayer extends MediaPlayer {
   @Override
   public void pause() throws IllegalStateException {
     player.pause();
+  }
+
+  public void getMetaData(Map<String, String> map) {
+    player.getMetaData(map);
   }
 }
