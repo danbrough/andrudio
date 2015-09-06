@@ -6,4 +6,4 @@
 /build
 /jni/native/native
 /Test
-/libs
+#/libs
