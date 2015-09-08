@@ -44,7 +44,9 @@ public class LibAndrudio {
 
   public static void initialize() {
 
-    String libs[] = { "crypto", "ssl", "avutil", "avresample", "avcodec", "avformat", "andrudio" };
+    // String libs[] = { "crypto", "ssl", "avutil", "avresample", "avcodec",
+    // "avformat", "andrudio" };
+    String libs[] = { "avutil", "avresample", "avcodec", "avformat", "andrudio" };
 
     for (int i = 0; i < libs.length; i++) {
       System.loadLibrary(libs[i]);

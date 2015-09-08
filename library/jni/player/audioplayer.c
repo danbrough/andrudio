@@ -20,14 +20,14 @@
  */
 #define _GNU_SOURCE
 
-#include <inttypes.h>
-#include <math.h>
-#include <limits.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <libavutil/avstring.h>
-#include <libavutil/dict.h>
-#include <libavutil/samplefmt.h>
+#include "inttypes.h"
+#include "math.h"
+#include "limits.h"
+#include "stdint.h"
+#include "fcntl.h"
+#include "libavutil/avstring.h"
+#include "libavutil/dict.h"
+#include "libavutil/samplefmt.h"
 
 
 

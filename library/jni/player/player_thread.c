@@ -1,9 +1,9 @@
-#include <assert.h>
+#include "assert.h"
 
 #include "audioplayer.h"
-#include <pthread.h>
-#include <libavutil/opt.h>
-#include <sys/epoll.h>
+#include "pthread.h"
+#include "libavutil/opt.h"
+#include "sys/epoll.h"
 
 static int decode_interrupt_cb(player_t *player) {
 	//log_trace("decode_interrupt returning %d", player && player->abort_call);

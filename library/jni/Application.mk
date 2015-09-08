@@ -1,5 +1,5 @@
 # Compile with android-ndk-r10d
 APP_ABI := armeabi armeabi-v7a x86 x86_64 
 #APP_ABI := armeabi armeabi-v7a x86  
-#APP_ABI := x86
+#APP_ABI := x86_64 x86
 

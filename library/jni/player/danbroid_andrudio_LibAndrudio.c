@@ -1,6 +1,6 @@
 #include "audioplayer.h"
 #include "danbroid_andrudio_LibAndrudio.h"
-#include <assert.h>
+#include "assert.h"
 
 #define JLONG_TO_PLAYER(handle) (player_t*)(intptr_t) handle
 #define PLAYER_TO_JLONG(stream) (jlong)(intptr_t) stream

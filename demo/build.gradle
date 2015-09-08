@@ -8,8 +8,8 @@ android {
     buildToolsVersion parent.BUILD_TOOLS_VERSION
     
     defaultConfig {
-        versionCode 3
-        versionName 'v1.03'
+        versionCode 4
+        versionName 'v1.04'
         minSdkVersion 8
         targetSdkVersion parent.TARGET_SDK
     }
@@ -23,8 +23,24 @@ android {
 
 
   
-  
+      signingConfigs {
+      release {
+        storeFile file('keystore')
+        storePassword file('password.txt').text.trim()
+        keyAlias "andrudio_demo"
+        keyPassword file('password.txt').text.trim()
+      }
+    }
 
+  buildTypes {
+    release {
+      signingConfig signingConfigs.release
+      minifyEnabled false
+      proguardFile 'proguard-android.txt'
+    }
+    debug { debuggable true }
+  }
+  
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'

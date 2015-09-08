@@ -8,7 +8,7 @@ source env.sh
 [ ! -d $JNIDIR ] && mkdir -p $JNIDIR
 
 
-#source $BUILD/build_mips.sh || exit 1
+source $BUILD/build_mips.sh || exit 1
 source $BUILD/build_x86_64.sh || exit 1
 source $BUILD/build_arm.sh || exit 1
 source $BUILD/build_armv7.sh || exit 1

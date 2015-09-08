@@ -11,7 +11,8 @@ for use in audio only applications.
 
 You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
 
-For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to go.
+For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to install or you can install the demo
+from [Google Play](https://play.google.com/store/apps/details?id=danbroid.andrudio.demo)
 
 There is also a command line application for testing the native code:
 	see:  `./library/test/test.sh`
