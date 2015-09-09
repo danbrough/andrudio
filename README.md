@@ -9,10 +9,13 @@ for use in audio only applications.
     ./library/build.sh
     ./gradlew build
 
-You will need to have the android ndk installed and the environment variable `$ANDROID_NDK_HOME` set to its location.
+You will need to have the android ndk installed (version r10e) and the environment variable `$ANDROID_NDK_HOME` set to its location.
 
 For testing there is a ./demo/build/outputs/apk/demo-debug.apk file ready to install or you can install the demo
 from [Google Play](https://play.google.com/store/apps/details?id=danbroid.andrudio.demo)
+
+If you can't compile the native code then you can unpack libs.tar.bz2 in the library directory which contain
+the latest binaries.
 
 There is also a command line application for testing the native code:
 	see:  `./library/test/test.sh`
@@ -26,6 +29,7 @@ Status
 It works. It plays stuff.
 Doesn't play .m3u or .pls playlists but you can implement that yourself by
 parsing these files from your code.
+The demo application does exactly that (though probably not very well).
 
 
 
