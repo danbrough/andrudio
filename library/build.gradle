@@ -1,11 +1,16 @@
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
 
 apply plugin: 'android-library'
 apply plugin: 'maven-publish'
 
 android {
 
-    compileSdkVersion parent.TARGET_SDK
-    buildToolsVersion parent.BUILD_TOOLS_VERSION
+    compileSdkVersion 23
+    buildToolsVersion '23.0.1'
 
     defaultConfig {
         versionCode parent.VERSION_CODE
@@ -37,7 +42,6 @@ android {
     }
 }
 
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -49,4 +53,5 @@ publishing {
     }
 }
 
-
+dependencies {
+}
