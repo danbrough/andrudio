@@ -124,4 +124,6 @@ public class LibAndrudio {
 
   public static native int getMetaData(long handle, Map<String, String> data);
 
+  // public static native int setUserAgent(long handle, String userAgent);
+
 }

@@ -395,14 +395,23 @@ static int cmd_prepare(player_t *player) {
 		avformat_close_input(&player->ic);
 	}
 
+	//AVDictionary *options = NULL;
+	//av_dict_set(&options, "user-agent", "This is my user-agent!", 0);
+
+
 	log_debug("cmd_prepare::avformat_open_input() %s", player->url);
+	//ret = avformat_open_input(&player->ic, player->url, NULL, &options);
 	ret = avformat_open_input(&player->ic, player->url, NULL, NULL);
-	log_debug("cmd_prepare:avformat_open_input retured");
+	log_debug("cmd_prepare:avformat_open_input returned");
+
+	//av_dict_free(&options);
 
 	if (ret < 0) {
 		ap_print_error("cmd_prepare::avformat_open_input failed: ", ret);
 		return FAILURE;
 	}
+
+
 
 	player->ic->interrupt_callback.opaque = player;
 	player->ic->interrupt_callback.callback = (void*) decode_interrupt_cb;

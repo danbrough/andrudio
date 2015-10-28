@@ -398,3 +398,11 @@ JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_getMetaData(
 	}
 	return 0;
 }
+
+
+/*
+JNIEXPORT jint JNICALL Java_danbroid_andrudio_LibAndrudio_setUserAgent
+  (JNIEnv *env, jclass jcls, jlong handle, jstring j_user_agent){
+	return 0;
+}
+*/
