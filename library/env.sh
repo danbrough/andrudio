@@ -31,30 +31,34 @@ export NDK=$ANDROID_NDK
 export PATH=$NDK:$PATH
 export JNIDIR=$ROOT/jni/native/native
 
+[ -f local.env ] && source local.env
+
 OPENSSL=$BUILD/openssl.git
 
 if (( $FFMPEG )); then
-  export LIBAV=$BUILD/ffmpeg.git
+  export SRC=$BUILD/ffmpeg.git
   export TAG=n2.8.1
-  #export TAG=master
 else
-  export LIBAV=$BUILD/libav.git
+  export SRC=$BUILD/libav.git
   export TAG=v11.4
-  #export TAG=master
+fi
+
+if [ ! -z "$CUSTOM_TAG" ]; then
+  export TAG="$CUSTOM_TAG"
 fi
 
 
 setup_source(){
   log setup_source
-  if [ ! -d $LIBAV ]; then
-    log setting up $LIBAV 
+  if [ ! -d $SRC ]; then
+    log setting up $SRC 
     if (( $FFMPEG )); then
-      git clone git://source.ffmpeg.org/ffmpeg.git $LIBAV
+      git clone git://source.ffmpeg.org/ffmpeg.git $SRC
     else
-      git clone git://git.libav.org/libav.git $LIBAV
+      git clone git://git.libav.org/libav.git $SRC
     fi    
   fi
-  cd $LIBAV
+  cd $SRC
   git clean -xdf && git reset --hard > /dev/null 2>&1
   git checkout $TAG  
   

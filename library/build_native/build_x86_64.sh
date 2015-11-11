@@ -31,7 +31,7 @@ export AR=${CROSS_PREFIX}ar
 export STRIP=${CROSS_PREFIX}strip
 
 DEST=$BUILD/build
-cd $LIBAV
+cd $SRC
 
 
 DEST="$DEST/$ABI"

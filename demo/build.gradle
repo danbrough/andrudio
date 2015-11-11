@@ -8,8 +8,8 @@ android {
     buildToolsVersion parent.BUILD_TOOLS_VERSION
     
     defaultConfig {
-        versionCode 5
-        versionName 'v1.05'
+        versionCode 6
+        versionName 'v1.06'
         minSdkVersion 8
         targetSdkVersion parent.TARGET_SDK
     }

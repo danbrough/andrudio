@@ -19,21 +19,21 @@ TEST_ROOT=`pwd`
 
 export ANDROID_NDK=/tmp/notneeded
 cd .. && . env.sh
-EXE=/tmp/playertest
-[ -f $EXE ] && rm $EXE
 
-log "this test program will require libao to be installed"
+
+
 if (( $FFMPEG )); then
-export BUILD=/tmp/ffmpeg
 log compiling ffmpeg
 else
-export BUILD=/tmp/libav
 log compiling libav
 fi
 
+export BUILD=$BUILD/test
+export EXE=$BUILD/playertest
+
 if [ ! -d $BUILD ]; then   
   setup_source
-  cd $LIBAV
+  cd $SRC
   source ../common_flags.sh
   ./configure $FLAGS --prefix=$BUILD --disable-shared --enable-static || exit 1
   make -j4 || exit 1
@@ -59,7 +59,8 @@ fi
 
 gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ../jni/player/player_thread.c \
   ../jni/player/audioplayer.c  -I../jni/player/  -o $EXE  $BUILD/lib/lib*.a  \
- $LDFLAGS -lz -lbz2 -lc -lm -lavutil -lavcodec -lavformat -lavresample -lpthread -I${BUILD}/include -L${BUILD}/lib || exit 1  
+  $LDFLAGS -lz -lbz2 -lc -lm -lavutil -lva -lavcodec -lavformat -lavresample -lpthread \
+ -I${BUILD}/include -L${BUILD}/lib || exit 1  
 
 WRAPPER=""
 
