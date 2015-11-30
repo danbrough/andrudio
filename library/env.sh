@@ -37,7 +37,7 @@ OPENSSL=$BUILD/openssl.git
 
 if (( $FFMPEG )); then
   export SRC=$BUILD/ffmpeg.git
-  export TAG=n2.8.1
+  export TAG=n2.8.3
 else
   export SRC=$BUILD/libav.git
   export TAG=v11.4

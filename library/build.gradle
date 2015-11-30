@@ -1,11 +1,18 @@
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
+
+
+
 repositories {
     jcenter()
     mavenLocal()
 }
 
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+
 
 android {
 
