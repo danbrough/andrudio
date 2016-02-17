@@ -1,8 +1,15 @@
-h263_vaapi		hevc_dxva2		mpeg4_vdpau
-h263_vdpau		mpeg1_vdpau		vc1_dxva2
-h264_dxva2		mpeg1_xvmc		vc1_vaapi
-h264_qsv		mpeg2_dxva2		vc1_vdpau
-h264_vaapi		mpeg2_vaapi		wmv3_dxva2
-h264_vda		mpeg2_vdpau		wmv3_vaapi
-h264_vda_old		mpeg2_xvmc		wmv3_vdpau
-h264_vdpau		mpeg4_vaapi
+h263_vaapi		hevc_vdpau		mpeg4_videotoolbox
+h263_videotoolbox	mpeg1_vdpau		vc1_d3d11va
+h264_d3d11va		mpeg1_videotoolbox	vc1_dxva2
+h264_dxva2		mpeg1_xvmc		vc1_mmal
+h264_mmal		mpeg2_d3d11va		vc1_qsv
+h264_qsv		mpeg2_dxva2		vc1_vaapi
+h264_vaapi		mpeg2_mmal		vc1_vdpau
+h264_vda		mpeg2_qsv		vp9_d3d11va
+h264_vda_old		mpeg2_vaapi		vp9_dxva2
+h264_vdpau		mpeg2_vdpau		vp9_vaapi
+h264_videotoolbox	mpeg2_videotoolbox	wmv3_d3d11va
+hevc_d3d11va		mpeg2_xvmc		wmv3_dxva2
+hevc_dxva2		mpeg4_mmal		wmv3_vaapi
+hevc_qsv		mpeg4_vaapi		wmv3_vdpau
+hevc_vaapi		mpeg4_vdpau

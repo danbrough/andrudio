@@ -111,6 +111,7 @@ public class LibAndrudio {
       throw new IllegalArgumentException("datasource is null");
     if (dataSource.startsWith("mms:"))
       dataSource = dataSource.replace("mms:", "mmsh:");
+    dataSource = "async:cache:" + dataSource;
     _setDataSource(handle, dataSource);
   }
 

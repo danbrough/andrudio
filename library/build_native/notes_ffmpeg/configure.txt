@@ -27,6 +27,7 @@ Standard options:
   --shlibdir=DIR           install shared libs in DIR [LIBDIR]
   --incdir=DIR             install includes in DIR [PREFIX/include]
   --mandir=DIR             install man page in DIR [PREFIX/share/man]
+  --pkgconfigdir=DIR       install pkg-config files in DIR [LIBDIR/pkgconfig]
   --enable-rpath           use rpath to allow installing libraries in paths
                            not part of the dynamic linker search path
                            use rpath when linking programs [USE WITH CARE]
@@ -67,7 +68,6 @@ Component options:
   --disable-avdevice       disable libavdevice build
   --disable-avcodec        disable libavcodec build
   --disable-avformat       disable libavformat build
-  --disable-avutil         disable libavutil build
   --disable-swresample     disable libswresample build
   --disable-swscale        disable libswscale build
   --disable-postproc       disable libpostproc build
@@ -89,10 +89,12 @@ Component options:
   --disable-pixelutils     disable pixel utils in libavutil
 
 Hardware accelerators:
+  --disable-d3d11va        disable D3D11VA code [autodetect]
   --disable-dxva2          disable DXVA2 code [autodetect]
   --disable-vaapi          disable VAAPI code [autodetect]
   --disable-vda            disable VDA code [autodetect]
   --disable-vdpau          disable VDPAU code [autodetect]
+  --enable-videotoolbox    enable VideoToolbox code [autodetect]
 
 Individual component options:
   --disable-everything     disable all components listed below
@@ -134,13 +136,17 @@ Individual component options:
 External library support:
   --enable-avisynth        enable reading of AviSynth script files [no]
   --disable-bzlib          disable bzlib [autodetect]
+  --enable-chromaprint     enable audio fingerprinting with chromaprint [no]
   --enable-fontconfig      enable fontconfig, useful for drawtext filter [no]
   --enable-frei0r          enable frei0r video filtering [no]
+  --enable-gcrypt          enable gcrypt, needed for rtmp(t)e support
+                           if openssl, librtmp or gmp is not used [no]
+  --enable-gmp             enable gmp, needed for rtmp(t)e support
+                           if openssl or librtmp is not used [no]
   --enable-gnutls          enable gnutls, needed for https support
                            if openssl is not used [no]
   --disable-iconv          disable iconv [autodetect]
   --enable-ladspa          enable LADSPA audio filtering [no]
-  --enable-libaacplus      enable AAC+ encoding via libaacplus [no]
   --enable-libass          enable libass subtitles rendering,
                            needed for subtitles and ass filter [no]
   --enable-libbluray       enable BluRay reading using libbluray [no]
@@ -150,6 +156,7 @@ External library support:
   --enable-libcdio         enable audio CD grabbing with libcdio [no]
   --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
                            and libraw1394 [no]
+  --enable-libdcadec       enable DCA decoding via libdcadec [no]
   --enable-libfaac         enable AAC encoding via libfaac [no]
   --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
   --enable-libflite        enable flite (voice synthesis) support via libflite [no]
@@ -159,6 +166,7 @@ External library support:
   --enable-libgsm          enable GSM de/encoding via libgsm [no]
   --enable-libiec61883     enable iec61883 via libiec61883 [no]
   --enable-libilbc         enable iLBC de/encoding via libilbc [no]
+  --enable-libkvazaar      enable HEVC encoding via libkvazaar [no]
   --enable-libmfx          enable HW acceleration through libmfx
   --enable-libmodplug      enable ModPlug via libmodplug [no]
   --enable-libmp3lame      enable MP3 encoding via libmp3lame [no]
@@ -171,21 +179,21 @@ External library support:
   --enable-libopenjpeg     enable JPEG 2000 de/encoding via OpenJPEG [no]
   --enable-libopus         enable Opus de/encoding via libopus [no]
   --enable-libpulse        enable Pulseaudio input via libpulse [no]
-  --enable-libquvi         enable quvi input via libquvi [no]
+  --enable-librubberband   enable rubberband needed for rubberband filter [no]
   --enable-librtmp         enable RTMP[E] support via librtmp [no]
   --enable-libschroedinger enable Dirac de/encoding via libschroedinger [no]
   --enable-libshine        enable fixed-point MP3 encoding via libshine [no]
   --enable-libsmbclient    enable Samba protocol via libsmbclient [no]
+  --enable-libsnappy       enable Snappy compression, needed for hap encoding [no]
   --enable-libsoxr         enable Include libsoxr resampling [no]
   --enable-libspeex        enable Speex de/encoding via libspeex [no]
   --enable-libssh          enable SFTP protocol via libssh [no]
-  --enable-libstagefright-h264  enable H.264 decoding via libstagefright [no]
+  --enable-libtesseract    enable Tesseract, needed for ocr filter [no]
   --enable-libtheora       enable Theora encoding via libtheora [no]
   --enable-libtwolame      enable MP2 encoding via libtwolame [no]
   --enable-libutvideo      enable Ut Video encoding and decoding via libutvideo [no]
   --enable-libv4l2         enable libv4l2/v4l-utils [no]
   --enable-libvidstab      enable video stabilization using vid.stab [no]
-  --enable-libvo-aacenc    enable AAC encoding via libvo-aacenc [no]
   --enable-libvo-amrwbenc  enable AMR-WB encoding via libvo-amrwbenc [no]
   --enable-libvorbis       enable Vorbis en/decoding via libvorbis,
                            native implementation exists [no]
@@ -201,17 +209,24 @@ External library support:
   --enable-libxcb-shape    enable X11 grabbing shape rendering [autodetect]
   --enable-libxvid         enable Xvid encoding via xvidcore,
                            native MPEG-4/Xvid encoder exists [no]
+  --enable-libzimg         enable z.lib, needed for zscale filter [no]
   --enable-libzmq          enable message passing via libzmq [no]
   --enable-libzvbi         enable teletext support via libzvbi [no]
   --disable-lzma           disable lzma [autodetect]
-  --enable-decklink        enable Blackmagick DeckLink I/O support [no]
+  --enable-decklink        enable Blackmagic DeckLink I/O support [no]
+  --enable-mmal            enable decoding via MMAL [no]
+  --enable-netcdf          enable NetCDF, needed for sofalizer filter [no]
   --enable-nvenc           enable NVIDIA NVENC support [no]
   --enable-openal          enable OpenAL 1.1 capture support [no]
   --enable-opencl          enable OpenCL code
   --enable-opengl          enable OpenGL rendering [no]
   --enable-openssl         enable openssl, needed for https support
                            if gnutls is not used [no]
+  --disable-schannel       disable SChannel SSP, needed for TLS support on
+                           Windows if openssl and gnutls are not used [autodetect]
   --disable-sdl            disable sdl [autodetect]
+  --disable-securetransport disable Secure Transport, needed for TLS support
+                           on OSX if openssl and gnutls are not used [autodetect]
   --enable-x11grab         enable X11 grabbing (legacy) [no]
   --disable-xlib           disable xlib [autodetect]
   --disable-zlib           disable zlib [autodetect]
@@ -238,11 +253,12 @@ Toolchain options:
   --yasmexe=EXE            use yasm-compatible assembler EXE [yasm]
   --cc=CC                  use C compiler CC [gcc]
   --cxx=CXX                use C compiler CXX [g++]
+  --objcc=OCC              use ObjC compiler OCC [gcc]
   --dep-cc=DEPCC           use dependency generator DEPCC [gcc]
   --ld=LD                  use linker LD []
   --pkg-config=PKGCONFIG   use pkg-config tool PKGCONFIG [pkg-config]
   --pkg-config-flags=FLAGS pass additional flags to pkgconf []
-  --ranlib=RANLIB          use ranlib RANLIB [ranlib -D]
+  --ranlib=RANLIB          use ranlib RANLIB [ranlib]
   --doxygen=DOXYGEN        use DOXYGEN to generate API doc [doxygen]
   --host-cc=HOSTCC         use host C compiler HOSTCC
   --host-cflags=HCFLAGS    use HCFLAGS when compiling for host
@@ -253,8 +269,10 @@ Toolchain options:
   --host-os=OS             compiler host OS []
   --extra-cflags=ECFLAGS   add ECFLAGS to CFLAGS []
   --extra-cxxflags=ECFLAGS add ECFLAGS to CXXFLAGS []
+  --extra-objcflags=FLAGS  add FLAGS to OBJCFLAGS []
   --extra-ldflags=ELDFLAGS add ELDFLAGS to LDFLAGS []
   --extra-ldexeflags=ELDFLAGS add ELDFLAGS to LDEXEFLAGS []
+  --extra-ldlibflags=ELDFLAGS add ELDFLAGS to LDLIBFLAGS []
   --extra-libs=ELIBS       add ELIBS []
   --extra-version=STRING   version string suffix []
   --optflags=OPTFLAGS      override optimization-related compiler flags
@@ -262,9 +280,11 @@ Toolchain options:
   --enable-pic             build position-independent code
   --enable-thumb           compile for Thumb instruction set
   --enable-lto             use link-time optimization
+  --env="ENV=override"     override the environment variables
 
 Advanced options (experts only):
   --malloc-prefix=PREFIX   prefix malloc and related names with PREFIX
+  --custom-allocator=NAME  use a supported custom allocator
   --disable-symver         disable symbol versioning
   --enable-hardcoded-tables use hardcoded tables instead of runtime generation
   --disable-safe-bitstream-reader
@@ -276,6 +296,8 @@ Advanced options (experts only):
 Optimization options (experts only):
   --disable-asm            disable all assembly optimizations
   --disable-altivec        disable AltiVec optimizations
+  --disable-vsx            disable VSX optimizations
+  --disable-power8         disable POWER8 optimizations
   --disable-amd3dnow       disable 3DNow! optimizations
   --disable-amd3dnowext    disable 3DNow! extended optimizations
   --disable-mmx            disable MMX optimizations
@@ -291,6 +313,7 @@ Optimization options (experts only):
   --disable-fma3           disable FMA3 optimizations
   --disable-fma4           disable FMA4 optimizations
   --disable-avx2           disable AVX2 optimizations
+  --disable-aesni          disable AESNI optimizations
   --disable-armv5te        disable armv5te optimizations
   --disable-armv6          disable armv6 optimizations
   --disable-armv6t2        disable armv6t2 optimizations
@@ -298,9 +321,11 @@ Optimization options (experts only):
   --disable-neon           disable NEON optimizations
   --disable-inline-asm     disable use of inline assembly
   --disable-yasm           disable use of nasm/yasm assembly
-  --disable-mipsdspr1      disable MIPS DSP ASE R1 optimizations
+  --disable-mipsdsp        disable MIPS DSP ASE R1 optimizations
   --disable-mipsdspr2      disable MIPS DSP ASE R2 optimizations
+  --disable-msa            disable MSA optimizations
   --disable-mipsfpu        disable floating point MIPS optimizations
+  --disable-mmi            disable Loongson SIMD optimizations
   --disable-fast-unaligned consider unaligned accesses slow
 
 Developer options (useful when working on FFmpeg itself):
@@ -330,5 +355,7 @@ Developer options (useful when working on FFmpeg itself):
                            (group) and PROB the probability associated with
                            NAME (default 0.5).
   --random-seed=VALUE      seed value for --enable/disable-random
+  --disable-valgrind-backtrace do not print a backtrace under Valgrind
+                           (only applies to --disable-optimizations builds)
 
 NOTE: Object files are built at the place where configure is launched.
