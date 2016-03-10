@@ -129,7 +129,9 @@ static void log_callback_help(void *ptr, int level, const char *fmt, va_list vl)
 				fmt,vl);
 	}
 #else
+	if (AS_DEBUG_LEVEL & AS_DEBUG_TRACE) {
 	vfprintf(stderr, fmt, vl);
+	}
 #endif
 }
 
@@ -260,11 +262,12 @@ int ap_stop(player_t *player) {
 }
 
 void ap_print_metadata(player_t *player) {
+	log_trace("ap_print_metadata()");
 	if (player->ic) {
 		AVDictionaryEntry *entry = NULL;
 		while ((entry = av_dict_get(player->ic->metadata, "", entry,
 		AV_DICT_IGNORE_SUFFIX)))
-			log_trace("metadata:\t%s:%s", entry->key, entry->value);
+			log_debug("metadata:\t%s:%s", entry->key, entry->value);
 	}
 }
 

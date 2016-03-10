@@ -2,15 +2,16 @@ package danbroid.andrudio;
 
 import java.util.Map;
 
+import android.util.Log;
+
 /**
  * 
- * This is the second tier API that resides on top of {@link LibAndrudio}.
- * You don't have to use this class, instead you can use {@link LibAndrudio}
+ * This is the second tier API that resides on top of {@link LibAndrudio}. You
+ * don't have to use this class, instead you can use {@link LibAndrudio}
  * directly to create your own API.
  */
 
-public abstract class AbstractAudioPlayer implements
-    LibAndrudio.NativeCallbacks {
+public abstract class AbstractAudioPlayer implements LibAndrudio.NativeCallbacks {
 
   private long handle = 0;
 
@@ -55,7 +56,7 @@ public abstract class AbstractAudioPlayer implements
    * resets, sets the datasource and prepares the player
    * 
    * @param url
-   * the datasource
+   *          the datasource
    */
 
   public void play(String url) {
@@ -87,8 +88,7 @@ public abstract class AbstractAudioPlayer implements
   }
 
   @Override
-  public abstract void prepareAudio(int sampleFormat, int sampleRateInHZ,
-      int channelConfig);
+  public abstract void prepareAudio(int sampleFormat, int sampleRateInHZ, int channelConfig);
 
   @Override
   public final void handleEvent(int what, int arg1, int arg2) {
@@ -144,6 +144,7 @@ public abstract class AbstractAudioPlayer implements
    * @return length of track in millis
    */
   public int getDuration() {
+    Log.e("danbroid.andrudio", "GETTING DURATION", new Exception());
     return LibAndrudio.getDuration(handle);
   }
 

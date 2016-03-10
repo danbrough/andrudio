@@ -182,7 +182,7 @@ static void event_loop(player_t *player) {
 			log_error("epoll_wait failed: error:%d:%s", errno, strerror(errno));
 			do_exit();
 		}
-		log_trace("select returned %d", nfds);
+		log_debug("select returned %d", nfds);
 
 		for (int n = 0; n < nfds; n++) {
 			if (events[n].data.fd == STDIN_FILENO) {
@@ -192,6 +192,7 @@ static void event_loop(player_t *player) {
 			}
 		}
 
+		log_debug("read a %d:%c",c,c);
 		if (nfds == 0) {
 			//timeout occurred. Print the status
 			c = 'p';
@@ -257,6 +258,7 @@ static void event_loop(player_t *player) {
 			ap_seek(player, 0, FALSE);
 			break;
 		case 'm':
+			log_debug("printing metadata ..");
 			ap_print_metadata(player);
 			break;
 		case 'l':

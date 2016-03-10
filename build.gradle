@@ -6,7 +6,6 @@ task wrapper(type: Wrapper) {
 buildscript {
     repositories {
         jcenter()
-        mavenLocal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.5.0'
@@ -25,7 +24,7 @@ ext {
     GRADLE_PLUGIN = "com.android.tools.build:gradle:1.5.0"
     TARGET_SDK = 23
     BUILD_TOOLS_VERSION = "23.0.2"
-    APP_COMPAT_VERSION = "23.1.0"
+    APP_COMPAT_VERSION = "23.2.1"
     VERSION_CODE = 1
     VERSION_NAME = "1.1"
 }

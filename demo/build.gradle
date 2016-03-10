@@ -8,8 +8,8 @@ android {
     buildToolsVersion parent.BUILD_TOOLS_VERSION
     
     defaultConfig {
-        versionCode 7
-        versionName 'v1.07'
+        versionCode 8
+        versionName 'v1.08'
         minSdkVersion 8
         targetSdkVersion parent.TARGET_SDK
     }
@@ -39,7 +39,7 @@ android {
 
 dependencies {    
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.1.+'
+    compile 'com.android.support:appcompat-v7:23.2.1'
     compile project(':library')
 }
 
