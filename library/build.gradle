@@ -1,9 +1,12 @@
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
 
-repositories {
-    jcenter()
+    dependencies { classpath PLUGIN_VERSION}
 }
-
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
@@ -11,14 +14,14 @@ apply plugin: 'maven-publish'
 
 android {
 
-    compileSdkVersion parent.TARGET_SDK
-    buildToolsVersion parent.BUILD_TOOLS_VERSION
+    compileSdkVersion Integer.parseInt(TARGET_SDK)
+    buildToolsVersion BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode parent.VERSION_CODE
-        versionName parent.VERSION_NAME
+        versionCode Integer.parseInt(VERSION_CODE)
+        versionName VERSION_NAME
         minSdkVersion 8
-        targetSdkVersion parent.TARGET_SDK
+        targetSdkVersion Integer.parseInt(TARGET_SDK)
     }
 
     lintOptions { abortOnError false }
@@ -57,3 +60,4 @@ publishing {
 
 dependencies {
 }
+

@@ -5,14 +5,6 @@ log(){
   printf '\x1b[1;32m### %s\x1b[0m\n' "$*"
 }
 
-
-FFMPEG=0
-if grep FFMPEG jni/Android.mk | grep 1 > /dev/null; then
-  log "using ffmpeg as found FFMPEG := 1 in Android.mk"
-  FFMPEG=1
-fi
-export FFMPEG
-
 SSL=0
 if grep SSL jni/Android.mk | grep 1 > /dev/null; then
   log "using openssl as found SSL := 1 in Android.mk"
@@ -35,14 +27,10 @@ export JNIDIR=$ROOT/jni/native/native
 
 OPENSSL=$BUILD/openssl.git
 
-if (( $FFMPEG )); then
-  export SRC=$BUILD/ffmpeg.git
-  #export TAG=n2.8.6
-  export TAG=n3.0
-else
-  export SRC=$BUILD/libav.git
-  export TAG=v11.5
-fi
+export SRC=$BUILD/ffmpeg.git
+#export TAG=n2.8.6
+export TAG=n3.0.1
+
 
 if [ ! -z "$CUSTOM_TAG" ]; then
   export TAG="$CUSTOM_TAG"
@@ -53,11 +41,7 @@ setup_source(){
   log setup_source
   if [ ! -d $SRC ]; then
     log setting up $SRC 
-    if (( $FFMPEG )); then
-      git clone git://source.ffmpeg.org/ffmpeg.git $SRC
-    else
-      git clone git://git.libav.org/libav.git $SRC
-    fi    
+    git clone git://source.ffmpeg.org/ffmpeg.git $SRC
   fi
   cd $SRC
   git clean -xdf && git reset --hard > /dev/null 2>&1

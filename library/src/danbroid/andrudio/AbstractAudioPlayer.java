@@ -2,8 +2,6 @@ package danbroid.andrudio;
 
 import java.util.Map;
 
-import android.util.Log;
-
 /**
  * 
  * This is the second tier API that resides on top of {@link LibAndrudio}. You
@@ -144,7 +142,7 @@ public abstract class AbstractAudioPlayer implements LibAndrudio.NativeCallbacks
    * @return length of track in millis
    */
   public int getDuration() {
-    Log.e("danbroid.andrudio", "GETTING DURATION", new Exception());
+    // Log.e("danbroid.andrudio", "GETTING DURATION", new Exception());
     return LibAndrudio.getDuration(handle);
   }
 

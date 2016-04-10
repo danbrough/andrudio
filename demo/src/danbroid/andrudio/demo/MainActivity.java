@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
   private static org.slf4j.Logger log = null;
 
   static {
-    AndroidLoggerFactory.configureDefaultLogger(Package.getPackage("danbroid"));
+    AndroidLoggerFactory.configureDefaultLogger(Package.getPackage("danbroid.andrudio"));
     log = LoggerFactory.getLogger(MainActivity.class);
     LibAndrudio.initialize();
 
@@ -50,12 +50,7 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.GINGERBREAD)
-  private static void init_gingerbread() {
-    log.warn("setting strict thread policy");
-    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDialog().build());
-  }
-
+  private final HashMap<String, String> metadata = new HashMap<String, String>();
   private AndroidAudioPlayer player;
   private ListView urls;
   private SeekBar seekBar;
@@ -64,23 +59,10 @@ public class MainActivity extends AppCompatActivity {
   private ArrayAdapter<MenuAction> adapter;
   private SharedPreferences prefs;
 
-  static class MenuAction {
-    String title;
-    String description;
-
-    public MenuAction(String title, String description) {
-      this.title = title;
-      this.description = description;
-    }
-
-    public void onClick() {
-      log.debug("clicked: {}", title);
-    }
-
-    @Override
-    public String toString() {
-      return title;
-    }
+  @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+  private static void init_gingerbread() {
+    log.warn("setting strict thread policy");
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDialog().build());
   }
 
   @Override
@@ -151,19 +133,15 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-    /*    findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        player.start();
-      }
-    });
-    
-    findViewById(R.id.reset).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        player.reset();
-      }
-    });*/
+    /*
+     * findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
+     * 
+     * @Override public void onClick(View v) { player.start(); } });
+     * 
+     * findViewById(R.id.reset).setOnClickListener(new View.OnClickListener() {
+     * 
+     * @Override public void onClick(View v) { player.reset(); } });
+     */
 
     new AsyncTask<Void, Void, Void>() {
 
@@ -312,8 +290,6 @@ public class MainActivity extends AppCompatActivity {
 
   }
 
-  private final HashMap<String, String> metadata = new HashMap<String, String>();
-
   private void onStatusUpdate() {
     final int duration = player.getDuration();
     final int position = player.getPosition();
@@ -338,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
 
   @Override
   protected void onStop() {
+
     log.info("onStop();");
     super.onStop();
     player.release();
@@ -353,24 +330,7 @@ public class MainActivity extends AppCompatActivity {
 
   public void addCustomURL() {
     log.debug("addCustomURL();");
-    DialogFragment dlg = new DialogFragment() {
-      @Override
-      public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Add Custom URL");
-        builder.setView(R.layout.custom_url_dialog);
-
-        builder.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface d, int which) {
-            CharSequence url = ((TextView) getDialog().findViewById(R.id.url)).getText();
-            addCustomURL(url.toString());
-          }
-        });
-        return builder.create();
-      }
-    };
-
+    CustomURLDialog dlg = new CustomURLDialog();
     dlg.show(getSupportFragmentManager(), "dialog");
   }
 
@@ -431,9 +391,6 @@ public class MainActivity extends AppCompatActivity {
     // this tune is driving me insane.
     addURL("http://h1.danbrough.org/media/tests/test48.ogg");
 
-    // wmav2 encoded asf stream
-    addURL("mmsh://streaming.radionz.co.nz/national-mbr");
-
     // music that matters
     addURL("http://live-aacplus-64.kexp.org/kexp64.aac");
 
@@ -455,5 +412,42 @@ public class MainActivity extends AppCompatActivity {
     addURL("http://radionz-ice.streamguys.com/national.mp3");
     // audio/aacp
     addURL("http://radionz-ice.streamguys.com/national");
+  }
+
+  static class MenuAction {
+    String title;
+    String description;
+
+    public MenuAction(String title, String description) {
+      this.title = title;
+      this.description = description;
+    }
+
+    public void onClick() {
+      log.debug("clicked: {}", title);
+    }
+
+    @Override
+    public String toString() {
+      return title;
+    }
+  }
+
+  public static class CustomURLDialog extends DialogFragment {
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+      builder.setTitle("Add Custom URL");
+      builder.setView(R.layout.custom_url_dialog);
+
+      builder.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface d, int which) {
+          CharSequence url = ((TextView) getDialog().findViewById(R.id.url)).getText();
+          ((MainActivity) getActivity()).addCustomURL(url.toString());
+        }
+      });
+      return builder.create();
+    }
   }
 }
