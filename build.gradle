@@ -6,13 +6,5 @@ allprojects {
     }
 }
 
-ext {
-    GRADLE_PLUGIN = "com.android.tools.build:gradle:2.0.0"
-    TARGET_SDK = 23
-    BUILD_TOOLS_VERSION = "23.0.3"
-    APP_COMPAT_VERSION = "23.3.0"
-    VERSION_CODE = 1
-    VERSION_NAME = "1.1"
-}
 
 defaultTasks 'run'

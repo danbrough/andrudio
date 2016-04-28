@@ -21,7 +21,7 @@ FLAGS="$FLAGS --disable-protocols"
 FLAGS="$FLAGS --disable-demuxers"
 FLAGS="$FLAGS --disable-debug"
 FLAGS="$FLAGS --enable-small"
-#FLAGS="$FLAGS --enable-runtime-cpudetect"
+FLAGS="$FLAGS --enable-runtime-cpudetect"
 FLAGS="$FLAGS --extra-ldexeflags=-pie" 
 FLAGS="$FLAGS --enable-shared --disable-symver --disable-static"
 
