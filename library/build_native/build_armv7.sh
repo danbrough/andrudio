@@ -23,7 +23,7 @@ ECFLAGS="-mfloat-abi=softfp -Wno-asm-operand-widths"
 ELDFLAGS="-Wl,--fix-cortex-a8"
 TOOLCHAIN=/tmp/mediaplayer
 #SYSROOT=$TOOLCHAIN/sysroot/
-SYSROOT="${NDK}/platforms/android-8/arch-arm"
+SYSROOT="${NDK}/platforms/android-9/arch-arm"
 TOOLCHAIN=${NDK}/toolchains/${CROSS_PREFIX}4.9/prebuilt/${HOST_SYSTEM}
 
 

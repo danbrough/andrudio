@@ -9,7 +9,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
+
 
 
 android {
@@ -45,19 +45,26 @@ android {
 
         androidTest.setRoot('tests')
     }
+    
+
+ 
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId 'danbroid'
-            artifactId 'andrudio'
-            version parent.VERSION_NAME
-            artifact("$buildDir/outputs/aar/library-release.aar")
-        }
-    }
-}
+apply plugin: 'maven'
+    uploadArchives {
+      repositories {
+          mavenDeployer {
+              repository(url: mavenLocal().url)
+              pom.groupId = 'danbroid.andrudio'
+              pom.artifactId = 'andrudio-library'
+              pom.version = VERSION_NAME
+          }
+      }
+  }
 
-dependencies {
-}
+
+
+
+
+
 

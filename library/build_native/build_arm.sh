@@ -21,7 +21,7 @@ ABI="armeabi"
 
 ECFLAGS=""
 ELDFLAGS=""
-SYSROOT="${NDK}/platforms/android-8/arch-arm"
+SYSROOT="${NDK}/platforms/android-9/arch-arm"
 TOOLCHAIN=${NDK}/toolchains/${CROSS_PREFIX}4.9/prebuilt/${HOST_SYSTEM}
 
 export PATH=$TOOLCHAIN/bin:$PATH
