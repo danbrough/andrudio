@@ -19,7 +19,7 @@ android {
     defaultConfig {
         versionCode 11
         versionName 'v1.11'
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion Integer.parseInt(TARGET_SDK)
     }
 

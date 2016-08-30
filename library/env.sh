@@ -28,10 +28,9 @@ export JNIDIR=$ROOT/jni/native/native
 OPENSSL=$BUILD/openssl.git
 
 export SRC=$BUILD/ffmpeg.git
-export TAG=n3.0
-#export TAG=n3.0.1
+export TAG=n3.1.3
 #export TAG=n3.1-dev
-
+#export TAG=n3.0
 
 if [ ! -z "$CUSTOM_TAG" ]; then
   export TAG="$CUSTOM_TAG"
