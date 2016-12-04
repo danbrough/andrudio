@@ -1,26 +1,18 @@
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenLocal()
-    }
-
-    dependencies { classpath PLUGIN_VERSION}
-}
 
 apply plugin: 'com.android.application'
 
 android {
 
 
-    compileSdkVersion Integer.parseInt(TARGET_SDK)
-    buildToolsVersion BUILD_TOOLS_VERSION
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 11
-        versionName 'v1.11'
+        versionCode 12
+        versionName 'v1.012'
         minSdkVersion 9
-        targetSdkVersion Integer.parseInt(TARGET_SDK)
+        targetSdkVersion rootProject.targetSdkVersion
     }
 
     lintOptions { abortOnError false }
@@ -29,26 +21,13 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
-  
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-        }
 
-        androidTest.setRoot('tests')
-    }
 }
 
 
 dependencies {    
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:' + SUPPORT_VERSION
+    compile 'com.android.support:appcompat-v7:' + rootProject.supportLibVersion
     compile project(':library')
 }
 
@@ -56,7 +35,7 @@ dependencies {
 task run(type: Task, dependsOn: 'installDebug') {
   doLast {
     println "Running application ..."
-    "$System.env.ANDROID_SDK/platform-tools/adb shell am start -c android.intent.category.LAUNCHER -n danbroid.andrudio.demo/.MainActivity".execute()
+    "adb shell am start -c android.intent.category.LAUNCHER -n danbroid.andrudio.demo/.MainActivity".execute()
   }
 }
 
