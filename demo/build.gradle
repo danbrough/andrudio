@@ -9,8 +9,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 12
-        versionName 'v1.012'
+        versionCode 13
+        versionName 'v1.013'
         minSdkVersion 9
         targetSdkVersion rootProject.targetSdkVersion
     }

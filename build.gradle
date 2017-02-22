@@ -5,7 +5,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.2.2'
+    classpath 'com.android.tools.build:gradle:2.2.3'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
@@ -29,11 +29,11 @@ defaultTasks 'run'
 
 
 ext {
-  versionCode = 4
-  versionName = "v1.004"
-  googlePlayVersion = "10.0.1"
-  supportLibVersion = "25.0.1"
+  versionCode = 6
+  versionName = "v1.006"
+  googlePlayVersion = "10.2.0"
+  supportLibVersion = "25.2.0"
   compileSdkVersion = 25
   targetSdkVersion = 25
-  buildToolsVersion = "25.0.1"
+  buildToolsVersion = "25.0.2"
 }
