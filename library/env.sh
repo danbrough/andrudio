@@ -28,7 +28,7 @@ export JNIDIR=$ROOT/jni/native/native
 OPENSSL=$BUILD/openssl.git
 
 export SRC=$BUILD/ffmpeg.git
-export TAG=n2.8.9
+export TAG=n2.8.11
 #export TAG=n3.1-dev
 #export TAG=n3.0
 
@@ -45,7 +45,8 @@ setup_source(){
   fi
   cd $SRC
   git clean -xdf && git reset --hard > /dev/null 2>&1
-  git checkout $TAG  
+  git checkout $TAG
+  patch -p1 < ../ffmpeg.patch || exit 1
   
   if [ $SSL == "1" ]; then
     log setting up openssl source

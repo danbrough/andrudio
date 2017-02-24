@@ -17,7 +17,9 @@ buildscript {
 allprojects {
   repositories {
     jcenter()
-    mavenLocal()
+    maven {
+      url "https://h1.danbrough.org/maven"
+    }
   }
 }
 
@@ -29,8 +31,8 @@ defaultTasks 'run'
 
 
 ext {
-  versionCode = 6
-  versionName = "v1.006"
+  versionCode = 7
+  versionName = "v1.007"
   googlePlayVersion = "10.2.0"
   supportLibVersion = "25.2.0"
   compileSdkVersion = 25

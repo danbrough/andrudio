@@ -1,16 +1,5 @@
 package danbroid.andrudio.demo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Locale;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.AndroidLoggerFactory;
-
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -34,6 +23,18 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.AndroidLoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Locale;
+
 import danbroid.andrudio.AndroidAudioPlayer;
 import danbroid.andrudio.LibAndrudio;
 
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     log = LoggerFactory.getLogger(MainActivity.class);
     LibAndrudio.initialize();
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD && BuildConfig.DEBUG) {
       init_gingerbread();
     }
   }
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
   @TargetApi(Build.VERSION_CODES.GINGERBREAD)
   private static void init_gingerbread() {
     log.warn("setting strict thread policy");
-    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDialog().build());
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog()
+        .penaltyDialog().build());
   }
 
   @Override
@@ -358,9 +360,9 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-    case R.id.menu_add_custom_url:
-      addCustomURL();
-      return true;
+      case R.id.menu_add_custom_url:
+        addCustomURL();
+        return true;
     }
     return super.onOptionsItemSelected(item);
   }
@@ -436,11 +438,12 @@ public class MainActivity extends AppCompatActivity {
   public static class CustomURLDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-      AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
       builder.setTitle("Add Custom URL");
       builder.setView(R.layout.custom_url_dialog);
 
-      builder.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+      builder.setPositiveButton(getString(android.R.string.ok), new DialogInterface
+          .OnClickListener() {
         @Override
         public void onClick(DialogInterface d, int which) {
           CharSequence url = ((TextView) getDialog().findViewById(R.id.url)).getText();

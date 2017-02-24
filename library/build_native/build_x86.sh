@@ -40,6 +40,7 @@ mkdir -p $DEST
 export FLAGS="--arch=x86"
 export FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
 export FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
+export FLAGS="$FLAGS --disable-asm"
 
 
 if (( $SSL )); then
