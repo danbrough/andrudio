@@ -14,7 +14,7 @@ To use this in your own android applications simply add to your maven repositori
 
 and add the dependency:
 
-    compile 'danbroid.andrudio:andrudio-library:v2.010'
+    compile 'danbroid.andrudio:andrudio-library:v2.014'
 
 or you can build from source by doing something like:
     
