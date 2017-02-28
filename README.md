@@ -31,6 +31,18 @@ from [Google Play](https://play.google.com/store/apps/details?id=danbroid.andrud
 There is also a command line application for testing the native code:
 	see:  `./test/test.sh`
 
+To make use of the library:
+
+    android.media.MediaPlayer player = new danbroid.andrudio.AndrudioMediaPlayer();
+        player.setOnPreparedListener(new android.media.MediaPlayer.OnPreparedListener(){
+          @Override
+          public void onPrepared(MediaPlayer mp) {
+            mp.start();
+          }
+        });
+        player.setDataSource("url to a ffmpeg supported audio file or stream");
+        player.prepareAsync();
+
 Status
 =======
 
