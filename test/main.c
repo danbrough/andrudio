@@ -4,6 +4,7 @@
 #include <termios.h>
 
 #include "audioplayer.h"
+#include "logging.h"
 
 #include <ao/ao.h>
 #ifndef DISABLE_AUDIO

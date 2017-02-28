@@ -9,3 +9,4 @@
 .externalNativeBuild
 /ffmpeg/ffmpeg.git
 /ffmpeg/build
+/test/andrudiotest

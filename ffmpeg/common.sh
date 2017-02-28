@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+
 
 
 FFMPEG_SRC="${ROOT}/ffmpeg.git"
