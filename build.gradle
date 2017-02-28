@@ -12,14 +12,9 @@ buildscript {
   }
 }
 
-
-
 allprojects {
   repositories {
     jcenter()
-    maven {
-      url "https://h1.danbrough.org/maven"
-    }
   }
 }
 
@@ -27,15 +22,15 @@ task clean(type: Delete) {
   delete rootProject.buildDir
 }
 
-defaultTasks 'run'
-
 
 ext {
-  versionCode = 7
-  versionName = "v1.007"
-  googlePlayVersion = "10.2.0"
-  supportLibVersion = "25.2.0"
   compileSdkVersion = 25
-  targetSdkVersion = 25
   buildToolsVersion = "25.0.2"
+  versionCode = 10
+  versionName = "v2.010"
+  supportLibVersion = "25.2.0"
 }
+
+
+defaultTasks ':app:run'
+

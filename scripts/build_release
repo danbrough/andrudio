@@ -1,0 +1,23 @@
+#!/bin/bash
+
+KEYFILE="keystore"
+KEY_ALIAS="andrudio_demo"
+
+echo -n enter password:
+read -s password
+echo
+
+STORE_PASSWORD="$password"
+KEY_PASSWORD="$password"
+cd `dirname $0` && cd ../app
+
+../gradlew assembleRelease -Pandroid.injected.signing.store.file=$KEYFILE \
+  -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
+  -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+  -Pandroid.injected.signing.key.password=$KEY_PASSWORD || exit 1
+
+
+cp build/outputs/apk/app-release.apk ../demo.apk
+
+
+

@@ -1,7 +1,0 @@
-h263_vaapi		mpeg1_vdpau		vc1_dxva2
-h263_vdpau		mpeg2_dxva2		vc1_vaapi
-h264_dxva2		mpeg2_vaapi		vc1_vdpau
-h264_vaapi		mpeg2_vdpau		wmv3_dxva2
-h264_vda		mpeg4_vaapi		wmv3_vaapi
-h264_vda_old		mpeg4_vdpau		wmv3_vdpau
-h264_vdpau
