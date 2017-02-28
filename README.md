@@ -28,9 +28,6 @@ You will need to have the android ndk installed and the environment variable `$A
 For testing there is a demo.apk file ready to install or you can install the demo
 from [Google Play](https://play.google.com/store/apps/details?id=danbroid.andrudio.demo)
 
-If you can't compile the native code then you can unpack libs.tar.bz2 in the library directory which contain
-the latest binaries.
-
 There is also a command line application for testing the native code:
 	see:  `./test/test.sh`
 
