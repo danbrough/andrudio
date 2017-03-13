@@ -1,0 +1,949 @@
+Usage: configure [options]
+Options: [defaults in brackets after descriptions]
+
+Help options:
+  --help                   print this message
+  --list-decoders          show all available decoders
+  --list-encoders          show all available encoders
+  --list-hwaccels          show all available hardware accelerators
+  --list-demuxers          show all available demuxers
+  --list-muxers            show all available muxers
+  --list-parsers           show all available parsers
+  --list-protocols         show all available protocols
+  --list-bsfs              show all available bitstream filters
+  --list-indevs            show all available input devices
+  --list-outdevs           show all available output devices
+  --list-filters           show all available filters
+
+Standard options:
+  --logfile=FILE           log tests and output to FILE [config.log]
+  --disable-logging        do not log configure debug information
+  --fatal-warnings         fail if any configure warning is generated
+  --prefix=PREFIX          install in PREFIX []
+  --bindir=DIR             install binaries in DIR [PREFIX/bin]
+  --datadir=DIR            install data files in DIR [PREFIX/share/ffmpeg]
+  --docdir=DIR             install documentation in DIR [PREFIX/share/doc/ffmpeg]
+  --libdir=DIR             install libs in DIR [PREFIX/lib]
+  --shlibdir=DIR           install shared libs in DIR [LIBDIR]
+  --incdir=DIR             install includes in DIR [PREFIX/include]
+  --mandir=DIR             install man page in DIR [PREFIX/share/man]
+  --pkgconfigdir=DIR       install pkg-config files in DIR [LIBDIR/pkgconfig]
+  --enable-rpath           use rpath to allow installing libraries in paths
+                           not part of the dynamic linker search path
+                           use rpath when linking programs [USE WITH CARE]
+  --install-name-dir=DIR   Darwin directory name for installed targets
+
+Licensing options:
+  --enable-gpl             allow use of GPL code, the resulting libs
+                           and binaries will be under GPL [no]
+  --enable-version3        upgrade (L)GPL to version 3 [no]
+  --enable-nonfree         allow use of nonfree code, the resulting libs
+                           and binaries will be unredistributable [no]
+
+Configuration options:
+  --disable-static         do not build static libraries [no]
+  --enable-shared          build shared libraries [no]
+  --enable-small           optimize for size instead of speed
+  --disable-runtime-cpudetect disable detecting cpu capabilities at runtime (smaller binary)
+  --enable-gray            enable full grayscale support (slower color)
+  --disable-swscale-alpha  disable alpha channel support in swscale
+  --disable-all            disable building components, libraries and programs
+  --enable-raise-major     increase major version numbers in sonames [no]
+
+Program options:
+  --disable-programs       do not build command line programs
+  --disable-ffmpeg         disable ffmpeg build
+  --disable-ffplay         disable ffplay build
+  --disable-ffprobe        disable ffprobe build
+  --disable-ffserver       disable ffserver build
+
+Documentation options:
+  --disable-doc            do not build documentation
+  --disable-htmlpages      do not build HTML documentation pages
+  --disable-manpages       do not build man documentation pages
+  --disable-podpages       do not build POD documentation pages
+  --disable-txtpages       do not build text documentation pages
+
+Component options:
+  --disable-avdevice       disable libavdevice build
+  --disable-avcodec        disable libavcodec build
+  --disable-avformat       disable libavformat build
+  --disable-swresample     disable libswresample build
+  --disable-swscale        disable libswscale build
+  --disable-postproc       disable libpostproc build
+  --disable-avfilter       disable libavfilter build
+  --enable-avresample      enable libavresample build [no]
+  --disable-pthreads       disable pthreads [autodetect]
+  --disable-w32threads     disable Win32 threads [autodetect]
+  --disable-os2threads     disable OS/2 threads [autodetect]
+  --disable-network        disable network support [no]
+  --disable-dct            disable DCT code
+  --disable-dwt            disable DWT code
+  --disable-error-resilience disable error resilience code
+  --disable-lsp            disable LSP code
+  --disable-lzo            disable LZO decoder code
+  --disable-mdct           disable MDCT code
+  --disable-rdft           disable RDFT code
+  --disable-fft            disable FFT code
+  --disable-faan           disable floating point AAN (I)DCT code
+  --disable-pixelutils     disable pixel utils in libavutil
+
+Individual component options:
+  --disable-everything     disable all components listed below
+  --disable-encoder=NAME   disable encoder NAME
+  --enable-encoder=NAME    enable encoder NAME
+  --disable-encoders       disable all encoders
+  --disable-decoder=NAME   disable decoder NAME
+  --enable-decoder=NAME    enable decoder NAME
+  --disable-decoders       disable all decoders
+  --disable-hwaccel=NAME   disable hwaccel NAME
+  --enable-hwaccel=NAME    enable hwaccel NAME
+  --disable-hwaccels       disable all hwaccels
+  --disable-muxer=NAME     disable muxer NAME
+  --enable-muxer=NAME      enable muxer NAME
+  --disable-muxers         disable all muxers
+  --disable-demuxer=NAME   disable demuxer NAME
+  --enable-demuxer=NAME    enable demuxer NAME
+  --disable-demuxers       disable all demuxers
+  --enable-parser=NAME     enable parser NAME
+  --disable-parser=NAME    disable parser NAME
+  --disable-parsers        disable all parsers
+  --enable-bsf=NAME        enable bitstream filter NAME
+  --disable-bsf=NAME       disable bitstream filter NAME
+  --disable-bsfs           disable all bitstream filters
+  --enable-protocol=NAME   enable protocol NAME
+  --disable-protocol=NAME  disable protocol NAME
+  --disable-protocols      disable all protocols
+  --enable-indev=NAME      enable input device NAME
+  --disable-indev=NAME     disable input device NAME
+  --disable-indevs         disable input devices
+  --enable-outdev=NAME     enable output device NAME
+  --disable-outdev=NAME    disable output device NAME
+  --disable-outdevs        disable output devices
+  --disable-devices        disable all devices
+  --enable-filter=NAME     enable filter NAME
+  --disable-filter=NAME    disable filter NAME
+  --disable-filters        disable all filters
+
+External library support:
+
+  Using any of the following switches will allow FFmpeg to link to the
+  corresponding external library. All the components depending on that library
+  will become enabled, if all their other dependencies are met and they are not
+  explicitly disabled. E.g. --enable-libwavpack will enable linking to
+  libwavpack and allow the libwavpack encoder to be built, unless it is
+  specifically disabled with --disable-encoder=libwavpack.
+
+  Note that only the system libraries are auto-detected. All the other external
+  libraries must be explicitly enabled.
+
+  Also note that the following help text describes the purpose of the libraries
+  themselves, not all their features will necessarily be usable by FFmpeg.
+
+  --enable-avisynth        enable reading of AviSynth script files [no]
+  --disable-bzlib          disable bzlib [autodetect]
+  --enable-chromaprint     enable audio fingerprinting with chromaprint [no]
+  --enable-frei0r          enable frei0r video filtering [no]
+  --enable-gcrypt          enable gcrypt, needed for rtmp(t)e support
+                           if openssl, librtmp or gmp is not used [no]
+  --enable-gmp             enable gmp, needed for rtmp(t)e support
+                           if openssl or librtmp is not used [no]
+  --enable-gnutls          enable gnutls, needed for https support
+                           if openssl is not used [no]
+  --disable-iconv          disable iconv [autodetect]
+  --enable-jni             enable JNI support [no]
+  --enable-ladspa          enable LADSPA audio filtering [no]
+  --enable-libass          enable libass subtitles rendering,
+                           needed for subtitles and ass filter [no]
+  --enable-libbluray       enable BluRay reading using libbluray [no]
+  --enable-libbs2b         enable bs2b DSP library [no]
+  --enable-libcaca         enable textual display using libcaca [no]
+  --enable-libcelt         enable CELT decoding via libcelt [no]
+  --enable-libcdio         enable audio CD grabbing with libcdio [no]
+  --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
+                           and libraw1394 [no]
+  --enable-libebur128      enable libebur128 for EBU R128 measurement,
+                           needed for loudnorm filter [no]
+  --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
+  --enable-libflite        enable flite (voice synthesis) support via libflite [no]
+  --enable-libfontconfig   enable libfontconfig, useful for drawtext filter [no]
+  --enable-libfreetype     enable libfreetype, needed for drawtext filter [no]
+  --enable-libfribidi      enable libfribidi, improves drawtext filter [no]
+  --enable-libgme          enable Game Music Emu via libgme [no]
+  --enable-libgsm          enable GSM de/encoding via libgsm [no]
+  --enable-libiec61883     enable iec61883 via libiec61883 [no]
+  --enable-libilbc         enable iLBC de/encoding via libilbc [no]
+  --enable-libkvazaar      enable HEVC encoding via libkvazaar [no]
+  --enable-libmodplug      enable ModPlug via libmodplug [no]
+  --enable-libmp3lame      enable MP3 encoding via libmp3lame [no]
+  --enable-libnut          enable NUT (de)muxing via libnut,
+                           native (de)muxer exists [no]
+  --enable-libopencore-amrnb enable AMR-NB de/encoding via libopencore-amrnb [no]
+  --enable-libopencore-amrwb enable AMR-WB decoding via libopencore-amrwb [no]
+  --enable-libopencv       enable video filtering via libopencv [no]
+  --enable-libopenh264     enable H.264 encoding via OpenH264 [no]
+  --enable-libopenjpeg     enable JPEG 2000 de/encoding via OpenJPEG [no]
+  --enable-libopenmpt      enable decoding tracked files via libopenmpt [no]
+  --enable-libopus         enable Opus de/encoding via libopus [no]
+  --enable-libpulse        enable Pulseaudio input via libpulse [no]
+  --enable-librubberband   enable rubberband needed for rubberband filter [no]
+  --enable-librtmp         enable RTMP[E] support via librtmp [no]
+  --enable-libschroedinger enable Dirac de/encoding via libschroedinger [no]
+  --enable-libshine        enable fixed-point MP3 encoding via libshine [no]
+  --enable-libsmbclient    enable Samba protocol via libsmbclient [no]
+  --enable-libsnappy       enable Snappy compression, needed for hap encoding [no]
+  --enable-libsoxr         enable Include libsoxr resampling [no]
+  --enable-libspeex        enable Speex de/encoding via libspeex [no]
+  --enable-libssh          enable SFTP protocol via libssh [no]
+  --enable-libtesseract    enable Tesseract, needed for ocr filter [no]
+  --enable-libtheora       enable Theora encoding via libtheora [no]
+  --enable-libtwolame      enable MP2 encoding via libtwolame [no]
+  --enable-libv4l2         enable libv4l2/v4l-utils [no]
+  --enable-libvidstab      enable video stabilization using vid.stab [no]
+  --enable-libvo-amrwbenc  enable AMR-WB encoding via libvo-amrwbenc [no]
+  --enable-libvorbis       enable Vorbis en/decoding via libvorbis,
+                           native implementation exists [no]
+  --enable-libvpx          enable VP8 and VP9 de/encoding via libvpx [no]
+  --enable-libwavpack      enable wavpack encoding via libwavpack [no]
+  --enable-libwebp         enable WebP encoding via libwebp [no]
+  --enable-libx264         enable H.264 encoding via x264 [no]
+  --enable-libx265         enable HEVC encoding via x265 [no]
+  --enable-libxavs         enable AVS encoding via xavs [no]
+  --enable-libxcb          enable X11 grabbing using XCB [autodetect]
+  --enable-libxcb-shm      enable X11 grabbing shm communication [autodetect]
+  --enable-libxcb-xfixes   enable X11 grabbing mouse rendering [autodetect]
+  --enable-libxcb-shape    enable X11 grabbing shape rendering [autodetect]
+  --enable-libxvid         enable Xvid encoding via xvidcore,
+                           native MPEG-4/Xvid encoder exists [no]
+  --enable-libzimg         enable z.lib, needed for zscale filter [no]
+  --enable-libzmq          enable message passing via libzmq [no]
+  --enable-libzvbi         enable teletext support via libzvbi [no]
+  --disable-lzma           disable lzma [autodetect]
+  --enable-decklink        enable Blackmagic DeckLink I/O support [no]
+  --enable-mediacodec      enable Android MediaCodec support [no]
+  --enable-netcdf          enable NetCDF, needed for sofalizer filter [no]
+  --enable-openal          enable OpenAL 1.1 capture support [no]
+  --enable-opencl          enable OpenCL code
+  --enable-opengl          enable OpenGL rendering [no]
+  --enable-openssl         enable openssl, needed for https support
+                           if gnutls is not used [no]
+  --disable-schannel       disable SChannel SSP, needed for TLS support on
+                           Windows if openssl and gnutls are not used [autodetect]
+  --disable-sdl2           disable sdl2 [autodetect]
+  --disable-securetransport disable Secure Transport, needed for TLS support
+                           on OSX if openssl and gnutls are not used [autodetect]
+  --enable-x11grab         enable X11 grabbing (legacy) [no]
+  --disable-xlib           disable xlib [autodetect]
+  --disable-zlib           disable zlib [autodetect]
+
+  The following libraries provide various hardware acceleration features:
+  --disable-audiotoolbox   disable Apple AudioToolbox code [autodetect]
+  --enable-cuda            enable dynamically linked Nvidia CUDA code [no]
+  --enable-cuvid           enable Nvidia CUVID support [autodetect]
+  --disable-d3d11va        disable Microsoft Direct3D 11 video acceleration code [autodetect]
+  --disable-dxva2          disable Microsoft DirectX 9 video acceleration code [autodetect]
+  --enable-libmfx          enable Intel MediaSDK (AKA Quick Sync Video) code via libmfx [no]
+  --enable-libnpp          enable Nvidia Performance Primitives-based code [no]
+  --enable-mmal            enable Broadcom Multi-Media Abstraction Layer (Raspberry Pi) via MMAL [no]
+  --disable-nvenc          disable Nvidia video encoding code [autodetect]
+  --enable-omx             enable OpenMAX IL code [no]
+  --enable-omx-rpi         enable OpenMAX IL code for Raspberry Pi [no]
+  --disable-vaapi          disable Video Acceleration API (mainly Unix/Intel) code [autodetect]
+  --disable-vda            disable Apple Video Decode Acceleration code [autodetect]
+  --disable-vdpau          disable Nvidia Video Decode and Presentation API for Unix code [autodetect]
+  --disable-videotoolbox   disable VideoToolbox code [autodetect]
+
+Toolchain options:
+  --arch=ARCH              select architecture []
+  --cpu=CPU                select the minimum required CPU (affects
+                           instruction selection, may crash on older CPUs)
+  --cross-prefix=PREFIX    use PREFIX for compilation tools []
+  --progs-suffix=SUFFIX    program name suffix []
+  --enable-cross-compile   assume a cross-compiler is used
+  --sysroot=PATH           root of cross-build tree
+  --sysinclude=PATH        location of cross-build system headers
+  --target-os=OS           compiler targets OS []
+  --target-exec=CMD        command to run executables on target
+  --target-path=DIR        path to view of build directory on target
+  --target-samples=DIR     path to samples directory on target
+  --tempprefix=PATH        force fixed dir/prefix instead of mktemp for checks
+  --toolchain=NAME         set tool defaults according to NAME
+  --nm=NM                  use nm tool NM [nm -g]
+  --ar=AR                  use archive tool AR [ar]
+  --as=AS                  use assembler AS []
+  --ln_s=LN_S              use symbolic link tool LN_S [ln -s -f]
+  --strip=STRIP            use strip tool STRIP [strip]
+  --windres=WINDRES        use windows resource compiler WINDRES [windres]
+  --yasmexe=EXE            use yasm-compatible assembler EXE [yasm]
+  --cc=CC                  use C compiler CC [gcc]
+  --cxx=CXX                use C compiler CXX [g++]
+  --objcc=OCC              use ObjC compiler OCC [gcc]
+  --dep-cc=DEPCC           use dependency generator DEPCC [gcc]
+  --ld=LD                  use linker LD []
+  --pkg-config=PKGCONFIG   use pkg-config tool PKGCONFIG [pkg-config]
+  --pkg-config-flags=FLAGS pass additional flags to pkgconf []
+  --ranlib=RANLIB          use ranlib RANLIB [ranlib]
+  --doxygen=DOXYGEN        use DOXYGEN to generate API doc [doxygen]
+  --host-cc=HOSTCC         use host C compiler HOSTCC
+  --host-cflags=HCFLAGS    use HCFLAGS when compiling for host
+  --host-cppflags=HCPPFLAGS use HCPPFLAGS when compiling for host
+  --host-ld=HOSTLD         use host linker HOSTLD
+  --host-ldflags=HLDFLAGS  use HLDFLAGS when linking for host
+  --host-libs=HLIBS        use libs HLIBS when linking for host
+  --host-os=OS             compiler host OS []
+  --extra-cflags=ECFLAGS   add ECFLAGS to CFLAGS []
+  --extra-cxxflags=ECFLAGS add ECFLAGS to CXXFLAGS []
+  --extra-objcflags=FLAGS  add FLAGS to OBJCFLAGS []
+  --extra-ldflags=ELDFLAGS add ELDFLAGS to LDFLAGS []
+  --extra-ldexeflags=ELDFLAGS add ELDFLAGS to LDEXEFLAGS []
+  --extra-ldlibflags=ELDFLAGS add ELDFLAGS to LDLIBFLAGS []
+  --extra-libs=ELIBS       add ELIBS []
+  --extra-version=STRING   version string suffix []
+  --optflags=OPTFLAGS      override optimization-related compiler flags
+  --build-suffix=SUFFIX    library name suffix []
+  --enable-pic             build position-independent code
+  --enable-thumb           compile for Thumb instruction set
+  --enable-lto             use link-time optimization
+  --env="ENV=override"     override the environment variables
+
+Advanced options (experts only):
+  --malloc-prefix=PREFIX   prefix malloc and related names with PREFIX
+  --custom-allocator=NAME  use a supported custom allocator
+  --disable-symver         disable symbol versioning
+  --enable-hardcoded-tables use hardcoded tables instead of runtime generation
+  --disable-safe-bitstream-reader
+                           disable buffer boundary checking in bitreaders
+                           (faster, but may crash)
+  --enable-memalign-hack   emulate memalign, interferes with memory debuggers
+  --sws-max-filter-size=N  the max filter size swscale uses [256]
+
+Optimization options (experts only):
+  --disable-asm            disable all assembly optimizations
+  --disable-altivec        disable AltiVec optimizations
+  --disable-vsx            disable VSX optimizations
+  --disable-power8         disable POWER8 optimizations
+  --disable-amd3dnow       disable 3DNow! optimizations
+  --disable-amd3dnowext    disable 3DNow! extended optimizations
+  --disable-mmx            disable MMX optimizations
+  --disable-mmxext         disable MMXEXT optimizations
+  --disable-sse            disable SSE optimizations
+  --disable-sse2           disable SSE2 optimizations
+  --disable-sse3           disable SSE3 optimizations
+  --disable-ssse3          disable SSSE3 optimizations
+  --disable-sse4           disable SSE4 optimizations
+  --disable-sse42          disable SSE4.2 optimizations
+  --disable-avx            disable AVX optimizations
+  --disable-xop            disable XOP optimizations
+  --disable-fma3           disable FMA3 optimizations
+  --disable-fma4           disable FMA4 optimizations
+  --disable-avx2           disable AVX2 optimizations
+  --disable-aesni          disable AESNI optimizations
+  --disable-armv5te        disable armv5te optimizations
+  --disable-armv6          disable armv6 optimizations
+  --disable-armv6t2        disable armv6t2 optimizations
+  --disable-vfp            disable VFP optimizations
+  --disable-neon           disable NEON optimizations
+  --disable-inline-asm     disable use of inline assembly
+  --disable-yasm           disable use of nasm/yasm assembly
+  --disable-mipsdsp        disable MIPS DSP ASE R1 optimizations
+  --disable-mipsdspr2      disable MIPS DSP ASE R2 optimizations
+  --disable-msa            disable MSA optimizations
+  --disable-mipsfpu        disable floating point MIPS optimizations
+  --disable-mmi            disable Loongson SIMD optimizations
+  --disable-fast-unaligned consider unaligned accesses slow
+
+Developer options (useful when working on FFmpeg itself):
+  --disable-debug          disable debugging symbols
+  --enable-debug=LEVEL     set the debug level []
+  --disable-optimizations  disable compiler optimizations
+  --enable-extra-warnings  enable more compiler warnings
+  --disable-stripping      disable stripping of executables and shared libraries
+  --assert-level=level     0(default), 1 or 2, amount of assertion testing,
+                           2 causes a slowdown at runtime.
+  --enable-memory-poisoning fill heap uninitialized allocated space with arbitrary data
+  --valgrind=VALGRIND      run "make fate" tests through valgrind to detect memory
+                           leaks and errors, using the specified valgrind binary.
+                           Cannot be combined with --target-exec
+  --enable-ftrapv          Trap arithmetic overflows
+  --samples=PATH           location of test samples for FATE, if not set use
+                           $FATE_SAMPLES at make invocation time.
+  --enable-neon-clobber-test check NEON registers for clobbering (should be
+                           used only for debugging purposes)
+  --enable-xmm-clobber-test check XMM registers for clobbering (Win64-only;
+                           should be used only for debugging purposes)
+  --enable-random          randomly enable/disable components
+  --disable-random
+  --enable-random=LIST     randomly enable/disable specific components or
+  --disable-random=LIST    component groups. LIST is a comma-separated list
+                           of NAME[:PROB] entries where NAME is a component
+                           (group) and PROB the probability associated with
+                           NAME (default 0.5).
+  --random-seed=VALUE      seed value for --enable/disable-random
+  --disable-valgrind-backtrace do not print a backtrace under Valgrind
+                           (only applies to --disable-optimizations builds)
+
+NOTE: Object files are built at the place where configure is launched.
+################ --list-decoders ########################
+aac			atrac1			escape130
+aac_at			atrac3			evrc
+aac_fixed		atrac3p			exr
+aac_latm		aura			ffv1
+aasc			aura2			ffvhuff
+ac3			avrn			ffwavesynth
+ac3_at			avrp			fic
+ac3_fixed		avs			flac
+adpcm_4xm		avui			flashsv
+adpcm_adx		ayuv			flashsv2
+adpcm_afc		bethsoftvid		flic
+adpcm_aica		bfi			flv
+adpcm_ct		bink			fourxm
+adpcm_dtk		binkaudio_dct		fraps
+adpcm_ea		binkaudio_rdft		frwu
+adpcm_ea_maxis_xa	bintext			g2m
+adpcm_ea_r1		bmp			g723_1
+adpcm_ea_r2		bmv_audio		g729
+adpcm_ea_r3		bmv_video		gif
+adpcm_ea_xas		brender_pix		gsm
+adpcm_g722		c93			gsm_ms
+adpcm_g726		cavs			gsm_ms_at
+adpcm_g726le		ccaption		h261
+adpcm_ima_amv		cdgraphics		h263
+adpcm_ima_apc		cdxl			h263_cuvid
+adpcm_ima_dat4		cfhd			h263i
+adpcm_ima_dk3		cinepak			h263p
+adpcm_ima_dk4		cljr			h264
+adpcm_ima_ea_eacs	cllc			h264_crystalhd
+adpcm_ima_ea_sead	comfortnoise		h264_cuvid
+adpcm_ima_iss		cook			h264_mediacodec
+adpcm_ima_oki		cpia			h264_mmal
+adpcm_ima_qt		cscd			h264_qsv
+adpcm_ima_qt_at		cyuv			h264_vda
+adpcm_ima_rad		dca			h264_vdpau
+adpcm_ima_smjpeg	dds			hap
+adpcm_ima_wav		dfa			hevc
+adpcm_ima_ws		dirac			hevc_cuvid
+adpcm_ms		dnxhd			hevc_mediacodec
+adpcm_mtaf		dpx			hevc_qsv
+adpcm_psx		dsd_lsbf		hnm4_video
+adpcm_sbpro_2		dsd_lsbf_planar		hq_hqa
+adpcm_sbpro_3		dsd_msbf		hqx
+adpcm_sbpro_4		dsd_msbf_planar		huffyuv
+adpcm_swf		dsicinaudio		iac
+adpcm_thp		dsicinvideo		idcin
+adpcm_thp_le		dss_sp			idf
+adpcm_vima		dst			iff_ilbm
+adpcm_xa		dvaudio			ilbc_at
+adpcm_yamaha		dvbsub			imc
+aic			dvdsub			indeo2
+alac			dvvideo			indeo3
+alac_at			dxa			indeo4
+alias_pix		dxtory			indeo5
+als			dxv			interplay_acm
+amr_nb_at		eac3			interplay_dpcm
+amrnb			eac3_at			interplay_video
+amrwb			eacmv			jacosub
+amv			eamad			jpeg2000
+anm			eatgq			jpegls
+ansi			eatgv			jv
+ape			eatqi			kgv1
+apng			eightbps		kmvc
+ass			eightsvx_exp		lagarith
+asv1			eightsvx_fib		libcelt
+asv2			escape124		libfdk_aac
+libgsm			msmpeg4v2		qdm2_at
+libgsm_ms		msmpeg4v3		qdmc_at
+libilbc			msrle			qdraw
+libopencore_amrnb	mss1			qpeg
+libopencore_amrwb	mss2			qtrle
+libopenh264		msvideo1		r10k
+libopenjpeg		mszh			r210
+libopus			mts2			ra_144
+libschroedinger		mvc1			ra_288
+libspeex		mvc2			ralf
+libvorbis		mxpeg			rawvideo
+libvpx_vp8		nellymoser		realtext
+libvpx_vp9		nuv			rl2
+libzvbi_teletext	on2avc			roq
+loco			opus			roq_dpcm
+m101			paf_audio		rpza
+mace3			paf_video		rscc
+mace6			pam			rv10
+magicyuv		pbm			rv20
+mdec			pcm_alaw		rv30
+metasound		pcm_alaw_at		rv40
+microdvd		pcm_bluray		s302m
+mimic			pcm_dvd			sami
+mjpeg			pcm_f32be		sanm
+mjpeg_cuvid		pcm_f32le		screenpresso
+mjpegb			pcm_f64be		sdx2_dpcm
+mlp			pcm_f64le		sgi
+mmvideo			pcm_lxf			sgirle
+motionpixels		pcm_mulaw		sheervideo
+movtext			pcm_mulaw_at		shorten
+mp1			pcm_s16be		sipr
+mp1_at			pcm_s16be_planar	smackaud
+mp1float		pcm_s16le		smacker
+mp2			pcm_s16le_planar	smc
+mp2_at			pcm_s24be		smvjpeg
+mp2float		pcm_s24daud		snow
+mp3			pcm_s24le		sol_dpcm
+mp3_at			pcm_s24le_planar	sonic
+mp3adu			pcm_s32be		sp5x
+mp3adufloat		pcm_s32le		srt
+mp3float		pcm_s32le_planar	ssa
+mp3on4			pcm_s64be		stl
+mp3on4float		pcm_s64le		subrip
+mpc7			pcm_s8			subviewer
+mpc8			pcm_s8_planar		subviewer1
+mpeg1_cuvid		pcm_u16be		sunrast
+mpeg1_vdpau		pcm_u16le		svq1
+mpeg1video		pcm_u24be		svq3
+mpeg2_crystalhd		pcm_u24le		tak
+mpeg2_cuvid		pcm_u32be		targa
+mpeg2_mmal		pcm_u32le		targa_y216
+mpeg2_qsv		pcm_u8			tdsc
+mpeg2video		pcm_zork		text
+mpeg4			pcx			theora
+mpeg4_crystalhd		pgm			thp
+mpeg4_cuvid		pgmyuv			tiertexseqvideo
+mpeg4_mediacodec	pgssub			tiff
+mpeg4_mmal		pictor			tmv
+mpeg4_vdpau		pjs			truehd
+mpeg_vdpau		png			truemotion1
+mpeg_xvmc		ppm			truemotion2
+mpegvideo		prores			truemotion2rt
+mpl2			prores_lgpl		truespeech
+msa1			ptx			tscc
+msmpeg4_crystalhd	qcelp			tscc2
+msmpeg4v1		qdm2			tta
+twinvq			vp5			wmv3_crystalhd
+txd			vp6			wmv3_vdpau
+ulti			vp6a			wmv3image
+utvideo			vp6f			wnv1
+v210			vp7			ws_snd1
+v210x			vp8			xan_dpcm
+v308			vp8_cuvid		xan_wc3
+v408			vp8_mediacodec		xan_wc4
+v410			vp9			xbin
+vb			vp9_cuvid		xbm
+vble			vp9_mediacodec		xface
+vc1			vplayer			xl
+vc1_crystalhd		vqa			xma1
+vc1_cuvid		wavpack			xma2
+vc1_mmal		webp			xsub
+vc1_qsv			webvtt			xwd
+vc1_vdpau		wmalossless		y41p
+vc1image		wmapro			ylc
+vcr1			wmav1			yop
+vmdaudio		wmav2			yuv4
+vmdvideo		wmavoice		zero12v
+vmnc			wmv1			zerocodec
+vorbis			wmv2			zlib
+vp3			wmv3			zmbv
+
+
+################ --list-encoders ########################
+a64multi		libkvazaar		pcm_s64le
+a64multi5		libmp3lame		pcm_s8
+aac			libopencore_amrnb	pcm_s8_planar
+aac_at			libopenh264		pcm_u16be
+ac3			libopenjpeg		pcm_u16le
+ac3_fixed		libopus			pcm_u24be
+adpcm_adx		libschroedinger		pcm_u24le
+adpcm_g722		libshine		pcm_u32be
+adpcm_g726		libspeex		pcm_u32le
+adpcm_ima_qt		libtheora		pcm_u8
+adpcm_ima_wav		libtwolame		pcx
+adpcm_ms		libvo_amrwbenc		pgm
+adpcm_swf		libvorbis		pgmyuv
+adpcm_yamaha		libvpx_vp8		png
+alac			libvpx_vp9		ppm
+alac_at			libwavpack		prores
+alias_pix		libwebp			prores_aw
+amv			libwebp_anim		prores_ks
+apng			libx262			qtrle
+ass			libx264			r10k
+asv1			libx264rgb		r210
+asv2			libx265			ra_144
+avrp			libxavs			rawvideo
+avui			libxvid			roq
+ayuv			ljpeg			roq_dpcm
+bmp			mjpeg			rv10
+cinepak			mjpeg_vaapi		rv20
+cljr			mlp			s302m
+comfortnoise		movtext			sgi
+dca			mp2			snow
+dnxhd			mp2fixed		sonic
+dpx			mpeg1video		sonic_ls
+dvbsub			mpeg2_qsv		srt
+dvdsub			mpeg2video		ssa
+dvvideo			mpeg4			subrip
+eac3			msmpeg4v2		sunrast
+ffv1			msmpeg4v3		svq1
+ffvhuff			msvideo1		targa
+flac			nellymoser		text
+flashsv			nvenc			tiff
+flashsv2		nvenc_h264		truehd
+flv			nvenc_hevc		tta
+g723_1			pam			utvideo
+gif			pbm			v210
+h261			pcm_alaw		v308
+h263			pcm_alaw_at		v408
+h263p			pcm_f32be		v410
+h264_nvenc		pcm_f32le		vc2
+h264_omx		pcm_f64be		vorbis
+h264_qsv		pcm_f64le		wavpack
+h264_vaapi		pcm_mulaw		webvtt
+h264_videotoolbox	pcm_mulaw_at		wmav1
+hap			pcm_s16be		wmav2
+hevc_nvenc		pcm_s16be_planar	wmv1
+hevc_qsv		pcm_s16le		wmv2
+hevc_vaapi		pcm_s16le_planar	wrapped_avframe
+huffyuv			pcm_s24be		xbm
+ilbc_at			pcm_s24daud		xface
+jpeg2000		pcm_s24le		xsub
+jpegls			pcm_s24le_planar	xwd
+libfdk_aac		pcm_s32be		y41p
+libgsm			pcm_s32le		yuv4
+libgsm_ms		pcm_s32le_planar	zlib
+libilbc			pcm_s64be		zmbv
+
+
+################ --list-hwaccels ########################
+h263_cuvid		hevc_vdpau		mpeg4_videotoolbox
+h263_vaapi		mjpeg_cuvid		vc1_cuvid
+h263_videotoolbox	mpeg1_cuvid		vc1_d3d11va
+h264_cuvid		mpeg1_vdpau		vc1_dxva2
+h264_d3d11va		mpeg1_videotoolbox	vc1_mmal
+h264_dxva2		mpeg1_xvmc		vc1_qsv
+h264_mediacodec		mpeg2_cuvid		vc1_vaapi
+h264_mmal		mpeg2_d3d11va		vc1_vdpau
+h264_qsv		mpeg2_dxva2		vp8_cuvid
+h264_vaapi		mpeg2_mmal		vp8_mediacodec
+h264_vda		mpeg2_qsv		vp9_cuvid
+h264_vda_old		mpeg2_vaapi		vp9_d3d11va
+h264_vdpau		mpeg2_vdpau		vp9_dxva2
+h264_videotoolbox	mpeg2_videotoolbox	vp9_mediacodec
+hevc_cuvid		mpeg2_xvmc		vp9_vaapi
+hevc_d3d11va		mpeg4_cuvid		wmv3_d3d11va
+hevc_dxva2		mpeg4_mediacodec	wmv3_dxva2
+hevc_mediacodec		mpeg4_mmal		wmv3_vaapi
+hevc_qsv		mpeg4_vaapi		wmv3_vdpau
+hevc_vaapi		mpeg4_vdpau
+
+
+################ --list-demuxers ########################
+aa			flac			lxf
+aac			flic			m4v
+ac3			flv			matroska
+acm			fourxm			mgsts
+act			frm			microdvd
+adf			fsb			mjpeg
+adp			g722			mlp
+ads			g723_1			mlv
+adx			g729			mm
+aea			genh			mmf
+afc			gif			mov
+aiff			gsm			mp3
+aix			gxf			mpc
+amr			h261			mpc8
+anm			h263			mpegps
+apc			h264			mpegts
+ape			hevc			mpegtsraw
+apng			hls			mpegvideo
+aqtitle			hnm			mpjpeg
+asf			ico			mpl2
+asf_o			idcin			mpsub
+ass			idf			msf
+ast			iff			msnwc_tcp
+au			ilbc			mtaf
+avi			image2			mtv
+avisynth		image2_alias_pix	musx
+avr			image2_brender_pix	mv
+avs			image2pipe		mvi
+bethsoftvid		image_bmp_pipe		mxf
+bfi			image_dds_pipe		mxg
+bfstm			image_dpx_pipe		nc
+bink			image_exr_pipe		nistsphere
+bintext			image_j2k_pipe		nsv
+bit			image_jpeg_pipe		nut
+bmv			image_jpegls_pipe	nuv
+boa			image_pam_pipe		ogg
+brstm			image_pbm_pipe		oma
+c93			image_pcx_pipe		paf
+caf			image_pgm_pipe		pcm_alaw
+cavsvideo		image_pgmyuv_pipe	pcm_f32be
+cdg			image_pictor_pipe	pcm_f32le
+cdxl			image_png_pipe		pcm_f64be
+cine			image_ppm_pipe		pcm_f64le
+concat			image_qdraw_pipe	pcm_mulaw
+data			image_sgi_pipe		pcm_s16be
+daud			image_sunrast_pipe	pcm_s16le
+dcstr			image_tiff_pipe		pcm_s24be
+dfa			image_webp_pipe		pcm_s24le
+dirac			ingenient		pcm_s32be
+dnxhd			ipmovie			pcm_s32le
+dsf			ircam			pcm_s8
+dsicin			iss			pcm_u16be
+dss			iv8			pcm_u16le
+dts			ivf			pcm_u24be
+dtshd			ivr			pcm_u24le
+dv			jacosub			pcm_u32be
+dvbsub			jv			pcm_u32le
+dvbtxt			libgme			pcm_u8
+dxa			libmodplug		pjs
+ea			libnut			pmp
+ea_cdata		libopenmpt		pva
+eac3			live_flv		pvf
+epaf			lmlm4			qcp
+ffm			loas			r3d
+ffmetadata		lrc			rawvideo
+filmstrip		lvf			realtext
+redspark		srt			vmd
+rl2			stl			vobsub
+rm			str			voc
+roq			subviewer		vpk
+rpl			subviewer1		vplayer
+rsd			sup			vqf
+rso			svag			w64
+rtp			swf			wav
+rtsp			tak			wc3
+sami			tedcaptions		webm_dash_manifest
+sap			thp			webvtt
+sbg			threedostr		wsaud
+sdp			tiertexseq		wsd
+sdr2			tmv			wsvqa
+segafilm		truehd			wtv
+shorten			tta			wv
+siff			tty			wve
+sln			txd			xa
+smacker			v210			xbin
+smjpeg			v210x			xmv
+smush			vag			xvag
+sol			vc1			xwma
+sox			vc1t			yop
+spdif			vivo			yuv4mpegpipe
+
+
+################ --list-muxers ########################
+a64			image2			pcm_s24be
+ac3			image2pipe		pcm_s24le
+adts			ipod			pcm_s32be
+adx			ircam			pcm_s32le
+aiff			ismv			pcm_s8
+amr			ivf			pcm_u16be
+apng			jacosub			pcm_u16le
+asf			latm			pcm_u24be
+asf_stream		libnut			pcm_u24le
+ass			lrc			pcm_u32be
+ast			m4v			pcm_u32le
+au			matroska		pcm_u8
+avi			matroska_audio		psp
+avm2			md5			rawvideo
+bit			microdvd		rm
+caf			mjpeg			roq
+cavsvideo		mkvtimestamp_v2		rso
+chromaprint		mlp			rtp
+crc			mmf			rtp_mpegts
+dash			mov			rtsp
+data			mp2			sap
+daud			mp3			segment
+dirac			mp4			singlejpeg
+dnxhd			mpeg1system		smjpeg
+dts			mpeg1vcd		smoothstreaming
+dv			mpeg1video		sox
+eac3			mpeg2dvd		spdif
+f4v			mpeg2svcd		spx
+ffm			mpeg2video		srt
+ffmetadata		mpeg2vob		stream_segment
+fifo			mpegts			swf
+filmstrip		mpjpeg			tee
+flac			mxf			tg2
+flv			mxf_d10			tgp
+framecrc		mxf_opatom		truehd
+framehash		null			tta
+framemd5		nut			uncodedframecrc
+g722			oga			vc1
+g723_1			ogg			vc1t
+gif			ogv			voc
+gsm			oma			w64
+gxf			opus			wav
+h261			pcm_alaw		webm
+h263			pcm_f32be		webm_chunk
+h264			pcm_f32le		webm_dash_manifest
+hash			pcm_f64be		webp
+hds			pcm_f64le		webvtt
+hevc			pcm_mulaw		wtv
+hls			pcm_s16be		wv
+ico			pcm_s16le		yuv4mpegpipe
+ilbc
+
+
+################ --list-parsers ########################
+aac			dvd_nav			mpegvideo
+aac_latm		dvdsub			opus
+ac3			flac			png
+adx			g729			pnm
+bmp			gsm			rv30
+cavsvideo		h261			rv40
+cook			h263			tak
+dca			h264			vc1
+dirac			hevc			vorbis
+dnxhd			mjpeg			vp3
+dpx			mlp			vp8
+dvaudio			mpeg4video		vp9
+dvbsub			mpegaudio
+
+
+################ --list-protocols ########################
+async			librtmp			rtmpte
+bluray			librtmpe		rtmpts
+cache			librtmps		rtp
+concat			librtmpt		sctp
+crypto			librtmpte		srtp
+data			libsmbclient		subfile
+ffrtmpcrypt		libssh			tcp
+ffrtmphttp		md5			tee
+file			mmsh			tls_gnutls
+ftp			mmst			tls_openssl
+gopher			pipe			tls_schannel
+hls			rtmp			tls_securetransport
+http			rtmpe			udp
+httpproxy		rtmps			udplite
+https			rtmpt			unix
+icecast
+
+
+################ --list-bsfs ########################
+aac_adtstoasc		imx_dump_header		mpeg4_unpack_bframes
+chomp			mjpeg2jpeg		noise
+dca_core		mjpega_dump_header	remove_extradata
+dump_extradata		mov2textsub		text2movsub
+h264_mp4toannexb	mp3_header_decompress	vp9_superframe
+hevc_mp4toannexb
+
+
+################ --list-indevs ########################
+alsa			iec61883		pulse
+avfoundation		jack			qtkit
+bktr			lavfi			sndio
+decklink		libcdio			v4l2
+dshow			libdc1394		vfwcap
+dv1394			openal			x11grab
+fbdev			oss			x11grab_xcb
+gdigrab
+
+
+################ --list-outdevs ########################
+alsa			opengl			sndio
+caca			oss			v4l2
+decklink		pulse			xv
+fbdev			sdl2
+
+
+################ --list-filters ########################
+abench			blackdetect		flanger
+acompressor		blackframe		flite
+acrossfade		blend			format
+acrusher		boxblur			fps
+adelay			bs2b			framepack
+adrawgraph		bwdif			framerate
+aecho			cellauto		framestep
+aemphasis		channelmap		frei0r
+aeval			channelsplit		frei0r_src
+aevalsrc		chorus			fspp
+afade			chromakey		gblur
+afftfilt		ciescope		geq
+aformat			codecview		gradfun
+agate			color			haldclut
+ahistogram		colorbalance		haldclutsrc
+ainterleave		colorchannelmixer	hdcd
+alimiter		colorkey		hflip
+allpass			colorlevels		highpass
+allrgb			colormatrix		histeq
+allyuv			colorspace		histogram
+aloop			compand			hqdn3d
+alphaextract		compensationdelay	hqx
+alphamerge		concat			hstack
+amerge			convolution		hue
+ametadata		copy			hwdownload
+amix			coreimage		hwupload
+amovie			coreimagesrc		hwupload_cuda
+anequalizer		cover_rect		hysteresis
+anoisesrc		crop			idet
+anull			cropdetect		il
+anullsink		crystalizer		inflate
+anullsrc		curves			interlace
+apad			datascope		interleave
+aperms			dcshift			join
+aphasemeter		dctdnoiz		kerndeint
+aphaser			deband			ladspa
+apulsator		decimate		lenscorrection
+arealtime		deflate			life
+aresample		dejudder		loop
+areverse		delogo			loudnorm
+aselect			deshake			lowpass
+asendcmd		detelecine		lut
+asetnsamples		dilation		lut2
+asetpts			displace		lut3d
+asetrate		drawbox			lutrgb
+asettb			drawgraph		lutyuv
+ashowinfo		drawgrid		mandelbrot
+asidedata		drawtext		maskedclamp
+asplit			dynaudnorm		maskedmerge
+ass			earwax			mcdeint
+astats			ebur128			mergeplanes
+astreamselect		edgedetect		mestimate
+asyncts			elbg			metadata
+atadenoise		eq			minterpolate
+atempo			equalizer		movie
+atrim			erosion			mpdecimate
+avectorscope		extractplanes		mptestsrc
+avgblur			extrastereo		negate
+azmq			fade			nlmeans
+bandpass		fftfilt			nnedi
+bandreject		field			noformat
+bass			fieldhint		noise
+bbox			fieldmatch		null
+bench			fieldorder		nullsink
+biquad			find_rect		nullsrc
+bitplanenoise		firequalizer		ocr
+ocv			sendcmd			streamselect
+overlay			separatefields		subtitles
+owdenoise		setdar			super2xsai
+pad			setfield		swaprect
+palettegen		setpts			swapuv
+paletteuse		setsar			tblend
+pan			settb			telecine
+perms			showcqt			testsrc
+perspective		showfreqs		testsrc2
+phase			showinfo		thumbnail
+pixdesctest		showpalette		tile
+pp			showspectrum		tinterlace
+pp7			showspectrumpic		transpose
+prewitt			showvolume		treble
+psnr			showwaves		tremolo
+pullup			showwavespic		trim
+qp			shuffleframes		unsharp
+random			shuffleplanes		uspp
+readvitc		sidechaincompress	vaguedenoiser
+realtime		sidechaingate		vectorscope
+remap			sidedata		vflip
+removegrain		signalstats		vibrato
+removelogo		silencedetect		vidstabdetect
+repeatfields		silenceremove		vidstabtransform
+replaygain		sine			vignette
+resample		smartblur		volume
+reverse			smptebars		volumedetect
+rgbtestsrc		smptehdbars		vstack
+rotate			sobel			w3fdif
+rubberband		sofalizer		waveform
+sab			spectrumsynth		weave
+scale			split			xbr
+scale2ref		spp			yadif
+scale_npp		ssim			yuvtestsrc
+scale_vaapi		stereo3d		zmq
+select			stereotools		zoompan
+selectivecolor		stereowiden		zscale
+
+

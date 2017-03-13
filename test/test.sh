@@ -40,7 +40,9 @@ fi
 
 SRC_DIR=../lib/src/main/native
 
-gcc -g -O0 -DUSE_COLOR=1 $EXTRA_FLAGS main.c ${SRC_DIR}/player_thread.c \
+
+
+gcc -g -O0 -DUSE_COLOR=1   $EXTRA_FLAGS main.c ${SRC_DIR}/player_thread.c \
   ${SRC_DIR}/audioplayer.c  -I${SRC_DIR}  -o $EXE  \
   -lz -lbz2 -lc -lm -lavutil  ${LDFLAGS} -lavcodec -lavformat -lavresample -lpthread || exit 1
 

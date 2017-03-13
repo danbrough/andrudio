@@ -10,7 +10,6 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 # You can define multiple libraries, and CMake builds it for you.
 # Gradle automatically packages shared libraries with your APK.
 
-
 set(ffmpeg_libs ${CMAKE_SOURCE_DIR}/../ffmpeg/libs)
 include_directories( ${CMAKE_SOURCE_DIR}/../ffmpeg/include/ )
 

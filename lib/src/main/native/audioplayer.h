@@ -17,7 +17,7 @@
 #define FAILURE -1
 
 #define OUTPUT_SAMPLE_FMT AV_SAMPLE_FMT_S16
-#define USE_COLOR 1
+
 
 #define MAX_QUEUE_SIZE (15  * 1024)
 #define MIN_AUDIOQ_SIZE (20 * 16 * 1024)

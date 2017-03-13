@@ -7,6 +7,7 @@ ELDFLAGS=""
 
 FLAGS="$FLAGS --enable-cross-compile --cross-prefix=$CROSS_PREFIX"
 FLAGS="$FLAGS --target-os=android --sysroot=$SYSROOT"
+FLAGS="$FLAGS --enable-gpl"
 FLAGS="$FLAGS --disable-doc"
 FLAGS="$FLAGS --disable-programs"
 FLAGS="$FLAGS --disable-avdevice"

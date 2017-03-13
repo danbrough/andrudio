@@ -57,6 +57,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
     player.setOnPreparedListener(this);
 
 
+    configureContent();
+  }
+
+  private void configureContent() {
+    tests.removeAllViews();
+
     new Test("Pause") {
       @Override
       protected void perform() throws Exception {
@@ -70,6 +76,20 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
         player.stop();
       }
     };
+
+    SharedPreferences prefs = getPreferences();
+    int n = 1;
+    urls.clear();
+    while (true) {
+      String url = prefs.getString(PREF_URL + "_" + n, null);
+      if (url == null) break;
+      urls.add(url);
+      n++;
+    }
+
+    for (String url : urls) {
+      new PlayTest(url);
+    }
 
     new PlayTest("http://h1.danbrough.org/media/tests/test.ogg");
 
@@ -114,14 +134,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
     // audio/aacp
     new PlayTest("http://radionz-ice.streamguys.com/national");
 
-    SharedPreferences prefs = getPreferences();
-    int n = 1;
-    while (true) {
-      String url = prefs.getString(PREF_URL + "_" + n, null);
-      if (url == null) break;
-      urls.add(url);
-      n++;
-    }
+
   }
 
   @Override
@@ -149,23 +162,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
     MenuItem item = menu.add(0, MENU_ADD_URL, 0, "Add URL");
     item.setIcon(R.drawable.ic_playlist_add);
     MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-
-
-    int n = 1;
-    for (final String url : urls) {
-      item = menu.add(0, n, n, url);
-      item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-        @Override
-        public boolean onMenuItemClick(MenuItem item) {
-          try {
-            play(url);
-          } catch (IOException e) {
-            handleError(e);
-          }
-          return true;
-        }
-      });
-    }
     return super.onCreateOptionsMenu(menu);
   }
 
@@ -208,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
         }
         try {
           play(url);
+          configureContent();
         } catch (IOException e) {
           handleError(e);
         }
