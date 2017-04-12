@@ -32,7 +32,7 @@ dependencies {
   testCompile 'junit:junit:4.12'
   compile project(':lib')
   //to use the maven distribution instead of project(':lib')
-  //compile 'danbroid.andrudio:andrudio-library:v2.010'
+  //compile 'danbroid.andrudio:andrudio-library:v2.019'
   compile 'danbroid.util:slf4j:v1.018'
 }
 

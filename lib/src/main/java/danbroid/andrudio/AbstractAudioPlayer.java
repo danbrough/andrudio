@@ -1,12 +1,6 @@
 package danbroid.andrudio;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 /**
  * This is the second tier API that resides on top of {@link LibAndrudio}. You
@@ -63,15 +57,6 @@ public abstract class AbstractAudioPlayer implements LibAndrudio.NativeCallbacks
     prepareAsync();
   }
 
-  protected abstract void runInBackground(Runnable runnable);
-
-  protected void handleError(IOException e) {
-    e.printStackTrace();
-  }
-
-
-
-  protected abstract void runOnUIThread(Runnable runnable);
 
   public void prepareAsync() {
     LibAndrudio.prepareAsync(handle);

@@ -4,12 +4,10 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.AudioTrack.OnPlaybackPositionUpdateListener;
-import android.os.Handler;
 import android.util.Log;
 
 /**
  * {@link AbstractAudioPlayer} subclass that uses a {@link AudioTrack} instance.
- *
  */
 
 public class AndroidAudioPlayer extends AbstractAudioPlayer {
@@ -26,21 +24,6 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   private long statusUpdateInterval = 1000;
 
-  private final Handler handler = new Handler();
-
-  @Override
-  protected void runInBackground(final Runnable runnable) {
-    new Thread(){
-      public void run(){
-        runnable.run();
-      }
-    }.start();
-  }
-
-  @Override
-  protected void runOnUIThread(Runnable runnable) {
-    handler.post(runnable);
-  }
 
   @Override
   public synchronized void reset() {
@@ -53,7 +36,7 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   @Override
   public synchronized void prepareAudio(int sampleFormat, int sampleRateInHZ,
-      int channelConfig) {
+                                        int channelConfig) {
     Log.d(TAG, "prepareAudio() format: " + sampleFormat + " rate: "
         + sampleRateInHZ + " channels: " + channelConfig);
 
@@ -111,25 +94,24 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
 
   /**
    * Override to update playback status information.
-   * 
+   *
    * @see AndroidAudioPlayer#statusUpdateInterval
    */
   protected void onStatusUpdate() {
     Log.i(TAG, "onStatusUpdate() " + getPosition() + ":" + getDuration());
   }
 
+  public long getStatusUpdateInterval() {
+    return statusUpdateInterval;
+  }
+
   /**
    * Set this to 0 to disable automatic status updates
-   * 
-   * @param statusUpdateInterval
-   * millis between calls to {@link AndroidAudioPlayer#onStatusUpdate()}
+   *
+   * @param statusUpdateInterval millis between calls to {@link AndroidAudioPlayer#onStatusUpdate()}
    */
   public void setStatusUpdateInterval(long statusUpdateInterval) {
     this.statusUpdateInterval = statusUpdateInterval;
-  }
-
-  public long getStatusUpdateInterval() {
-    return statusUpdateInterval;
   }
 
   @Override
@@ -159,13 +141,10 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
   @Override
   protected void onCompleted() {
     Log.v(TAG, "onCompleted()");
-    handler.post(new Runnable() {
-      @Override
-      public void run() {
-        onStatusUpdate();
-        onStopped();
-      }
-    });
+
+    onStatusUpdate();
+    onStopped();
+
   }
 
   @Override
