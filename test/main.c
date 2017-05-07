@@ -223,7 +223,7 @@ static void event_loop(player_t *player) {
         play(player, "http://radionz-ice.streamguys.com/national.mp3");
         break;
       case '5':
-        play(player, "http://ice1.somafm.com/u80s-128-aac");
+        play(player, "http://ice1.somafm.com/lush-128-aac");
         break;
       case '6':
         play(player, "http://live-aacplus-64.kexp.org/kexp64.aac");

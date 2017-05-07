@@ -33,7 +33,7 @@ dependencies {
   compile project(':lib')
   //to use the maven distribution instead of project(':lib')
   //compile 'danbroid.andrudio:andrudio-library:v2.019'
-  compile 'danbroid.util:slf4j:v1.018'
+  compile 'danbroid.util:slf4j:v1.022'
 }
 
 repositories {

@@ -110,7 +110,7 @@ static int stream_component_open(player_t *player, int stream_index) {
   AVCodec *codec;
   int ret = 0;
 
-  log_info("stream_component_open()");
+  log_error("stream_component_open()");
 
   if (stream_index < 0 || stream_index >= ic->nb_streams)
     return -1;
@@ -141,6 +141,7 @@ static int stream_component_open(player_t *player, int stream_index) {
   /* prepare audio output */
   if (avctx->codec_type == AVMEDIA_TYPE_AUDIO) {
     player->sdl_sample_rate = avctx->sample_rate;
+    log_info("avctx->sample_rate is %d",player->sdl_sample_rate);
 
     if (!avctx->channel_layout)
       avctx->channel_layout = av_get_default_channel_layout(
@@ -428,7 +429,6 @@ static int cmd_prepare(player_t *player) {
     player->ic->flags |= AVFMT_FLAG_GENPTS;
   log_debug("cmd_prepare::avformat_find_stream_info()");
   ret = avformat_find_stream_info(player->ic, NULL);
-  log_debug("cmd_prepare:avformat_find_stream_info retured");
 
   if (ret < 0) {
     ap_print_error("cmd_prepare::avformat_find_stream_info failed", ret);
@@ -460,13 +460,13 @@ static int cmd_prepare(player_t *player) {
   }
 
   log_debug("cmd_prepare:: stream opened .. reading metadata..");
-
   av_dump_format(player->ic, 0, player->url, 0);
   AVDictionaryEntry *entry = NULL;
   while ((entry = av_dict_get(player->ic->metadata, "", entry,
-                              AV_DICT_IGNORE_SUFFIX)))
+                              AV_DICT_IGNORE_SUFFIX))) {
     log_debug("metadata:\t%s:%s", entry->key, entry->value);
-
+  }
+  log_debug("changing to STATE_PREPARED...");
   return change_state(player, STATE_PREPARED);
 }
 

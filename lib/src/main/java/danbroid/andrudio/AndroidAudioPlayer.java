@@ -40,6 +40,11 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
     Log.d(TAG, "prepareAudio() format: " + sampleFormat + " rate: "
         + sampleRateInHZ + " channels: " + channelConfig);
 
+    if (sampleRateInHZ == 2) {
+      Log.e(TAG, "changing sampleRate to 44100");
+      sampleRateInHZ = 44100;
+    }
+
     boolean changed = (this.sampleFormat != sampleFormat
         || this.sampleRateInHz != sampleRateInHZ || this.channelConfig != channelConfig);
 
@@ -53,6 +58,7 @@ public class AndroidAudioPlayer extends AbstractAudioPlayer {
     }
     int chanConfig = (channelConfig == 1) ? AudioFormat.CHANNEL_OUT_MONO
         : AudioFormat.CHANNEL_OUT_STEREO;
+
 
     int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz, chanConfig,
         AudioFormat.ENCODING_PCM_16BIT) * 4;

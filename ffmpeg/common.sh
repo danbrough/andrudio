@@ -2,7 +2,7 @@
 
 
 FFMPEG_SRC="${ROOT}/ffmpeg.git"
-FFMPEG_VERSION=n3.2.4
+#FFMPEG_VERSION=n3.2.4
 FFMPEG_VERSION=n3.3
 
 OS=`uname`

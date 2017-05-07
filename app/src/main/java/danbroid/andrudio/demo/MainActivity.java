@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
     // audio/aacp
     new PlayTest("http://radionz-ice.streamguys.com/national");
 
+    //soma fm: lush
+    new PlayTest("http://ice1.somafm.com/lush-128-aac");
+
 
   }
 
