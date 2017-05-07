@@ -55,6 +55,7 @@ build(){
 }
 
 build_all(){
+  #for ABI in  x86; do
   for ABI in  x86 x86_64 armeabi armeabi-v7a arm64-v8a; do
     build $ABI HOST: $HOST_SYSTEM
   done
