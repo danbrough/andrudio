@@ -1,8 +1,11 @@
+#!/usr/bin/env bash
 
 
 
 FFMPEG_SRC="${ROOT}/ffmpeg.git"
 FFMPEG_VERSION=n3.3
+#FFMPEG_VERSION=n3.2.4
+#FFMPEG_VERSION=n3.0.1
 
 OS=`uname`
 HOST_ARCH=`uname -m`

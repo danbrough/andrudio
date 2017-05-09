@@ -460,12 +460,14 @@ static int cmd_prepare(player_t *player) {
   }
 
   log_debug("cmd_prepare:: stream opened .. reading metadata..");
-  av_dump_format(player->ic, 0, player->url, 0);
+
+
+/*  av_dump_format(player->ic, 0, player->url, 0);
   AVDictionaryEntry *entry = NULL;
   while ((entry = av_dict_get(player->ic->metadata, "", entry,
                               AV_DICT_IGNORE_SUFFIX))) {
     log_debug("metadata:\t%s:%s", entry->key, entry->value);
-  }
+  }*/
   log_debug("changing to STATE_PREPARED...");
   return change_state(player, STATE_PREPARED);
 }
