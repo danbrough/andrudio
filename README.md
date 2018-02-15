@@ -1,8 +1,12 @@
 
-Andrudio Audio Player
+Andrudio Audio Player (obsolete)
 =================
 A FFMPEG based drop-in replacement for the android [MediaPlayer](http://developer.android.com/reference/android/media/MediaPlayer.html)
 for use in audio only applications.
+
+You can do everything that this does using https://github.com/google/ExoPlayer.
+
+I'm leaving this code here as its a useful guide on integrating native libraries with android.
 
 To use this in your own android applications simply add to your maven repositories in your build.gradle:
 
